@@ -109,14 +109,14 @@ public class ImgToFile extends FileToImg{
     }
     */
     public int[] imgToBinaryStream(Bitmap img) throws NotFoundException{
-        int[][] biMatrix=Binarizer.binarizer(img);
+        BiMatrix biMatrix=Binarizer.binarizer(img);
         int[] border=FindBoarder.findBoarder(biMatrix);
         int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
         GridSampler gs=new GridSampler();
-        int[][] matrixStream=gs.sampleGrid(biMatrix,imgWidth,imgWidth,0,0,imgWidth,0,imgWidth,imgWidth,0,imgWidth,border[0],border[1],border[2],border[3],border[4],border[5],border[6],border[7]);
+        BiMatrix matrixStream=gs.sampleGrid(biMatrix,imgWidth,imgWidth,0,0,imgWidth,0,imgWidth,imgWidth,0,imgWidth,border[0],border[1],border[2],border[3],border[4],border[5],border[6],border[7]);
         return matrixToBinaryStream(matrixStream);
     }
-    public int[] matrixToBinaryStream(int[][] biMatrix) throws NotFoundException{
+    public int[] matrixToBinaryStream(BiMatrix biMatrix) throws NotFoundException{
         int startOffset=frameBlackLength+frameVaryLength;
         int stopOffset=startOffset+contentLength;
         System.out.println(startOffset+" "+stopOffset);
@@ -124,7 +124,7 @@ public class ImgToFile extends FileToImg{
         int[] verify={0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
         int index=0;
         for(int j=frameBlackLength;j<frameBlackLength+contentLength;j++){
-            if(biMatrix[frameBlackLength+frameVaryLength+contentLength][j]!=verify[index++]){
+            if(!biMatrix.pixelEquals(frameBlackLength+frameVaryLength+contentLength,j,verify[index++])){
                 throw NotFoundException.getNotFoundInstance();
             }
             //System.out.print(Integer.toString(biMatrix[frameBlackLength+frameVaryLength+contentLength][j]));
@@ -133,7 +133,7 @@ public class ImgToFile extends FileToImg{
         System.out.println();
         for(int j=startOffset;j<stopOffset;j++){
             for(int i=startOffset;i<stopOffset;i++){
-                result[index++]=biMatrix[i][j];
+                result[index++]=biMatrix.get(i,j);
             }
         }
         return result;
