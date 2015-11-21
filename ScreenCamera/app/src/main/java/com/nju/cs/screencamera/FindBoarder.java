@@ -1,5 +1,7 @@
 package com.nju.cs.screencamera;
 
+import android.util.Log;
+
 /**
  * Created by zhantong on 15/11/15.
  */
@@ -58,7 +60,8 @@ public class FindBoarder {
                 break;
             }
         }
-        System.out.println("boarder:"+up+" "+right+" "+down+" "+left);
+        Log.i("Img:","boarder:"+up+" "+right+" "+down+" "+left);
+        //System.out.println("boarder:"+up+" "+right+" "+down+" "+left);
         if(left==0||up==0||right==width||down==height){
             throw NotFoundException.getNotFoundInstance();
         }

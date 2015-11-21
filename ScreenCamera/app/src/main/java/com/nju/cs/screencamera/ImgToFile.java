@@ -1,6 +1,7 @@
 package com.nju.cs.screencamera;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 /*
 import javax.imageio.ImageIO;
@@ -55,19 +56,22 @@ public class ImgToFile extends FileToImg{
         int[] last={};
         int[] xx={};
         //int[] last=new int[2500];
+        int count=0;
         for(Bitmap img:bitmaps){
             int[] t;
             try {
                 t = imgToBinaryStream(img);
             }catch (NotFoundException e){
-                System.out.println("Code image not found!");
+                Log.i("Img "+Integer.toString(count),"Code image not found!");
+                //System.out.println("Code image not found!");
                 continue;
             }
             if(Arrays.equals(t,last)){
-                System.out.println("Same image!");
+                Log.i("Img "+Integer.toString(count),"Same image!");
+                //System.out.println("Same image!");
                 continue;
             }
-            int count=0;
+            count=0;
             if(!Arrays.equals(last,xx)) {
                 for (int i = 0; i < t.length; i++) {
                     if (t[i] != last[i]) {
@@ -83,7 +87,8 @@ public class ImgToFile extends FileToImg{
             System.arraycopy(buffer,0,temp,0,buffer.length);
             System.arraycopy(t,0,temp,buffer.length,t.length);
             buffer=temp;
-            System.out.println("DONE!");
+            Log.i("Img "+Integer.toString(count),"DONE!");
+            //System.out.println("DONE!");
         }
         binaryStreamToFile(buffer, file);
     }
