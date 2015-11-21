@@ -24,8 +24,8 @@ public final class BiMatrix {
         int offset=y*width+x;
         pixels[offset]=(byte)pixel;
     }
-    public void set(int location,byte pixel){
-        pixels[location]=pixel;
+    public void set(int location,int pixel){
+        pixels[location]=(byte)pixel;
     }
     public boolean pixelEquals(int x,int y,int pixel){
         int offset=y*width+x;

@@ -76,16 +76,21 @@ public class Binarizer {
         int width=img.getWidth();
         //int[][] biMatrix=new int[width][height];
         BiMatrix biMatrix=new BiMatrix(width,height);
+        int[] argbs=new int[width*height];
+        img.getPixels(argbs,0,width,0,0,width,height);
         for(int y=0;y<height;y++){
+            int offset=y*width;
             for(int x=0;x<width;x++){
+                int current=offset+x;
                 //int argb=img.getRGB(x,y);
-                int argb=img.getPixel(x,y);
+                //int argb=img.getPixel(x,y);
+                int argb=argbs[current];
                 int r=(argb>>16)&0xFF;
                 int g=(argb>>8)&0xFF;
                 int b=(argb)&0xFF;
                 int gray=((b*29+g*150+r*77+128)>>8);
                 if(gray<=threshold){
-                    biMatrix.set(x,y,0);
+                    biMatrix.set(current,0);
                     //biMatrix[x][y]=0;
                     //img.setRGB(x,y,0xff000000);
                 }
