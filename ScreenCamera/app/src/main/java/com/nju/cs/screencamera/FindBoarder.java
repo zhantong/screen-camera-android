@@ -65,12 +65,18 @@ public class FindBoarder {
         if(left==0||up==0||right==width||down==height){
             throw NotFoundException.getNotFoundInstance();
         }
-
+        if(left==width/2-init&&right==width/2+init&&up==height/2-init&&down==height/2+init){
+            throw NotFoundException.getNotFoundInstance();
+        }
         int[] vertexs=new int[8];
         left=findVertex(biMatrix,up,down,left,vertexs,0,3,false,false);
+        Log.i("Img:","found 1 vertex");
         up=findVertex(biMatrix,left,right,up,vertexs,0,1,true,false);
+        Log.i("Img:","found 2 vertex");
         right=findVertex(biMatrix,up,down,right,vertexs,1,2,false,true);
+        Log.i("Img:","found 3 vertex");
         down=findVertex(biMatrix,left,right,down,vertexs,3,2,true,true);
+        Log.i("Img:","found 4 vertex");
         System.out.print("current:");
         for(int i:vertexs){
             System.out.print(i+" ");

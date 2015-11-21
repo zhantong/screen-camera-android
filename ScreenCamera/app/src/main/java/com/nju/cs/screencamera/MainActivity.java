@@ -1,22 +1,19 @@
 package com.nju.cs.screencamera;
 
-import android.content.Intent;
+
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,48 +22,51 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try{
-            Process process = Runtime.getRuntime().exec("logcat -d");
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder log=new StringBuilder();
-            String line;
-            TextView editText=(TextView)findViewById(R.id.textV);
-            editText.setMovementMethod(new ScrollingMovementMethod());
-            while ((line = bufferedReader.readLine()) != null) {
-                log.append(line);
+    }
+    BlockingDeque<Bitmap> rev=new LinkedBlockingDeque<Bitmap>();
 
+    public void click(View view){
+        final long TIMEOUT=1000l;
+        Thread worker=new Thread(){
+            @Override
+            public void run() {
+                /*
+                while(true){
+                    try {
+                        Bitmap bitmap = rev.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                        if(bitmap==null){
+                            continue;
+                        }
+                        bitmap.recycle();
+                        bitmap=null;
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+                */
+                File out=new File(Environment.getExternalStorageDirectory()+"/out3.txt");
+                ImgToFile imgToFile=new ImgToFile();
+                imgToFile.imgsToFile(rev,out);
             }
-            editText.setText(log.toString());
+        };
+        worker.start();
 
-        }catch (Exception e){
+        VideoToFrames videoToFrames=new VideoToFrames();
+        try {
+            videoToFrames.testExtractMpegFrames(rev);
+        }catch (Throwable e){
             e.printStackTrace();
         }
-    }
-    ArrayList<Bitmap> rev=new ArrayList<>();
-    public void click(View view){
-        File videoFile=new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/Download/test3.mp4");
-        MediaMetadataRetriever retriever=new MediaMetadataRetriever();
-        retriever.setDataSource(videoFile.getAbsolutePath());
-        String duration=retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        for(int i=0;i<Integer.parseInt(duration);i+=100){
-            Bitmap bitmap=retriever.getFrameAtTime(i*1000,MediaMetadataRetriever.OPTION_CLOSEST);
-//            File f=new File(Environment.getExternalStorageDirectory()+"/Test/"+i+".jpeg");
-//            try {
-//                FileOutputStream out = new FileOutputStream(f);
-//
-//                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-//                out.flush();
-//                out.close();
-//            }catch (Exception e){
-//                e.printStackTrace();
-//            }
-            rev.add(bitmap);
-        }
+        /*
+        String filePath=Environment.getExternalStorageDirectory().getAbsolutePath()+"/Download/test3.mp4";
+        File videoFile=new File(filePath);
+
         TextView editText=(TextView)findViewById(R.id.textV);
         //editText.setText(duration);
         ImgToFile imgToFile=new ImgToFile();
         File out=new File(Environment.getExternalStorageDirectory()+"/out3.txt");
         imgToFile.imgsToFile(rev,out);
+        */
     }
     public void dealWith(ArrayList<Bitmap> bitMapList){
         TextView editText=(TextView)findViewById(R.id.textV);
@@ -75,5 +75,7 @@ public class MainActivity extends AppCompatActivity {
             int pix=b.getPixel(500,500);
             editText.setText(Integer.toString(pix));
         }
+
     }
+
 }

@@ -12,6 +12,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zhantong on 15/11/15.
@@ -51,44 +53,59 @@ public class ImgToFile extends FileToImg{
         binaryStreamToFile(buffer,file);
     }
     */
-    public void imgsToFile(ArrayList<Bitmap> bitmaps,File file){
+    public void imgsToFile(BlockingDeque<Bitmap> bitmaps,File file){
+        long TIMEOUT=3000L;
         int[] buffer={};
         int[] last={};
         int[] xx={};
         //int[] last=new int[2500];
         int count=0;
-        for(Bitmap img:bitmaps){
-            int[] t;
+        TEST:
+        while (true){
+            int c=0;
+            count++;
+            Bitmap img;
             try {
+                img = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                if (img == null) {
+                    break TEST;
+                }
+                int[] t;
                 t = imgToBinaryStream(img);
-            }catch (NotFoundException e){
-                Log.i("Img "+Integer.toString(count),"Code image not found!");
-                //System.out.println("Code image not found!");
-                continue;
-            }
-            if(Arrays.equals(t,last)){
-                Log.i("Img "+Integer.toString(count),"Same image!");
-                //System.out.println("Same image!");
-                continue;
-            }
-            count=0;
-            if(!Arrays.equals(last,xx)) {
-                for (int i = 0; i < t.length; i++) {
-                    if (t[i] != last[i]) {
-                        count++;
+
+                if (Arrays.equals(t, last)) {
+                    Log.i("Img " + Integer.toString(count), "Same image!");
+                    //System.out.println("Same image!");
+                    continue TEST;
+                }
+                c = 0;
+                if (!Arrays.equals(last, xx)) {
+                    for (int i = 0; i < t.length; i++) {
+                        if (t[i] != last[i]) {
+                            c++;
+                        }
+                    }
+                    Log.i("Img " + Integer.toString(count), "The difference is "+c);
+                    if (c < 40) {
+                        continue TEST;
                     }
                 }
-                if(count<20){
-                    continue;
-                }
+                last = t;
+                int[] temp = new int[buffer.length + t.length];
+                System.arraycopy(buffer, 0, temp, 0, buffer.length);
+                System.arraycopy(t, 0, temp, buffer.length, t.length);
+                buffer = temp;
+                Log.i("Img " + Integer.toString(count), "DONE!");
+                //System.out.println("DONE!");
+
+                img.recycle();
+                img = null;
             }
-            last=t;
-            int[] temp=new int[buffer.length+t.length];
-            System.arraycopy(buffer,0,temp,0,buffer.length);
-            System.arraycopy(t,0,temp,buffer.length,t.length);
-            buffer=temp;
-            Log.i("Img "+Integer.toString(count),"DONE!");
-            //System.out.println("DONE!");
+            catch (Exception e){
+                Log.i("Img "+Integer.toString(count),"Code image not found!");
+                //System.out.println("Code image not found!");
+                continue TEST;
+            }
         }
         binaryStreamToFile(buffer, file);
     }
@@ -146,7 +163,7 @@ public class ImgToFile extends FileToImg{
                 break;
             }
         }
-        byte[] target=new byte[stopIndex/8];
+        byte[] target=new byte[stopIndex+1/8];
         System.out.println(Integer.toString(stopIndex));
         for(int i=0;i<stopIndex;i++){
             if(binaryStream[i]==1) {
