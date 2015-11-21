@@ -25,7 +25,7 @@ public class Binarizer {
                 int argb=img.getPixel(column, row);
                 int r=(argb>>16)&0xFF;
                 int g=(argb>>8)&0xFF;
-                int b=(argb>>0)&0xFF;
+                int b=(argb)&0xFF;
                 int gray=((b*29+g*150+r*77+128)>>8);
                 buckets[gray]++;
             }
@@ -70,25 +70,28 @@ public class Binarizer {
         }
         return bestValley;
     }
-    public static int[][] binarizer(Bitmap img) throws NotFoundException{
+    public static BiMatrix binarizer(Bitmap img) throws NotFoundException{
         int threshold=getThreshold(img);
         int height=img.getHeight();
         int width=img.getWidth();
-        int[][] biMatrix=new int[width][height];
-        for(int x=0;x<width;x++){
-            for(int y=0;y<height;y++){
+        //int[][] biMatrix=new int[width][height];
+        BiMatrix biMatrix=new BiMatrix(width,height);
+        for(int y=0;y<height;y++){
+            for(int x=0;y<width;x++){
                 //int argb=img.getRGB(x,y);
                 int argb=img.getPixel(x,y);
                 int r=(argb>>16)&0xFF;
                 int g=(argb>>8)&0xFF;
-                int b=(argb>>0)&0xFF;
+                int b=(argb)&0xFF;
                 int gray=((b*29+g*150+r*77+128)>>8);
                 if(gray<=threshold){
-                    biMatrix[x][y]=0;
+                    biMatrix.set(x,y,0);
+                    //biMatrix[x][y]=0;
                     //img.setRGB(x,y,0xff000000);
                 }
                 else{
-                    biMatrix[x][y]=1;
+                    biMatrix.set(x,y,1);
+                    //biMatrix[x][y]=1;
                     //img.setRGB(x,y,0xffffffff);
                 }
             }
