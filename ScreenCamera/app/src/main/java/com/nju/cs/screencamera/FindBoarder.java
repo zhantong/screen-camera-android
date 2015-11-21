@@ -6,10 +6,10 @@ import android.util.Log;
  * Created by zhantong on 15/11/15.
  */
 public class FindBoarder {
-    public static boolean containsBlack(int[][] biMatrix,int a,int b,int fixed,boolean horizontal){
+    public static boolean containsBlack(BiMatrix biMatrix,int a,int b,int fixed,boolean horizontal){
         if(horizontal){
             for(int x=a;x<=b;x++){
-                if(biMatrix[x][fixed]==0){
+                if(biMatrix.pixelEquals(x,fixed,0)){
                     return true;
                 }
 
@@ -17,16 +17,16 @@ public class FindBoarder {
         }
         else{
             for(int y=a;y<=b;y++){
-                if(biMatrix[fixed][y]==0){
+                if(biMatrix.pixelEquals(fixed,y,0)){
                     return true;
                 }
             }
         }
         return false;
     }
-    public static int[] findBoarder(int[][] biMatrix) throws NotFoundException{
-        int width=biMatrix.length;
-        int height=biMatrix[0].length;
+    public static int[] findBoarder(BiMatrix biMatrix) throws NotFoundException{
+        int width=biMatrix.width();
+        int height=biMatrix.height();
         int init=20;
         int left=width/2-init;
         int right=width/2+init;
@@ -81,19 +81,19 @@ public class FindBoarder {
         }
         return vertexs;
     }
-    public static int findVertex(int[][] biMatrix,int b1,int b2,int fixed,int[] vertexs,int p1,int p2,boolean horizontal,boolean sub){
+    public static int findVertex(BiMatrix biMatrix,int b1,int b2,int fixed,int[] vertexs,int p1,int p2,boolean horizontal,boolean sub){
         int mid=(b2-b1)/2;
         if(horizontal){
             while(true){
                 for (int i = 1; i <= mid; i++) {
-                    if (biMatrix[b1 + i][fixed] == 0) {
+                    if (biMatrix.pixelEquals(b1+i,fixed,0)) {
                         if (!isSinglePoint(biMatrix, b1 + i, fixed)) {
                             vertexs[p1 * 2] = b1 + i;
                             vertexs[p1 * 2 + 1] = fixed;
                             return fixed;
                         }
                     }
-                    if (biMatrix[b2 - i][fixed] == 0) {
+                    if (biMatrix.pixelEquals(b2-i,fixed,0)) {
                         if (!isSinglePoint(biMatrix, b2 - i, fixed)) {
                             vertexs[p2 * 2] = b2 - i;
                             vertexs[p2 * 2 + 1] = fixed;
@@ -112,14 +112,14 @@ public class FindBoarder {
         else{
             while(true) {
                 for (int i = 1; i <= mid; i++) {
-                    if (biMatrix[fixed][b1 + i] == 0) {
+                    if (biMatrix.pixelEquals(fixed,b1+i,0)) {
                         if (!isSinglePoint(biMatrix, fixed, b1 + i)) {
                             vertexs[p1 * 2] = fixed;
                             vertexs[p1 * 2 + 1] = b1 + i;
                             return fixed;
                         }
                     }
-                    if (biMatrix[fixed][b2 - i] == 0) {
+                    if (biMatrix.pixelEquals(fixed,b2-i,0)) {
                         if (!isSinglePoint(biMatrix, fixed, b2 - i)) {
                             vertexs[p2 * 2] = fixed;
                             vertexs[p2 * 2 + 1] = b2 - i;
@@ -136,8 +136,8 @@ public class FindBoarder {
             }
         }
     }
-    public static boolean isSinglePoint(int[][] biMatrix,int x,int y){
-        int sum=biMatrix[x-1][y-1]+biMatrix[x][y-1]+biMatrix[x+1][y-1]+biMatrix[x-1][y]+biMatrix[x+1][y]+biMatrix[x-1][y+1]+biMatrix[x][y+1]+biMatrix[x+1][y+1];
+    public static boolean isSinglePoint(BiMatrix biMatrix,int x,int y){
+        int sum=biMatrix.get(x-1,y-1)+biMatrix.get(x,y-1)+biMatrix.get(x+1,y-1)+biMatrix.get(x-1,y)+biMatrix.get(x+1,y)+biMatrix.get(x-1,y+1)+biMatrix.get(x,y+1)+biMatrix.get(x+1,y+1);
         //System.out.println("isSinglePoint:"+sum);
         return sum>=6;
     }

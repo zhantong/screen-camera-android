@@ -16,9 +16,9 @@ public final class BiMatrix {
         this.height=height;
         this.pixels=new byte[width*height];
     }
-    public byte get(int x,int y){
+    public int get(int x,int y){
         int offset=y*width+x;
-        return pixels[offset];
+        return (int)pixels[offset];
     }
     public void set(int x,int y,int pixel){
         int offset=y*width+x;
@@ -26,5 +26,15 @@ public final class BiMatrix {
     }
     public void set(int location,byte pixel){
         pixels[location]=pixel;
+    }
+    public boolean pixelEquals(int x,int y,int pixel){
+        int offset=y*width+x;
+        return pixels[offset]==(byte)pixel;
+    }
+    public int width(){
+        return width;
+    }
+    public int height(){
+        return height;
     }
 }
