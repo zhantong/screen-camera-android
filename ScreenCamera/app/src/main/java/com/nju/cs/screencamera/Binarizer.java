@@ -77,7 +77,7 @@ public class Binarizer {
         //int[][] biMatrix=new int[width][height];
         BiMatrix biMatrix=new BiMatrix(width,height);
         for(int y=0;y<height;y++){
-            for(int x=0;y<width;x++){
+            for(int x=0;x<width;x++){
                 //int argb=img.getRGB(x,y);
                 int argb=img.getPixel(x,y);
                 int r=(argb>>16)&0xFF;
