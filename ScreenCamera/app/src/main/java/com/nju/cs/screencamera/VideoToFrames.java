@@ -62,11 +62,11 @@ import java.util.concurrent.BlockingDeque;
  */
 public class VideoToFrames extends AndroidTestCase {
     private static final String TAG = "ExtractMpegFramesTest";
-    private static final boolean VERBOSE = true;           // lots of logging
+    private static final boolean VERBOSE = false;           // lots of logging
 
     // where to find files (note: requires WRITE_EXTERNAL_STORAGE permission)
     private static final File FILES_DIR = Environment.getExternalStorageDirectory();
-    private static final String INPUT_FILE = "source.mp4";
+    private static final String INPUT_FILE = "test4.mp4";
     private static final int MAX_FRAMES = 10;       // stop extracting after this many
 
     /** test entry point */
@@ -299,7 +299,7 @@ public class VideoToFrames extends AndroidTestCase {
                         decodeCount++;
                         */
                         count++;
-                        if(count%6!=0){
+                        if(count%2!=0){
                             continue;
                         }
                         long startWhen = System.nanoTime();

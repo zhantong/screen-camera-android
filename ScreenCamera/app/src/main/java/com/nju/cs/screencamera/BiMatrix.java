@@ -20,6 +20,9 @@ public final class BiMatrix {
         int offset=y*width+x;
         return (int)pixels[offset];
     }
+    public int get(int location){
+        return (int)pixels[location];
+    }
     public void set(int x,int y,int pixel){
         int offset=y*width+x;
         pixels[offset]=(byte)pixel;

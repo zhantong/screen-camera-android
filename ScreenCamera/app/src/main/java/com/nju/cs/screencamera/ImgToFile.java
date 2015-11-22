@@ -78,6 +78,7 @@ public class ImgToFile extends FileToImg{
                     //System.out.println("Same image!");
                     continue TEST;
                 }
+
                 c = 0;
                 if (!Arrays.equals(last, xx)) {
                     for (int i = 0; i < t.length; i++) {
@@ -91,6 +92,7 @@ public class ImgToFile extends FileToImg{
                     }
                 }
                 last = t;
+
                 int[] temp = new int[buffer.length + t.length];
                 System.arraycopy(buffer, 0, temp, 0, buffer.length);
                 System.arraycopy(t, 0, temp, buffer.length, t.length);
@@ -137,23 +139,89 @@ public class ImgToFile extends FileToImg{
         int startOffset=frameBlackLength+frameVaryLength;
         int stopOffset=startOffset+contentLength;
         System.out.println(startOffset+" "+stopOffset);
-        int[] result=new int[contentLength*contentLength];
-        int[] verify={0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
+        //int[] result=new int[contentLength*contentLength];
+        int[] result=new int[contentLength*contentLength/8];
         int index=0;
+        /*
+        int[] verify={0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
         for(int j=frameBlackLength;j<frameBlackLength+contentLength;j++){
             if(!biMatrix.pixelEquals(frameBlackLength+frameVaryLength+contentLength,j,verify[index++])){
                 throw NotFoundException.getNotFoundInstance();
             }
             //System.out.print(Integer.toString(biMatrix[frameBlackLength+frameVaryLength+contentLength][j]));
         }
+        */
         index=0;
         System.out.println();
+        /*
         for(int j=startOffset;j<stopOffset;j++){
             for(int i=startOffset;i<stopOffset;i++){
                 result[index++]=biMatrix.get(i,j);
             }
         }
         return result;
+        */
+        int c=0;
+        for(int j=startOffset;j<stopOffset;j++){
+            for(int i=startOffset;i<stopOffset;i++){
+                if(biMatrix.get(i,j)==1){
+                    switch (c%8) {
+                        case 0:
+                            result[c / 8] |= 0x80;
+                            break;
+                        case 1:
+                            result[c / 8] |= 0x40;
+                            break;
+                        case 2:
+                            result[c / 8] |= 0x20;
+                            break;
+                        case 3:
+                            result[c / 8] |= 0x10;
+                            break;
+                        case 4:
+                            result[c / 8] |= 0x8;
+                            break;
+                        case 5:
+                            result[c / 8] |= 0x4;
+                            break;
+                        case 6:
+                            result[c / 8] |= 0x2;
+                            break;
+                        case 7:
+                            result[c / 8] |= 0x1;
+                            break;
+                    }
+                }
+                c++;
+            }
+        }
+        /*
+        for(int x:result){
+            System.out.print(x+" ");
+        }
+        System.out.println();
+        */
+        ReedSolomonDecoder decoder=new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
+        try{
+            decoder.decode(result,38);
+        }catch (Exception e){
+            throw  NotFoundException.getNotFoundInstance();
+        }
+        int[] res=new int[2400];
+        int cc=0;
+        for(int i = 0; i < 300; i++) {
+            String s = String.format("%1$08d",Integer.parseInt(Integer.toBinaryString(result[i])));
+            for(int j=0;j<s.length();j++){
+                if(s.charAt(j)=='0'){
+                    res[cc++]=0;
+                }
+                else{
+                    res[cc++]=1;
+                }
+            }
+        }
+        //return result;
+        return res;
     }
     public void binaryStreamToFile(int[] binaryStream,File file){
         int stopIndex=0;
