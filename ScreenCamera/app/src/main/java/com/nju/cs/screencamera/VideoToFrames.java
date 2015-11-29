@@ -131,7 +131,7 @@ public class VideoToFrames extends AndroidTestCase {
         int saveHeight = 480;
 
         try {
-            File inputFile = new File(FILES_DIR, INPUT_FILE);   // must be an absolute path
+            File inputFile = new File(INPUT_FILE);   // must be an absolute path
             // The MediaExtractor error messages aren't very useful.  Check to see if the input
             // file exists so we can throw a better one if it's not there.
             if (!inputFile.canRead()) {
