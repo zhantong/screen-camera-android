@@ -44,16 +44,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 */
-                File out=new File(Environment.getExternalStorageDirectory()+"/out3.txt");
+                File out=new File(Environment.getExternalStorageDirectory()+"/out5.txt");
                 ImgToFile imgToFile=new ImgToFile();
                 imgToFile.imgsToFile(rev,out);
             }
         };
         worker.start();
-
+        String filePath=Environment.getExternalStorageDirectory().getAbsolutePath();
+        System.out.println(filePath);
         VideoToFrames videoToFrames=new VideoToFrames();
         try {
-            videoToFrames.testExtractMpegFrames(rev);
+            videoToFrames.testExtractMpegFrames(rev,"test5.mp4");
         }catch (Throwable e){
             e.printStackTrace();
         }

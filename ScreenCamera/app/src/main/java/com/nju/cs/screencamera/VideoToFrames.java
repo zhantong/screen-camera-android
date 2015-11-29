@@ -66,11 +66,12 @@ public class VideoToFrames extends AndroidTestCase {
 
     // where to find files (note: requires WRITE_EXTERNAL_STORAGE permission)
     private static final File FILES_DIR = Environment.getExternalStorageDirectory();
-    private static final String INPUT_FILE = "test4.mp4";
+    private static String INPUT_FILE = "test5.mp4";
     private static final int MAX_FRAMES = 10;       // stop extracting after this many
 
     /** test entry point */
-    public void testExtractMpegFrames(BlockingDeque<Bitmap> frames) throws Throwable {
+    public void testExtractMpegFrames(BlockingDeque<Bitmap> frames,String fileName) throws Throwable {
+        INPUT_FILE=fileName;
         ExtractMpegFramesWrapper extractMpegFramesWrapper=new ExtractMpegFramesWrapper(this,frames);
         extractMpegFramesWrapper.runTest(this);
         //ExtractMpegFramesWrapper.runTest(this);
@@ -299,9 +300,9 @@ public class VideoToFrames extends AndroidTestCase {
                         decodeCount++;
                         */
                         count++;
-                        if(count%2!=0){
-                            continue;
-                        }
+//                        if(count%2!=0){
+//                            continue;
+//                        }
                         long startWhen = System.nanoTime();
                         try {
                             frames.put(outputSurface.getFrame());
