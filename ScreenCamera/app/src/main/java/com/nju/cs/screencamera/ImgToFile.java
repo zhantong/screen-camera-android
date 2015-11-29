@@ -109,6 +109,7 @@ public class ImgToFile extends FileToImg{
                 continue TEST;
             }
         }
+        System.out.println("total length:"+buffer.length);
         binaryStreamToFile(buffer, file);
     }
     /*
@@ -226,12 +227,13 @@ public class ImgToFile extends FileToImg{
     public void binaryStreamToFile(int[] binaryStream,File file){
         int stopIndex=0;
         for(int i=binaryStream.length-1;i>0;i--){
-            if(binaryStream[i]==0){
+            if(binaryStream[i]==1){
                 stopIndex=i;
+                System.out.println("stop index:"+stopIndex);
                 break;
             }
         }
-        byte[] target=new byte[stopIndex+1/8];
+        byte[] target=new byte[stopIndex/8];
         System.out.println(Integer.toString(stopIndex));
         for(int i=0;i<stopIndex;i++){
             if(binaryStream[i]==1) {
@@ -262,6 +264,7 @@ public class ImgToFile extends FileToImg{
                 }
             }
         }
+        System.out.println("byte length:"+target.length);
         OutputStream os;
         try{
             os=new FileOutputStream(file);
