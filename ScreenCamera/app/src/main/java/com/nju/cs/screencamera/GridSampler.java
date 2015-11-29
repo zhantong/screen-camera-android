@@ -4,7 +4,7 @@ package com.nju.cs.screencamera;
  * Created by zhantong on 15/11/15.
  */
 public class GridSampler {
-    public BiMatrix sampleGrid(BiMatrix img,
+    public Matrix sampleGrid(BiMatrix img,
                               int dimensionX,
                               int dimensionY,
                               float p1ToX, float p1ToY,
@@ -22,8 +22,8 @@ public class GridSampler {
 
         return sampleGrid(img, dimensionX, dimensionY, transform);
     }
-    public BiMatrix sampleGrid(BiMatrix img,int dimensionX,int dimensionY,PerspectiveTransform transform){
-        BiMatrix result=new BiMatrix(dimensionX,dimensionY);
+    public Matrix sampleGrid(BiMatrix img,int dimensionX,int dimensionY,PerspectiveTransform transform){
+        Matrix result=new Matrix(dimensionX,dimensionY);
         //int[][] result=new int[dimensionX][dimensionY];
         float[] points=new float[2*dimensionX];
         int max=points.length;

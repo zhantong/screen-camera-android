@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 */
-                File out=new File(Environment.getExternalStorageDirectory()+"/out5.txt");
+                File out=new File(Environment.getExternalStorageDirectory()+"/out6.txt");
                 ImgToFile imgToFile=new ImgToFile();
                 imgToFile.imgsToFile(rev,out);
             }

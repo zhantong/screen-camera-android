@@ -133,10 +133,10 @@ public class ImgToFile extends FileToImg{
         int[] border=FindBoarder.findBoarder(biMatrix);
         int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
         GridSampler gs=new GridSampler();
-        BiMatrix matrixStream=gs.sampleGrid(biMatrix,imgWidth,imgWidth,0,0,imgWidth,0,imgWidth,imgWidth,0,imgWidth,border[0],border[1],border[2],border[3],border[4],border[5],border[6],border[7]);
+        Matrix matrixStream=gs.sampleGrid(biMatrix,imgWidth,imgWidth,0,0,imgWidth,0,imgWidth,imgWidth,0,imgWidth,border[0],border[1],border[2],border[3],border[4],border[5],border[6],border[7]);
         return matrixToBinaryStream(matrixStream);
     }
-    public int[] matrixToBinaryStream(BiMatrix biMatrix) throws NotFoundException{
+    public int[] matrixToBinaryStream(Matrix biMatrix) throws NotFoundException{
         int startOffset=frameBlackLength+frameVaryLength;
         int stopOffset=startOffset+contentLength;
         System.out.println(startOffset+" "+stopOffset);

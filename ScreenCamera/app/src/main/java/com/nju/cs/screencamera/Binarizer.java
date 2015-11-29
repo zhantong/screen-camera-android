@@ -74,40 +74,11 @@ public class Binarizer {
         int threshold=getThreshold(img);
         int height=img.getHeight();
         int width=img.getWidth();
-        //int[][] biMatrix=new int[width][height];
-        BiMatrix biMatrix=new BiMatrix(width,height);
+
         int[] argbs=new int[width*height];
         img.getPixels(argbs,0,width,0,0,width,height);
-        for(int y=0;y<height;y++){
-            int offset=y*width;
-            for(int x=0;x<width;x++){
-                int current=offset+x;
-                //int argb=img.getRGB(x,y);
-                //int argb=img.getPixel(x,y);
-                int argb=argbs[current];
-                int r=(argb>>16)&0xFF;
-                int g=(argb>>8)&0xFF;
-                int b=(argb)&0xFF;
-                int gray=((b*29+g*150+r*77+128)>>8);
-                if(gray<=threshold){
-                    biMatrix.set(current,0);
-                    //biMatrix[x][y]=0;
-                    //img.setRGB(x,y,0xff000000);
-                }
-                else{
-                    biMatrix.set(x,y,1);
-                    //biMatrix[x][y]=1;
-                    //img.setRGB(x,y,0xffffffff);
-                }
-            }
-        }
-        /*
-        try {
-            ImageIO.write(img, "jpg", new File("/Users/zhantong/Desktop/+"+Math.random()*10+".jpg"));
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        */
+        BiMatrix biMatrix=new BiMatrix(argbs,width,height);
+        biMatrix.setTheshod(threshold);
         return biMatrix;
     }
 }
