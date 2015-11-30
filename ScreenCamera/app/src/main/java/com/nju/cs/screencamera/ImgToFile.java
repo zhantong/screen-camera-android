@@ -71,6 +71,8 @@ public class ImgToFile extends FileToImg{
                     break TEST;
                 }
                 int[] t;
+                int index=getIndex(img);
+                System.out.println("frame index:"+index);
                 t = imgToBinaryStream(img);
 
                 if (Arrays.equals(t, last)) {
@@ -128,6 +130,15 @@ public class ImgToFile extends FileToImg{
         return matrixToBinaryStream(matrixStream);
     }
     */
+    public int getIndex(Bitmap img) throws NotFoundException{
+        BiMatrix biMatrix=Binarizer.binarizer(img);
+        int[] border=FindBoarder.findBoarder(biMatrix);
+        int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
+        GridSampler gs=new GridSampler();
+        String row=gs.sampleRow(biMatrix, imgWidth, imgWidth, 0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth, border[0], border[1], border[2], border[3], border[4], border[5], border[6], border[7], frameBlackLength);
+        int index=GrayCode.toInt(row.substring(frameBlackLength,frameBlackLength+grayCodeLength));
+        return index;
+    }
     public int[] imgToBinaryStream(Bitmap img) throws NotFoundException{
         BiMatrix biMatrix=Binarizer.binarizer(img);
         int[] border=FindBoarder.findBoarder(biMatrix);
@@ -208,9 +219,9 @@ public class ImgToFile extends FileToImg{
         }catch (Exception e){
             throw  NotFoundException.getNotFoundInstance();
         }
-        int[] res=new int[2400];
+        int[] res=new int[5472];
         int cc=0;
-        for(int i = 0; i < 300; i++) {
+        for(int i = 0; i < 684; i++) {
             String s = String.format("%1$08d",Integer.parseInt(Integer.toBinaryString(result[i])));
             for(int j=0;j<s.length();j++){
                 if(s.charAt(j)=='0'){

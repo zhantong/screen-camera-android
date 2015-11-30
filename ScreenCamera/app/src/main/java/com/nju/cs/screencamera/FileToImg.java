@@ -14,8 +14,9 @@ public class FileToImg {
     int frameWhiteLength=10;
     int frameBlackLength=1;
     int frameVaryLength=1;
-    int contentLength=52;
+    int contentLength=76;
     int blockLength=4;
+    int grayCodeLength=10;
     /*
     public static void main(String[] args){
         FileToImg f=new FileToImg();
