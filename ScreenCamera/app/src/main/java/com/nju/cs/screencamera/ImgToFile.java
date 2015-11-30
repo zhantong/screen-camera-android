@@ -60,6 +60,7 @@ public class ImgToFile extends FileToImg{
         int[] xx={};
         //int[] last=new int[2500];
         int count=0;
+        int lastSuccessIndex=0;
         TEST:
         while (true){
             int c=0;
@@ -73,28 +74,16 @@ public class ImgToFile extends FileToImg{
                 int[] t;
                 int index=getIndex(img);
                 System.out.println("frame index:"+index);
-                t = imgToBinaryStream(img);
-
-                if (Arrays.equals(t, last)) {
-                    Log.i("Img " + Integer.toString(count), "Same image!");
-                    //System.out.println("Same image!");
+                if(lastSuccessIndex==index){
+                    System.out.println("same frame!");
                     continue TEST;
                 }
-
-                c = 0;
-                if (!Arrays.equals(last, xx)) {
-                    for (int i = 0; i < t.length; i++) {
-                        if (t[i] != last[i]) {
-                            c++;
-                        }
-                    }
-                    Log.i("Img " + Integer.toString(count), "The difference is "+c);
-                    if (c < 40) {
-                        continue TEST;
-                    }
+                t = imgToBinaryStream(img);
+                if(index-lastSuccessIndex!=1){
+                    System.out.println("Error: lost frame!");
+                    break TEST;
                 }
-                last = t;
-
+                lastSuccessIndex=index;
                 int[] temp = new int[buffer.length + t.length];
                 System.arraycopy(buffer, 0, temp, 0, buffer.length);
                 System.arraycopy(t, 0, temp, buffer.length, t.length);
