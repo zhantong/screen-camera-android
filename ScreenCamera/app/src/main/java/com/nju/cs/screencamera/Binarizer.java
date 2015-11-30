@@ -78,7 +78,7 @@ public class Binarizer {
         int[] argbs=new int[width*height];
         img.getPixels(argbs,0,width,0,0,width,height);
         BiMatrix biMatrix=new BiMatrix(argbs,width,height);
-        biMatrix.setTheshod(threshold);
+        biMatrix.setThreshold(threshold);
         return biMatrix;
     }
 }

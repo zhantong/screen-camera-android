@@ -306,9 +306,11 @@ public class VideoToFrames extends AndroidTestCase {
                         long startWhen = System.nanoTime();
                         try {
                             frames.put(outputSurface.getFrame());
-                            //File outputFile = new File(FILES_DIR,String.format("test/frame-%02d.png", decodeCount));
-                            //decodeCount++;
-                            //outputSurface.saveFrame(outputFile.toString());
+                            /*
+                            File outputFile = new File(FILES_DIR,String.format("test/frame-%02d.png", decodeCount));
+                            decodeCount++;
+                            outputSurface.saveFrame(outputFile.toString());
+                            */
                         }catch (Exception e){
                             e.printStackTrace();
                         }

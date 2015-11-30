@@ -7,7 +7,7 @@ public final class BiMatrix {
     private final int width;
     private final int height;
     private final int[] pixels;
-    private int theshod=0;
+    private int threshold =0;
 
     public BiMatrix(int dimension){
         this(dimension,dimension);
@@ -29,19 +29,19 @@ public final class BiMatrix {
         int g=(p>>8)&0xFF;
         int b=(p)&0xFF;
         int gray=((b*29+g*150+r*77+128)>>8);
-        if(gray<=theshod){
+        if(gray<= threshold){
             return 0;
         }
-        if(gray>theshod){
+        if(gray> threshold){
             return 1;
         }
         return 0;
     }
-    public void setTheshod(int theshod){
-        this.theshod=theshod;
+    public void setThreshold(int threshold){
+        this.threshold = threshold;
     }
-    public int getTheshod(){
-        return theshod;
+    public int getThreshold(){
+        return threshold;
     }
     public int get(int location){
         return pixels[location];

@@ -17,6 +17,7 @@ public class FileToImg {
     int contentLength=76;
     int blockLength=4;
     int grayCodeLength=10;
+    int ecByteNum=38;
     /*
     public static void main(String[] args){
         FileToImg f=new FileToImg();
