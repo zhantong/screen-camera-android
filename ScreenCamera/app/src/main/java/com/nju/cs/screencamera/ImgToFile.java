@@ -6,6 +6,8 @@ import android.util.Log;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -15,10 +17,10 @@ import java.util.concurrent.TimeUnit;
 public class ImgToFile extends FileToImg{
     public void imgsToFile(BlockingDeque<Bitmap> bitmaps,File file){
         long TIMEOUT=3000L;
-        byte[] buffer={};
         int count=0;
         int lastSuccessIndex=0;
         int index=0;
+        List<byte[]> buf=new ArrayList<>();
         while (true){
             count++;
             Bitmap img;
@@ -40,10 +42,7 @@ public class ImgToFile extends FileToImg{
                     break;
                 }
                 lastSuccessIndex=index;
-                byte[] temp = new byte[buffer.length + stream.length];
-                System.arraycopy(buffer, 0, temp, 0, buffer.length);
-                System.arraycopy(stream, 0, temp, buffer.length, stream.length);
-                buffer = temp;
+                buf.add(stream);
                 Log.i("frame "+index+"/" + count, "done!");
                 img.recycle();
                 img = null;
@@ -52,8 +51,8 @@ public class ImgToFile extends FileToImg{
                 Log.i("frame "+index+"/" + count, "code image not found!");
             }
         }
-        Log.d("imgsToFile", "total length:" + buffer.length);
-        binaryStreamToFile(buffer, file);
+        Log.d("imgsToFile", "total length:" + buf.size());
+        binaryStreamToFile(buf, file);
     }
 
     public int getIndex(Bitmap img) throws NotFoundException{
@@ -85,76 +84,34 @@ public class ImgToFile extends FileToImg{
         }catch (Exception e){
             throw  NotFoundException.getNotFoundInstance();
         }
-        /*
-        int[] res=new int[realByteNum*8];
-        int cc=0;
-        for(int i = 0; i < realByteNum; i++) {
-            String s = String.format("%1$08d",Integer.parseInt(Integer.toBinaryString(result[i])));
-            for(int j=0;j<s.length();j++){
-                if(s.charAt(j)=='0'){
-                    res[cc++]=0;
-                }
-                else{
-                    res[cc++]=1;
-                }
-            }
-        }
-        */
         byte[] res=new byte[realByteNum];
         for(int i=0;i<realByteNum;i++){
             res[i]=(byte)result[i];
         }
         return res;
     }
-    public void binaryStreamToFile(byte[] binaryStream,File file){
+    public void binaryStreamToFile(List<byte[]> binaryStream,File file){
         int stopIndex=0;
-        for(int i=binaryStream.length-1;i>0;i--){
-            if(binaryStream[i]==-128){
+        byte[] oldLast=binaryStream.get(binaryStream.size()-1);
+        binaryStream.remove(binaryStream.size()-1);
+        for(int i=oldLast.length-1;i>0;i--){
+            if(oldLast[i]==-128){
                 stopIndex=i;
                 break;
             }
         }
-        Log.d("binaryStreamToFile", "byte length: " + stopIndex);
+        byte[] newLast=new byte[stopIndex];
+        System.arraycopy(oldLast,0,newLast,0,stopIndex);
+        binaryStream.add(newLast);
         OutputStream os;
         try {
             os = new FileOutputStream(file);
-            for(int i=0;i<stopIndex;i++){
-                os.write(binaryStream[i]);
+            for(byte[] b:binaryStream){
+                os.write(b);
             }
             os.close();
         }catch (Exception e){
             e.printStackTrace();
         }
     }
-    public void binaryStreamToFileBack(int[] binaryStream,File file){
-        int stopIndex=0;
-        for(int i=binaryStream.length-1;i>0;i--){
-            if(binaryStream[i]==1){
-                stopIndex=i;
-                Log.i("binaryStreamToFile", "bit length: " + stopIndex);
-                break;
-            }
-        }
-        byte[] target=new byte[stopIndex/8];
-        for(int i=0;i<stopIndex;i+=8){
-            int current=i/8;
-            byte t=0;
-            for(int j=0;j<8;j++){
-                t<<=1;
-                if(binaryStream[i+j]==1){
-                    t|=0x01;
-                }
-            }
-            target[current]=t;
-        }
-        Log.i("binaryStreamToFile", "byte length: " +stopIndex);
-        OutputStream os;
-        try{
-            os=new FileOutputStream(file);
-            os.write(target);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
 }
