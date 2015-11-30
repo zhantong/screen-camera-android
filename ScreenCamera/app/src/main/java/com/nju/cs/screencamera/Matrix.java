@@ -45,4 +45,16 @@ public class Matrix {
     public int height(){
         return height;
     }
+    public void toArray(int left,int top,int right,int down,int[] array){
+        int index=0;
+        for(int j=top;j<down;j++){
+            for(int i=left;i<right;i++){
+                array[index/8]<<=1;
+                if(get(i,j)==1){
+                    array[index/8]|=0x01;
+                }
+                index++;
+            }
+        }
+    }
 }

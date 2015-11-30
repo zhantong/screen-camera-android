@@ -19,108 +19,53 @@ import java.util.concurrent.TimeUnit;
  * Created by zhantong on 15/11/15.
  */
 public class ImgToFile extends FileToImg{
-    /*
-    public static void main(String[] args){
-        File outFile=new File("/Users/zhantong/Desktop/t.txt");
-        ImgToFile imgToFile=new ImgToFile();
-        imgToFile.imgsToFile("/Users/zhantong/Desktop/test1",outFile);
-    }
-    */
-    /*
-    public void imgsToFile(String imgsPath,File file){
-        File root=new File(imgsPath);
-        File[] imgs=root.listFiles();
-        int[] buffer={};
-        int[] last={};
-        for(File img:imgs){
-            int[] t;
-            try {
-                t = imgToBinaryStream(img);
-            }catch (NotFoundException e){
-                System.out.println("Code image not found!");
-                continue;
-            }
-            if(t==last){
-                continue;
-            }
-            last=t;
-            int[] temp=new int[buffer.length+t.length];
-            System.arraycopy(buffer,0,temp,0,buffer.length);
-            System.arraycopy(t,0,temp,buffer.length,t.length);
-            buffer=temp;
-            System.out.println("DONE!");
-        }
-        binaryStreamToFile(buffer,file);
-    }
-    */
     public void imgsToFile(BlockingDeque<Bitmap> bitmaps,File file){
         long TIMEOUT=3000L;
         int[] buffer={};
-        int[] last={};
-        int[] xx={};
-        //int[] last=new int[2500];
         int count=0;
         int lastSuccessIndex=0;
-        TEST:
+        int index=0;
+        MAIN:
         while (true){
-            int c=0;
             count++;
             Bitmap img;
             try {
                 img = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
                 if (img == null) {
-                    break TEST;
+                    break MAIN;
                 }
-                int[] t;
-                int index=getIndex(img);
-                System.out.println("frame index:"+index);
+                index=getIndex(img);
+                Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
-                    System.out.println("same frame!");
-                    continue TEST;
+                    Log.i("frame "+index+"/" + count, "same frame index!");
+                    continue MAIN;
                 }
-                t = imgToBinaryStream(img);
+                int[] stream;
+                stream = imgToBinaryStream(img);
                 if(index-lastSuccessIndex!=1){
-                    System.out.println("Error: lost frame!");
-                    break TEST;
+                    Log.e("frame "+index+"/" + count, "error lost frame!");
+                    break MAIN;
                 }
                 lastSuccessIndex=index;
-                int[] temp = new int[buffer.length + t.length];
+                int[] temp = new int[buffer.length + stream.length];
                 System.arraycopy(buffer, 0, temp, 0, buffer.length);
-                System.arraycopy(t, 0, temp, buffer.length, t.length);
+                System.arraycopy(stream, 0, temp, buffer.length, stream.length);
                 buffer = temp;
-                Log.i("Img " + Integer.toString(count), "DONE!");
-                //System.out.println("DONE!");
-
+                Log.i("frame "+index+"/" + count, "done!");
                 img.recycle();
                 img = null;
             }
             catch (Exception e){
-                Log.i("Img "+Integer.toString(count),"Code image not found!");
-                //System.out.println("Code image not found!");
-                continue TEST;
+                Log.i("frame "+index+"/" + count, "code image not found!");
+                continue MAIN;
             }
         }
-        System.out.println("total length:"+buffer.length);
+        Log.d("imgsToFile","total length:"+buffer.length);
         binaryStreamToFile(buffer, file);
     }
-    /*
-    public int[] imgToBinaryStream(File file) throws NotFoundException{
-        BufferedImage img=null;
-        try {
-            img = ImageIO.read(file);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        int[][] biMatrix=Binarizer.binarizer(img);
-        int[] border=FindBoarder.findBoarder(biMatrix);
-        int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
-        GridSampler gs=new GridSampler();
-        int[][] matrixStream=gs.sampleGrid(biMatrix,imgWidth,imgWidth,0,0,imgWidth,0,imgWidth,imgWidth,0,imgWidth,border[0],border[1],border[2],border[3],border[4],border[5],border[6],border[7]);
-        return matrixToBinaryStream(matrixStream);
-    }
-    */
+
     public int getIndex(Bitmap img) throws NotFoundException{
-        BiMatrix biMatrix=Binarizer.binarizer(img);
+        BiMatrix biMatrix=Binarizer.convertAndGetThreshold(img);
         int[] border=FindBoarder.findBoarder(biMatrix);
         int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
         GridSampler gs=new GridSampler();
@@ -129,7 +74,7 @@ public class ImgToFile extends FileToImg{
         return index;
     }
     public int[] imgToBinaryStream(Bitmap img) throws NotFoundException{
-        BiMatrix biMatrix=Binarizer.binarizer(img);
+        BiMatrix biMatrix=Binarizer.convertAndGetThreshold(img);
         int[] border=FindBoarder.findBoarder(biMatrix);
         int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
         GridSampler gs=new GridSampler();
@@ -139,69 +84,8 @@ public class ImgToFile extends FileToImg{
     public int[] matrixToBinaryStream(Matrix biMatrix) throws NotFoundException{
         int startOffset=frameBlackLength+frameVaryLength;
         int stopOffset=startOffset+contentLength;
-        System.out.println(startOffset+" "+stopOffset);
-        //int[] result=new int[contentLength*contentLength];
         int[] result=new int[contentLength*contentLength/8];
-        int index=0;
-        /*
-        int[] verify={0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1};
-        for(int j=frameBlackLength;j<frameBlackLength+contentLength;j++){
-            if(!biMatrix.pixelEquals(frameBlackLength+frameVaryLength+contentLength,j,verify[index++])){
-                throw NotFoundException.getNotFoundInstance();
-            }
-            //System.out.print(Integer.toString(biMatrix[frameBlackLength+frameVaryLength+contentLength][j]));
-        }
-        */
-        index=0;
-        System.out.println();
-        /*
-        for(int j=startOffset;j<stopOffset;j++){
-            for(int i=startOffset;i<stopOffset;i++){
-                result[index++]=biMatrix.get(i,j);
-            }
-        }
-        return result;
-        */
-        int c=0;
-        for(int j=startOffset;j<stopOffset;j++){
-            for(int i=startOffset;i<stopOffset;i++){
-                if(biMatrix.get(i,j)==1){
-                    switch (c%8) {
-                        case 0:
-                            result[c / 8] |= 0x80;
-                            break;
-                        case 1:
-                            result[c / 8] |= 0x40;
-                            break;
-                        case 2:
-                            result[c / 8] |= 0x20;
-                            break;
-                        case 3:
-                            result[c / 8] |= 0x10;
-                            break;
-                        case 4:
-                            result[c / 8] |= 0x8;
-                            break;
-                        case 5:
-                            result[c / 8] |= 0x4;
-                            break;
-                        case 6:
-                            result[c / 8] |= 0x2;
-                            break;
-                        case 7:
-                            result[c / 8] |= 0x1;
-                            break;
-                    }
-                }
-                c++;
-            }
-        }
-        /*
-        for(int x:result){
-            System.out.print(x+" ");
-        }
-        System.out.println();
-        */
+        biMatrix.toArray(startOffset,startOffset,stopOffset,stopOffset,result);
         ReedSolomonDecoder decoder=new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
         try{
             decoder.decode(result,38);
@@ -229,42 +113,23 @@ public class ImgToFile extends FileToImg{
         for(int i=binaryStream.length-1;i>0;i--){
             if(binaryStream[i]==1){
                 stopIndex=i;
-                System.out.println("stop index:"+stopIndex);
+                Log.i("binaryStreamToFile", "bit length: " + stopIndex);
                 break;
             }
         }
         byte[] target=new byte[stopIndex/8];
-        System.out.println(Integer.toString(stopIndex));
-        for(int i=0;i<stopIndex;i++){
-            if(binaryStream[i]==1) {
-                switch (i%8){
-                    case 0:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x80);
-                        break;
-                    case 1:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x40);
-                        break;
-                    case 2:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x20);
-                        break;
-                    case 3:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x10);
-                        break;
-                    case 4:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x8);
-                        break;
-                    case 5:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x4);
-                        break;
-                    case 6:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x2);
-                        break;
-                    case 7:
-                        target[i/8]= (byte) ((int)target[i/8] | 0x1);
+        for(int i=0;i<stopIndex;i+=8){
+            int current=i/8;
+            byte t=0;
+            for(int j=0;j<8;j++){
+                t<<=1;
+                if(binaryStream[i+j]==1){
+                    t|=0x01;
                 }
             }
+            target[current]=t;
         }
-        System.out.println("byte length:"+target.length);
+        Log.i("binaryStreamToFile", "byte length: " +stopIndex);
         OutputStream os;
         try{
             os=new FileOutputStream(file);

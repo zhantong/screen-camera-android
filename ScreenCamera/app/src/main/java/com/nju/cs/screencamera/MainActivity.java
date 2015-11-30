@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     public void selectVideoFile(View view){
         File mPath = new File(Environment.getExternalStorageDirectory() + "//DIR//");
         FileDialog fileDialog = new FileDialog(this, mPath);
-        fileDialog.setFileEndsWith(".txt");
+        //fileDialog.setFileEndsWith(".txt");
         fileDialog.addFileListener(new FileDialog.FileSelectedListener() {
             public void fileSelected(File file) {
                 EditText editText = (EditText) findViewById(R.id.videoFilePath);

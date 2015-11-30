@@ -6,6 +6,8 @@ import android.util.Log;
  * Created by zhantong on 15/11/15.
  */
 public class FindBoarder {
+    private static final String TAG = "FindBoarder";
+    private static final boolean VERBOSE = true;
     public static boolean containsBlack(BiMatrix biMatrix,int a,int b,int fixed,boolean horizontal){
         if(horizontal){
             for(int x=a;x<=b;x++){
@@ -32,7 +34,7 @@ public class FindBoarder {
         int right=width/2+init;
         int up=height/2-init;
         int down=height/2+init;
-        System.out.println("init:"+up+" "+right+" "+down+" "+left);
+        if(VERBOSE){Log.d(TAG,"boarder init: up:"+up+"\t"+"right:"+right+"\t"+"down:"+down+"\t"+"left:"+left);}
         if(left<0||right>=width||up<0||down>=height){
             throw NotFoundException.getNotFoundInstance();
         }
@@ -60,8 +62,7 @@ public class FindBoarder {
                 break;
             }
         }
-        Log.i("Img:","boarder:"+up+" "+right+" "+down+" "+left);
-        //System.out.println("boarder:"+up+" "+right+" "+down+" "+left);
+        if(VERBOSE){Log.d(TAG,"find boarder: up:"+up+"\t"+"right:"+right+"\t"+"down:"+down+"\t"+"left:"+left);}
         if(left==0||up==0||right==width||down==height){
             throw NotFoundException.getNotFoundInstance();
         }
@@ -70,18 +71,16 @@ public class FindBoarder {
         }
         int[] vertexs=new int[8];
         left=findVertex(biMatrix,up,down,left,vertexs,0,3,false,false);
-        Log.i("Img:","found 1 vertex");
+        if(VERBOSE){Log.d(TAG,"found 1 vertex");}
         up=findVertex(biMatrix,left,right,up,vertexs,0,1,true,false);
-        Log.i("Img:","found 2 vertex");
+        if(VERBOSE){Log.d(TAG,"found 2 vertex");}
         right=findVertex(biMatrix,up,down,right,vertexs,1,2,false,true);
-        Log.i("Img:","found 3 vertex");
+        if(VERBOSE){Log.d(TAG,"found 3 vertex");}
         down=findVertex(biMatrix,left,right,down,vertexs,3,2,true,true);
-        Log.i("Img:","found 4 vertex");
-        System.out.print("current:");
-        for(int i:vertexs){
-            System.out.print(i+" ");
+        if(VERBOSE){Log.d(TAG,"found 4 vertex");}
+        if(VERBOSE){
+            Log.d(TAG,"vertexes: ("+vertexs[0]+","+vertexs[1]+")\t("+vertexs[2]+","+vertexs[3]+")\t("+vertexs[4]+","+vertexs[5]+")\t("+vertexs[6]+","+vertexs[7]+")");
         }
-        System.out.println();
         if(vertexs[0]==0||vertexs[2]==0||vertexs[4]==0||vertexs[6]==0){
             throw NotFoundException.getNotFoundInstance();
         }

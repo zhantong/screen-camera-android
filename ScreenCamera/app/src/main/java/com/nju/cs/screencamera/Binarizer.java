@@ -13,7 +13,7 @@ import java.io.File;
  * Created by zhantong on 15/11/15.
  */
 public class Binarizer {
-    public static int getThreshold(Bitmap img) throws NotFoundException{
+    public static int threshold(Bitmap img) throws NotFoundException{
         int height=img.getHeight();
         int width=img.getWidth();
         int[] buckets=new int[256];
@@ -70,8 +70,8 @@ public class Binarizer {
         }
         return bestValley;
     }
-    public static BiMatrix binarizer(Bitmap img) throws NotFoundException{
-        int threshold=getThreshold(img);
+    public static BiMatrix convertAndGetThreshold(Bitmap img) throws NotFoundException{
+        int threshold=threshold(img);
         int height=img.getHeight();
         int width=img.getWidth();
 
