@@ -3,15 +3,9 @@ package com.nju.cs.screencamera;
 import android.graphics.Bitmap;
 import android.util.Log;
 
-/*
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-*/
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -25,26 +19,25 @@ public class ImgToFile extends FileToImg{
         int count=0;
         int lastSuccessIndex=0;
         int index=0;
-        MAIN:
         while (true){
             count++;
             Bitmap img;
             try {
                 img = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
                 if (img == null) {
-                    break MAIN;
+                    break;
                 }
                 index=getIndex(img);
                 Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
                     Log.i("frame "+index+"/" + count, "same frame index!");
-                    continue MAIN;
+                    continue;
                 }
                 int[] stream;
                 stream = imgToBinaryStream(img);
                 if(index-lastSuccessIndex!=1){
                     Log.e("frame "+index+"/" + count, "error lost frame!");
-                    break MAIN;
+                    break;
                 }
                 lastSuccessIndex=index;
                 int[] temp = new int[buffer.length + stream.length];
@@ -57,10 +50,9 @@ public class ImgToFile extends FileToImg{
             }
             catch (Exception e){
                 Log.i("frame "+index+"/" + count, "code image not found!");
-                continue MAIN;
             }
         }
-        Log.d("imgsToFile","total length:"+buffer.length);
+        Log.d("imgsToFile", "total length:" + buffer.length);
         binaryStreamToFile(buffer, file);
     }
 
@@ -70,8 +62,7 @@ public class ImgToFile extends FileToImg{
         int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
         GridSampler gs=new GridSampler();
         String row=gs.sampleRow(biMatrix, imgWidth, imgWidth, 0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth, border[0], border[1], border[2], border[3], border[4], border[5], border[6], border[7], frameBlackLength);
-        int index=GrayCode.toInt(row.substring(frameBlackLength,frameBlackLength+grayCodeLength));
-        return index;
+        return GrayCode.toInt(row.substring(frameBlackLength,frameBlackLength+grayCodeLength));
     }
     public int[] imgToBinaryStream(Bitmap img) throws NotFoundException{
         BiMatrix biMatrix=Binarizer.convertAndGetThreshold(img);
@@ -105,7 +96,6 @@ public class ImgToFile extends FileToImg{
                 }
             }
         }
-        //return result;
         return res;
     }
     public void binaryStreamToFile(int[] binaryStream,File file){

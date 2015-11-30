@@ -153,7 +153,7 @@ public class FileDialog {
 }
 
 class ListenerList<L> {
-    private List<L> listenerList = new ArrayList<L>();
+    private List<L> listenerList = new ArrayList<>();
 
     public interface FireHandler<L> {
         void fireEvent(L listener);
@@ -164,7 +164,7 @@ class ListenerList<L> {
     }
 
     public void fireEvent(FireHandler<L> fireHandler) {
-        List<L> copy = new ArrayList<L>(listenerList);
+        List<L> copy = new ArrayList<>(listenerList);
         for (L l : copy) {
             fireHandler.fireEvent(l);
         }

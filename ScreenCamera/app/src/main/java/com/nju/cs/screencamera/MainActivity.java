@@ -4,26 +4,21 @@ package com.nju.cs.screencamera;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
-    BlockingDeque<Bitmap> rev=new LinkedBlockingDeque<Bitmap>();
+    BlockingDeque<Bitmap> rev=new LinkedBlockingDeque<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         String newFileName=editTextFileName.getText().toString();
         String filePath=Environment.getExternalStorageDirectory()+"/Download/"+newFileName;
         File file=new File(filePath);
-        if(file!=null&&file.isFile())
+        if(file.isFile())
         {
             String fileName = file.toString();
             Intent intent;
@@ -131,24 +126,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
         };
-        final long TIMEOUT=1000l;
         Thread worker=new Thread(){
             @Override
             public void run() {
-                /*
-                while(true){
-                    try {
-                        Bitmap bitmap = rev.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-                        if(bitmap==null){
-                            continue;
-                        }
-                        bitmap.recycle();
-                        bitmap=null;
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-                */
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
                 ImgToFile imgToFile=new ImgToFile();
                 imgToFile.imgsToFile(rev, out);
@@ -163,26 +143,5 @@ public class MainActivity extends AppCompatActivity {
         }catch (Throwable e){
             e.printStackTrace();
         }
-
-        /*
-        String filePath=Environment.getExternalStorageDirectory().getAbsolutePath()+"/Download/test3.mp4";
-        File videoFile=new File(filePath);
-
-        TextView editText=(TextView)findViewById(R.id.textV);
-        //editText.setText(duration);
-        ImgToFile imgToFile=new ImgToFile();
-        File out=new File(Environment.getExternalStorageDirectory()+"/out3.txt");
-        imgToFile.imgsToFile(rev,out);
-        */
     }
-    public void dealWith(ArrayList<Bitmap> bitMapList){
-        TextView editText=(TextView)findViewById(R.id.textView);
-
-        for(Bitmap b:bitMapList){
-            int pix=b.getPixel(500,500);
-            editText.setText(Integer.toString(pix));
-        }
-
-    }
-
 }
