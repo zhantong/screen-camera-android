@@ -7,7 +7,7 @@ import android.util.Log;
  */
 public class FindBoarder {
     private static final String TAG = "FindBoarder";
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
     public static boolean containsBlack(BiMatrix biMatrix,int a,int b,int fixed,boolean horizontal){
         if(horizontal){
             for(int x=a;x<=b;x++){

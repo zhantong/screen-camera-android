@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
  * Created by zhantong on 15/11/15.
  */
 public class ImgToFile extends FileToImg{
-    public void imgsToFile(BlockingDeque<Bitmap> bitmaps,File file){
+    public void imgsToFile(BlockingDeque<byte[]> bitmaps,File file){
         long TIMEOUT=3000L;
         int count=0;
         int lastSuccessIndex=0;
@@ -25,7 +25,8 @@ public class ImgToFile extends FileToImg{
             count++;
             Bitmap img;
             try {
-                img = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                byte[] temp = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                img=YUVtoBitmap.convert(temp);
                 if (img == null) {
                     break;
                 }

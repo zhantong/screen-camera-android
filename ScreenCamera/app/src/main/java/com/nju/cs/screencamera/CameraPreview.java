@@ -8,6 +8,8 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -23,9 +25,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static final String TAG = "main";
     private SurfaceHolder mHolder;
     private Camera mCamera;
-    private BlockingDeque<Bitmap> bitmaps;
+    private BlockingDeque<byte[]> frames;
 
-    public CameraPreview(Context context,BlockingDeque<Bitmap> bitmaps) {
+    public CameraPreview(Context context,BlockingDeque<byte[]> frames) {
         super(context);
         mHolder = getHolder();
         mHolder.addCallback(this);
@@ -38,11 +40,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Log.i(TAG + "initCamera", "PreviewSize,width: " + psize.width + " height" + psize.height);
         }
         */
-        this.bitmaps=bitmaps;
+        this.frames=frames;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
         mCamera=Camera.open();
+        //newOpenCamera();
         mCamera.setPreviewCallback(this);
         // 当Surface被创建之后，开始Camera的预览
         try {
@@ -60,11 +63,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Camera.Parameters parameters=mCamera.getParameters();
         //parameters.setFlashMode("off");
         //parameters.setPreviewFormat(ImageFormat.RGB_565);
+        /*
         Camera.Parameters params = mCamera.getParameters();
         for(int i: params.getSupportedPreviewFormats()) {
             Log.e(TAG, "preview format supported are = "+i);
         }
-        parameters.setPreviewSize(1920, 1080);
+        */
+        parameters.setPreviewSize(1280, 720);
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         mCamera.setParameters(parameters);
         //mCamera.setDisplayOrientation(90);
@@ -77,15 +82,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        mCamera.startPreview();
+        Thread preview_thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mCamera.startPreview();
+            }
+        }, "preview_thread");
+        preview_thread.start();
+
+        //mCamera.startPreview();
     }
     public void onPreviewFrame(byte[] data, Camera camera) {
-        ByteArrayOutputStream outstr = new ByteArrayOutputStream();
-        Rect rect = new Rect(0, 0, 1920, 1080);
-        YuvImage yuvimage=new YuvImage(data,ImageFormat.NV21,1920,1080,null);
-        yuvimage.compressToJpeg(rect, 100, outstr);
-        Bitmap bmp = BitmapFactory.decodeByteArray(outstr.toByteArray(), 0, outstr.size());
-        bitmaps.add(bmp);
+        frames.add(data);
+        Log.d("queue length:", Integer.toString(frames.size()));
     }
     public void stop(){
         mHolder.removeCallback(this);
@@ -94,4 +103,53 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mCamera.release();
         mCamera=null;
     }
+/*
+    private void oldOpenCamera() {
+        try {
+            mCamera = Camera.open();
+        }
+        catch (RuntimeException e) {
+            Log.e("camera", "failed to open front camera");
+        }
+    }
+    private void newOpenCamera() {
+        if (mThread == null) {
+            mThread = new CameraHandlerThread();
+        }
+
+        synchronized (mThread) {
+            mThread.openCamera();
+        }
+    }
+    private CameraHandlerThread mThread = null;
+    private class CameraHandlerThread extends HandlerThread {
+        Handler mHandler = null;
+
+        CameraHandlerThread() {
+            super("CameraHandlerThread");
+            start();
+            mHandler = new Handler(getLooper());
+        }
+
+        synchronized void notifyCameraOpened() {
+            notify();
+        }
+
+        void openCamera() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    oldOpenCamera();
+                    notifyCameraOpened();
+                }
+            });
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                Log.w("camera", "wait was interrupted");
+            }
+        }
+    }
+    */
 }

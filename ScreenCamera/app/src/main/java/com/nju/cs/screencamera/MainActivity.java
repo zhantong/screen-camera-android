@@ -21,7 +21,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;
-    BlockingDeque<Bitmap> rev=new LinkedBlockingDeque<>();
+    BlockingDeque<byte[]> rev=new LinkedBlockingDeque<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println(videoFilePath);
         VideoToFrames videoToFrames=new VideoToFrames();
         try {
-            videoToFrames.testExtractMpegFrames(rev,videoFilePath);
+            //videoToFrames.testExtractMpegFrames(rev,videoFilePath);
         }catch (Throwable e){
             e.printStackTrace();
         }
