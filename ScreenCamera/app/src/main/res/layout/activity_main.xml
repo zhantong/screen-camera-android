@@ -10,7 +10,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
+        <FrameLayout
+            android:id="@+id/camera_preview"
+            android:layout_width="720px"
+            android:layout_height="1280px">
+        </FrameLayout>
         <TextView
             android:id="@+id/textView"
             android:scrollbars = "vertical"
