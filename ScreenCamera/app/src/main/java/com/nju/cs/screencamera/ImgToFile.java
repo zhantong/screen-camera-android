@@ -38,8 +38,9 @@ public class ImgToFile extends FileToImg{
                 byte[] stream;
                 stream = imgToArray(img);
                 if(index-lastSuccessIndex!=1){
-                    Log.e("frame "+index+"/" + count, "error lost frame!");
-                    break;
+                    //Log.e("frame "+index+"/" + count, "error lost frame!");
+                    //break;
+                    continue;
                 }
                 lastSuccessIndex=index;
                 buffer.add(stream);

@@ -20,19 +20,52 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class MainActivity extends AppCompatActivity {
+    private CameraPreview mPreview;
     BlockingDeque<Bitmap> rev=new LinkedBlockingDeque<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        CameraPreview mPreview=new CameraPreview(this);
+    }
+    public void openCamera(View view){
+        CameraPreview mPreview=new CameraPreview(this,rev);
+        this.mPreview=mPreview;
         //setContentView(mPreview);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+        final TextView editText=(TextView)findViewById(R.id.textView);
+        EditText editTextFileName=(EditText)findViewById(R.id.fileName);
+        final String newFileName=editTextFileName.getText().toString();
+        final Handler mHandler = new Handler(){
 
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                switch (msg.what) {
+                    case 0:
+                        editText.setText("识别完成!");
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+        };
+        Thread worker=new Thread(){
+            @Override
+            public void run() {
+                File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
+                ImgToFile imgToFile=new ImgToFile();
+                imgToFile.imgsToFile(rev, out);
+                mHandler.sendEmptyMessage(0);
+            }
+        };
+        worker.start();
     }
-
+    public void stop(View view){
+        mPreview.stop();
+    }
     public void selectVideoFile(View view){
         File mPath = new File(Environment.getExternalStorageDirectory() + "//DIR//");
         FileDialog fileDialog = new FileDialog(this, mPath);

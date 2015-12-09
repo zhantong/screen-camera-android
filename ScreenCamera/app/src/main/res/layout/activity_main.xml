@@ -7,8 +7,8 @@
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
     <FrameLayout
         android:id="@+id/camera_preview"
-        android:layout_width="480dp"
-        android:layout_height="640dp">
+        android:layout_width="640dp"
+        android:layout_height="480dp">
     </FrameLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -50,12 +50,25 @@
                 android:text="打开文件"
                 android:onClick="openFile"/>
         </LinearLayout>
-
-        <Button
-            android:layout_gravity="center_horizontal"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="开始识别"
-            android:onClick="start"/>
+            android:layout_gravity="center_horizontal">
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="开始识别"
+                android:onClick="start"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="打开摄像头"
+                android:onClick="openCamera"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="停止"
+                android:onClick="stop"/>
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

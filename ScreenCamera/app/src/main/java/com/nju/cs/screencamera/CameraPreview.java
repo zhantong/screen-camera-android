@@ -1,11 +1,20 @@
 package com.nju.cs.screencamera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.BlockingDeque;
 
 /**
  * Created by zhantong on 15/12/9.
@@ -14,8 +23,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static final String TAG = "main";
     private SurfaceHolder mHolder;
     private Camera mCamera;
+    private BlockingDeque<Bitmap> bitmaps;
 
-    public CameraPreview(Context context) {
+    public CameraPreview(Context context,BlockingDeque<Bitmap> bitmaps) {
         super(context);
         mHolder = getHolder();
         mHolder.addCallback(this);
@@ -28,6 +38,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Log.i(TAG + "initCamera", "PreviewSize,width: " + psize.width + " height" + psize.height);
         }
         */
+        this.bitmaps=bitmaps;
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -48,11 +59,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         */
         Camera.Parameters parameters=mCamera.getParameters();
         //parameters.setFlashMode("off");
-        //parameters.setPreviewFormat(PixelFormat.JPEG);
+        //parameters.setPreviewFormat(ImageFormat.RGB_565);
+        Camera.Parameters params = mCamera.getParameters();
+        for(int i: params.getSupportedPreviewFormats()) {
+            Log.e(TAG, "preview format supported are = "+i);
+        }
         parameters.setPreviewSize(1920, 1080);
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         mCamera.setParameters(parameters);
-        mCamera.setDisplayOrientation(90);
+        //mCamera.setDisplayOrientation(90);
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -65,6 +80,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mCamera.startPreview();
     }
     public void onPreviewFrame(byte[] data, Camera camera) {
-
+        ByteArrayOutputStream outstr = new ByteArrayOutputStream();
+        Rect rect = new Rect(0, 0, 1920, 1080);
+        YuvImage yuvimage=new YuvImage(data,ImageFormat.NV21,1920,1080,null);
+        yuvimage.compressToJpeg(rect, 100, outstr);
+        Bitmap bmp = BitmapFactory.decodeByteArray(outstr.toByteArray(), 0, outstr.size());
+        bitmaps.add(bmp);
+    }
+    public void stop(){
+        mHolder.removeCallback(this);
+        mCamera.setPreviewCallback(null);
+        mCamera.stopPreview();
+        mCamera.release();
+        mCamera=null;
     }
 }
