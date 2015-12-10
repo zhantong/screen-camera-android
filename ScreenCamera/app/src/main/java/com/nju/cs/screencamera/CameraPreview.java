@@ -26,45 +26,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
-        CameraSettings cameraSettings=new CameraSettings();
         mCamera=Camera.open();
-        //newOpenCamera();
         mCamera.setPreviewCallback(this);
-        // 当Surface被创建之后，开始Camera的预览
+
         try {
             mCamera.setPreviewDisplay(holder);
         } catch (IOException e) {
-            Log.d(TAG, "预览失败");
+            Log.d(TAG, "preview failed");
         }
-        /*
-        Camera.Parameters parameters = mCamera.getParameters();
-        List<String> allFocus = parameters.getSupportedFocusModes();
-        for(String s:allFocus){
-            System.out.println(s);
-        }
-        */
-        Camera.Parameters parameters=mCamera.getParameters();
-        //parameters.setFlashMode("off");
-        //parameters.setPreviewFormat(ImageFormat.RGB_565);
-        /*
-        Camera.Parameters params = mCamera.getParameters();
-        for(int i: params.getSupportedPreviewFormats()) {
-            Log.e(TAG, "preview format supported are = "+i);
-        }
-        */
-        parameters.setPreviewSize(CameraSettings.previewWidth, CameraSettings.previeHeight);
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-        parameters.setRecordingHint(true);
-        /*
-        Camera.Parameters params = mCamera.getParameters();
-        for(int[] i: params.getSupportedPreviewFpsRange()) {
-            Log.i(TAG, "preview fps range = ");
-            for(int j:i) {
-                Log.i(TAG,j+" ");
-            }
-        }
-        */
-        mCamera.setParameters(parameters);
+        mCamera.setParameters(CameraSettings.parameters);
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {

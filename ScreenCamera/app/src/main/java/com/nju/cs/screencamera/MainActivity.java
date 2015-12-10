@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         final TextView editText=(TextView)findViewById(R.id.text_view);
         editText.setGravity(Gravity.BOTTOM);
         final Handler mHandler = new Handler();
+        CameraSettings cameraSettings=new CameraSettings();
+        cameraSettings=null;
     }
     public void openCamera(View view){
         CameraPreview mPreview=new CameraPreview(this,rev);
