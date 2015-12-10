@@ -22,21 +22,6 @@ public final class BiMatrix {
         this.width=width;
         this.height=height;
     }
-    public int get_back(int x,int y){
-        int offset=y*width+x;
-        int p=pixels[offset];
-        int r=(p>>16)&0xFF;
-        int g=(p>>8)&0xFF;
-        int b=(p)&0xFF;
-        int gray=((b*29+g*150+r*77+128)>>8);
-        if(gray<= threshold){
-            return 0;
-        }
-        if(gray> threshold){
-            return 1;
-        }
-        return 0;
-    }
     public int get(int x,int y){
         int offset=y*width+x;
         int gray = pixels[offset]&0xff;

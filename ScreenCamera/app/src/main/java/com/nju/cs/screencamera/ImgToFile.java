@@ -1,11 +1,8 @@
 package com.nju.cs.screencamera;
 
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.EditText;
 import android.widget.TextView;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -42,12 +39,8 @@ public class ImgToFile extends FileToImg{
 
         while (true){
             count++;
-            //Bitmap img;
             byte[] img;
             try {
-                //byte[] temp = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-                //img=YUVtoBitmap.convert(temp);
-
                 img=bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
                 if (img == null) {
                     break;
@@ -74,8 +67,6 @@ public class ImgToFile extends FileToImg{
                 buffer.add(stream);
                 Log.i("frame "+index+"/" + count, "done!");
                 img = null;
-
-
             }
             catch (Exception e){
                 Log.i("frame "+index+"/" + count, "code image not found!");

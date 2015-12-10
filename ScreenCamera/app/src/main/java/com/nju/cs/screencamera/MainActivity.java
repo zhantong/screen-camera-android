@@ -3,7 +3,6 @@ package com.nju.cs.screencamera;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -15,11 +14,7 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -38,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
     public void openCamera(View view){
         CameraPreview mPreview=new CameraPreview(this,rev);
         this.mPreview=mPreview;
-        //setContentView(mPreview);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         final TextView editText=(TextView)findViewById(R.id.text_view);
