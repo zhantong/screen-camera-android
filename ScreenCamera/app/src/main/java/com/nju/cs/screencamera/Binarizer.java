@@ -19,8 +19,8 @@ public class Binarizer {
     public static int threshold(byte[] img) throws NotFoundException{
         //int height=img.getHeight();
         //int width=img.getWidth();
-        int width=1280;
-        int height=720;
+        int width=CameraSettings.previewWidth;
+        int height=CameraSettings.previeHeight;
         int[] buckets=new int[256];
 
         for(int y=1;y<5;y++){
@@ -36,7 +36,7 @@ public class Binarizer {
                 int b=(argb)&0xFF;
                 int gray=((b*29+g*150+r*77+128)>>8);
                 */
-                int i=row*1280+column;
+                int i=row*width+column;
                 int gray = img[i]&0xff;
                 buckets[gray]++;
 
@@ -85,11 +85,10 @@ public class Binarizer {
     public static BiMatrix convertAndGetThreshold(byte[] img) throws NotFoundException{
         int threshold=threshold(img);
         if(VERBOSE){Log.d(TAG, "threshold:"+threshold);}
-        System.out.println("threshold:"+threshold);
         //int height=img.getHeight();
         //int width=img.getWidth();
-        int width=1280;
-        int height=720;
+        int width=CameraSettings.previewWidth;
+        int height=CameraSettings.previeHeight;
         //int[] argbs=new int[width*height];
         //img.getPixels(argbs,0,width,0,0,width,height);
         //BiMatrix biMatrix=new BiMatrix(argbs,width,height);

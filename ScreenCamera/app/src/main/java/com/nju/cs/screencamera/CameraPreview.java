@@ -56,6 +56,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
+        CameraSettings cameraSettings=new CameraSettings();
         mCamera=Camera.open();
         //newOpenCamera();
         mCamera.setPreviewCallback(this);
@@ -81,7 +82,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Log.e(TAG, "preview format supported are = "+i);
         }
         */
-        parameters.setPreviewSize(1280, 720);
+        parameters.setPreviewSize(CameraSettings.previewWidth, CameraSettings.previeHeight);
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         parameters.setRecordingHint(true);
         /*
