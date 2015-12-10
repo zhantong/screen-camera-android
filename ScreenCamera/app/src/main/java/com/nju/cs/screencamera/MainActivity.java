@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         cameraSettings=null;
     }
     public void openCamera(View view){
-        CameraPreview mPreview=new CameraPreview(this,rev);
+        final CameraPreview mPreview=new CameraPreview(this,rev);
         this.mPreview=mPreview;
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
-                ImgToFile imgToFile=new ImgToFile(editText,nHandler);
+                ImgToFile imgToFile=new ImgToFile(mPreview,editText,nHandler);
                 imgToFile.imgsToFile(rev, out);
             }
         };
@@ -145,8 +145,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
-                ImgToFile imgToFile=new ImgToFile(editText,nHandler);
-                imgToFile.imgsToFile(rev, out);
+                //ImgToFile imgToFile=new ImgToFile(editText,nHandler);
+                //imgToFile.imgsToFile(rev, out);
             }
         };
         worker.start();

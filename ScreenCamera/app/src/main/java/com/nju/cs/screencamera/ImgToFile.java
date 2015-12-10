@@ -1,5 +1,6 @@
 package com.nju.cs.screencamera;
 
+import android.hardware.Camera;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
@@ -17,10 +18,12 @@ import java.util.concurrent.TimeUnit;
 public class ImgToFile extends FileToImg{
     private TextView textView;
     private Handler handler;
+    private CameraPreview mPreview;
     int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
-    public ImgToFile(TextView textView,Handler handler){
+    public ImgToFile(CameraPreview mPreview,TextView textView,Handler handler){
         this.textView=textView;
         this.handler=handler;
+        this.mPreview=mPreview;
     }
     private void update(String info){
         final String text=info;
@@ -36,14 +39,19 @@ public class ImgToFile extends FileToImg{
         int count=0;
         int lastSuccessIndex=0;
         int index=0;
+        int frameAmount=0;
         List<byte[]> buffer=new LinkedList<>();
-
+        byte[] img={};
         while (true){
             count++;
-            byte[] img;
-            try {
-                img=bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
 
+            try {
+                try {
+                    img = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                }
+                catch (InterruptedException e){
+                    e.printStackTrace();
+                }
                 if (img == null) {
                     break;
                 }
@@ -67,23 +75,48 @@ public class ImgToFile extends FileToImg{
                     //break;
                     continue;
                 }
-                lastSuccessIndex=index;
                 buffer.add(stream);
                 Log.i("frame "+index+"/" + count, "done!");
-                img = null;
+                if(frameAmount==0){
+                    frameAmount=getFrameAmount(biMatrix);
+                    System.out.println("frameAmount:"+frameAmount);
+                }
+                lastSuccessIndex=index;
+                if(lastSuccessIndex==frameAmount){
+                    mPreview.stop();
+                    break;
+                }
+                biMatrix=null;
             }
-            catch (Exception e){
+            catch (NotFoundException e){
                 Log.i("frame "+index+"/" + count, "code image not found!");
             }
         }
-
         Log.d("imgsToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
     }
 
     public int getIndex(BiMatrix biMatrix) throws NotFoundException{
-        String row=biMatrix.sampleRow(imgWidth,imgWidth,frameBlackLength);
-        return GrayCode.toInt(row.substring(frameBlackLength, frameBlackLength + grayCodeLength));
+
+        String row=biMatrix.sampleRow(imgWidth, imgWidth, frameBlackLength);
+        System.out.println(row);
+        int index=Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16),2);
+        System.out.println("index:" + index);
+        int crc=Integer.parseInt(row.substring(frameBlackLength + 16, frameBlackLength + 24), 2);
+        System.out.println(index+" "+crc+" "+CRC8.calcCrc8(index));
+        if(crc!=CRC8.calcCrc8(index)){
+            throw  NotFoundException.getNotFoundInstance();
+        }
+        return index;
+    }
+    public int getFrameAmount(BiMatrix biMatrix) throws NotFoundException{
+        String row=biMatrix.sampleRow(imgWidth, imgWidth, frameBlackLength);
+        int frameAmount=Integer.parseInt(row.substring(frameBlackLength+24, frameBlackLength + 40),2);
+        int crc=Integer.parseInt(row.substring(frameBlackLength + 40, frameBlackLength + 48), 2);
+        if(crc!=CRC8.calcCrc8(frameAmount)){
+            throw  NotFoundException.getNotFoundInstance();
+        }
+        return frameAmount;
     }
     public byte[] imgToArray(BiMatrix biMatrix) throws NotFoundException{
         Matrix matrixStream=biMatrix.sampleGrid(imgWidth,imgWidth);
