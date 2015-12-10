@@ -40,21 +40,6 @@ public class MainActivity extends AppCompatActivity {
         final TextView editText=(TextView)findViewById(R.id.text_view);
         EditText editTextFileName=(EditText)findViewById(R.id.fileName);
         final String newFileName=editTextFileName.getText().toString();
-        final Handler mHandler = new Handler(){
-
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case 0:
-                        editText.setText("识别完成!");
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-        };
         final Handler nHandler = new Handler();
         Thread worker=new Thread(){
             @Override
@@ -62,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
                 ImgToFile imgToFile=new ImgToFile(editText,nHandler);
                 imgToFile.imgsToFile(rev, out);
-                mHandler.sendEmptyMessage(0);
             }
         };
         worker.start();
@@ -156,21 +140,6 @@ public class MainActivity extends AppCompatActivity {
         String videoFilePath=editTextVideoFilePath.getText().toString();
         EditText editTextFileName=(EditText)findViewById(R.id.fileName);
         final String newFileName=editTextFileName.getText().toString();
-        final Handler mHandler = new Handler(){
-
-            @Override
-            public void handleMessage(Message msg) {
-                super.handleMessage(msg);
-                switch (msg.what) {
-                    case 0:
-                        editText.setText("识别完成!");
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-        };
         final Handler nHandler = new Handler();
         Thread worker=new Thread(){
             @Override
@@ -178,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
                 ImgToFile imgToFile=new ImgToFile(editText,nHandler);
                 imgToFile.imgsToFile(rev, out);
-                mHandler.sendEmptyMessage(0);
             }
         };
         worker.start();
