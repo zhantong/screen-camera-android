@@ -6,7 +6,7 @@ package com.nju.cs.screencamera;
 public final class BiMatrix {
     private final int width;
     private final int height;
-    private final int[] pixels;
+    private final byte[] pixels;
     private int threshold =0;
 
     public BiMatrix(int dimension){
@@ -15,20 +15,31 @@ public final class BiMatrix {
     public BiMatrix(int width,int height){
         this.width=width;
         this.height=height;
-        this.pixels=new int[width*height];
+        this.pixels=new byte[width*height];
     }
-    public BiMatrix(int[] pixels,int width,int height){
+    public BiMatrix(byte[] pixels,int width,int height){
         this.pixels=pixels;
         this.width=width;
         this.height=height;
     }
-    public int get(int x,int y){
+    public int get_back(int x,int y){
         int offset=y*width+x;
         int p=pixels[offset];
         int r=(p>>16)&0xFF;
         int g=(p>>8)&0xFF;
         int b=(p)&0xFF;
         int gray=((b*29+g*150+r*77+128)>>8);
+        if(gray<= threshold){
+            return 0;
+        }
+        if(gray> threshold){
+            return 1;
+        }
+        return 0;
+    }
+    public int get(int x,int y){
+        int offset=y*width+x;
+        int gray = pixels[offset]&0xff;
         if(gray<= threshold){
             return 0;
         }
@@ -46,6 +57,7 @@ public final class BiMatrix {
     public int get(int location){
         return pixels[location];
     }
+    /*
     public void set(int x,int y,int pixel){
         int offset=y*width+x;
         pixels[offset]=pixel;
@@ -53,6 +65,7 @@ public final class BiMatrix {
     public void set(int location,int pixel){
         pixels[location]=pixel;
     }
+    */
     public boolean pixelEquals(int x,int y,int pixel){
         int res=get(x,y);
         return res==pixel;

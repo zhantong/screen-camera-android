@@ -14,7 +14,7 @@ import java.io.ByteArrayOutputStream;
 public class YUVtoBitmap {
     public static Bitmap convert(byte[] data){
         ByteArrayOutputStream outstr = new ByteArrayOutputStream();
-        Rect rect = new Rect(0, 0, 1920, 1080);
+        Rect rect = new Rect(0, 0, 1280, 720);
         YuvImage yuvimage=new YuvImage(data, ImageFormat.NV21,1280,720,null);
         yuvimage.compressToJpeg(rect, 100, outstr);
         Bitmap bmp = BitmapFactory.decodeByteArray(outstr.toByteArray(), 0, outstr.size());

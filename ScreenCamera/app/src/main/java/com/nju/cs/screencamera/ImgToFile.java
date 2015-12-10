@@ -21,21 +21,27 @@ public class ImgToFile extends FileToImg{
         int lastSuccessIndex=0;
         int index=0;
         List<byte[]> buffer=new LinkedList<>();
+
         while (true){
             count++;
-            Bitmap img;
+            //Bitmap img;
+            byte[] img;
             try {
-                byte[] temp = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-                img=YUVtoBitmap.convert(temp);
+                //byte[] temp = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+                //img=YUVtoBitmap.convert(temp);
+
+                img=bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
                 if (img == null) {
                     break;
                 }
+                //Log.i("get picture", "caught...");
                 index=getIndex(img);
                 Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
                     Log.i("frame "+index+"/" + count, "same frame index!");
                     continue;
                 }
+                /*
                 byte[] stream;
                 stream = imgToArray(img);
                 if(index-lastSuccessIndex!=1){
@@ -48,16 +54,19 @@ public class ImgToFile extends FileToImg{
                 Log.i("frame "+index+"/" + count, "done!");
                 img.recycle();
                 img = null;
+                */
+
             }
             catch (Exception e){
                 Log.i("frame "+index+"/" + count, "code image not found!");
             }
         }
-        Log.d("imgsToFile", "total length:" + buffer.size());
-        bufferToFile(buffer, file);
+
+        //Log.d("imgsToFile", "total length:" + buffer.size());
+        //bufferToFile(buffer, file);
     }
 
-    public int getIndex(Bitmap img) throws NotFoundException{
+    public int getIndex(byte[] img) throws NotFoundException{
         BiMatrix biMatrix=Binarizer.convertAndGetThreshold(img);
         int[] border=FindBoarder.findBoarder(biMatrix);
         int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
@@ -65,7 +74,7 @@ public class ImgToFile extends FileToImg{
         String row=gs.sampleRow(biMatrix, imgWidth, imgWidth, 0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth, border[0], border[1], border[2], border[3], border[4], border[5], border[6], border[7], frameBlackLength);
         return GrayCode.toInt(row.substring(frameBlackLength, frameBlackLength + grayCodeLength));
     }
-    public byte[] imgToArray(Bitmap img) throws NotFoundException{
+    public byte[] imgToArray(byte[] img) throws NotFoundException{
         BiMatrix biMatrix=Binarizer.convertAndGetThreshold(img);
         int[] border=FindBoarder.findBoarder(biMatrix);
         int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
