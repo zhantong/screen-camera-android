@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 public class ImgToFile extends FileToImg{
     private TextView textView;
     private Handler handler;
+    int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
     public ImgToFile(TextView textView,Handler handler){
         this.textView=textView;
         this.handler=handler;
@@ -42,12 +43,15 @@ public class ImgToFile extends FileToImg{
             byte[] img;
             try {
                 img=bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
+
                 if (img == null) {
                     break;
                 }
+                BiMatrix biMatrix=new BiMatrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
+                biMatrix.perspectiveTransform(0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth);
                 //Log.i("get picture", "caught...");
                 update("frame "+index+"/" + count+"same frame index!");
-                index=getIndex(img);
+                index=getIndex(biMatrix);
 
                 Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
@@ -56,7 +60,7 @@ public class ImgToFile extends FileToImg{
                 }
 
                 byte[] stream;
-                stream = imgToArray(img);
+                stream = imgToArray(biMatrix);
                 if(index-lastSuccessIndex!=1){
                     //Log.e("frame "+index+"/" + count, "error lost frame!");
                     Log.i("frame "+index+"/" + count, "bad frame index!");
@@ -77,20 +81,12 @@ public class ImgToFile extends FileToImg{
         bufferToFile(buffer, file);
     }
 
-    public int getIndex(byte[] img) throws NotFoundException{
-        BiMatrix biMatrix=Binarizer.convertAndGetThreshold(img);
-        int[] border=FindBoarder.findBoarder(biMatrix);
-        int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
-        GridSampler gs=new GridSampler();
-        String row=gs.sampleRow(biMatrix, imgWidth, imgWidth, 0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth, border[0], border[1], border[2], border[3], border[4], border[5], border[6], border[7], frameBlackLength);
+    public int getIndex(BiMatrix biMatrix) throws NotFoundException{
+        String row=biMatrix.sampleRow(imgWidth,imgWidth,frameBlackLength);
         return GrayCode.toInt(row.substring(frameBlackLength, frameBlackLength + grayCodeLength));
     }
-    public byte[] imgToArray(byte[] img) throws NotFoundException{
-        BiMatrix biMatrix=Binarizer.convertAndGetThreshold(img);
-        int[] border=FindBoarder.findBoarder(biMatrix);
-        int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
-        GridSampler gs=new GridSampler();
-        Matrix matrixStream=gs.sampleGrid(biMatrix, imgWidth, imgWidth, 0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth, border[0], border[1], border[2], border[3], border[4], border[5], border[6], border[7]);
+    public byte[] imgToArray(BiMatrix biMatrix) throws NotFoundException{
+        Matrix matrixStream=biMatrix.sampleGrid(imgWidth,imgWidth);
         return matrixToArray(matrixStream);
     }
     public byte[] matrixToArray(Matrix biMatrix) throws NotFoundException{

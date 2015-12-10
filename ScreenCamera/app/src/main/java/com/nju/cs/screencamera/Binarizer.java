@@ -9,17 +9,16 @@ import android.util.Log;
 public class Binarizer {
     private static final boolean VERBOSE = false;
     private static final String TAG = "Binarizer";
-    public static int threshold(byte[] img) throws NotFoundException{
-        int width=CameraSettings.previewWidth;
-        int height=CameraSettings.previeHeight;
+    public static int threshold(BiMatrix biMatrix) throws NotFoundException{
+        int width=biMatrix.width();
+        int height=biMatrix.height();
         int[] buckets=new int[256];
 
         for(int y=1;y<5;y++){
             int row=height*y/5;
             int right=(width*4)/5;
             for(int column=width/5;column<right;column++){
-                int i=row*width+column;
-                int gray = img[i]&0xff;
+                int gray=biMatrix.getGray(column,row);
                 buckets[gray]++;
             }
         }
@@ -61,9 +60,12 @@ public class Binarizer {
                 bestValleyScore=score;
             }
         }
+        if(VERBOSE){Log.d(TAG, "threshold:"+bestValley);}
         return bestValley;
+
     }
-    public static BiMatrix convertAndGetThreshold(byte[] img) throws NotFoundException{
+    /*
+    public static BiMatrix convertAndGetThreshold(BiMatrix biMatrix) throws NotFoundException{
         int threshold=threshold(img);
         if(VERBOSE){Log.d(TAG, "threshold:"+threshold);}
         int width=CameraSettings.previewWidth;
@@ -72,4 +74,5 @@ public class Binarizer {
         biMatrix.setThreshold(threshold);
         return biMatrix;
     }
+    */
 }

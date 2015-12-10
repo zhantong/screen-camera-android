@@ -4,25 +4,21 @@ package com.nju.cs.screencamera;
  * Created by zhantong on 15/11/15.
  */
 public class GridSampler {
-    public Matrix sampleGrid(BiMatrix img,
-                              int dimensionX,
-                              int dimensionY,
-                              float p1ToX, float p1ToY,
-                              float p2ToX, float p2ToY,
-                              float p3ToX, float p3ToY,
-                              float p4ToX, float p4ToY,
-                              float p1FromX, float p1FromY,
-                              float p2FromX, float p2FromY,
-                              float p3FromX, float p3FromY,
-                              float p4FromX, float p4FromY){
-
-        PerspectiveTransform transform = PerspectiveTransform.quadrilateralToQuadrilateral(
+    private PerspectiveTransform transform;
+    public GridSampler(float p1ToX, float p1ToY,
+                       float p2ToX, float p2ToY,
+                       float p3ToX, float p3ToY,
+                       float p4ToX, float p4ToY,
+                       float p1FromX, float p1FromY,
+                       float p2FromX, float p2FromY,
+                       float p3FromX, float p3FromY,
+                       float p4FromX, float p4FromY){
+        transform=PerspectiveTransform.quadrilateralToQuadrilateral(
                 p1ToX, p1ToY, p2ToX, p2ToY, p3ToX, p3ToY, p4ToX, p4ToY,
                 p1FromX, p1FromY, p2FromX, p2FromY, p3FromX, p3FromY, p4FromX, p4FromY);
-
-        return sampleGrid(img, dimensionX, dimensionY, transform);
     }
-    public Matrix sampleGrid(BiMatrix img,int dimensionX,int dimensionY,PerspectiveTransform transform){
+
+    public Matrix sampleGrid(BiMatrix img,int dimensionX,int dimensionY){
         Matrix result=new Matrix(dimensionX,dimensionY);
         //int[][] result=new int[dimensionX][dimensionY];
         float[] points=new float[2*dimensionX];
@@ -45,17 +41,7 @@ public class GridSampler {
     public String sampleRow(BiMatrix img,
                             int dimensionX,
                             int dimensionY,
-                            float p1ToX, float p1ToY,
-                            float p2ToX, float p2ToY,
-                            float p3ToX, float p3ToY,
-                            float p4ToX, float p4ToY,
-                            float p1FromX, float p1FromY,
-                            float p2FromX, float p2FromY,
-                            float p3FromX, float p3FromY,
-                            float p4FromX, float p4FromY,int row){
-        PerspectiveTransform transform = PerspectiveTransform.quadrilateralToQuadrilateral(
-                p1ToX, p1ToY, p2ToX, p2ToY, p3ToX, p3ToY, p4ToX, p4ToY,
-                p1FromX, p1FromY, p2FromX, p2FromY, p3FromX, p3FromY, p4FromX, p4FromY);
+                            int row){
         StringBuilder stringBuilder=new StringBuilder();
         float[] points=new float[2*dimensionX];
         int max=points.length;
