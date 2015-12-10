@@ -1,9 +1,13 @@
 package com.nju.cs.screencamera;
 
+import android.util.Log;
+
 /**
  * Created by zhantong on 15/11/21.
  */
 public final class BiMatrix {
+    private static final boolean VERBOSE = false;
+    private static final String TAG = "BiMatrix";
     private final int width;
     private final int height;
     private final byte[] pixels;
@@ -23,9 +27,10 @@ public final class BiMatrix {
         this.pixels=pixels;
         this.width=width;
         this.height=height;
-        this.threshold=Binarizer.threshold(this);
+        this.threshold=getThreshold();
         this.borders=FindBoarder.findBoarder(this);
     }
+
     public void perspectiveTransform(float p1ToX, float p1ToY,
                                 float p2ToX, float p2ToY,
                                 float p3ToX, float p3ToY,
@@ -89,9 +94,6 @@ public final class BiMatrix {
     public void setThreshold(int threshold){
         this.threshold = threshold;
     }
-    public int getThreshold(){
-        return threshold;
-    }
     public int get(int location){
         return pixels[location];
     }
@@ -117,5 +119,59 @@ public final class BiMatrix {
     }
     public int height(){
         return height;
+    }
+    private int getThreshold() throws NotFoundException{
+        int[] buckets=new int[256];
+
+        for(int y=1;y<5;y++){
+            int row=height*y/5;
+            int right=(width*4)/5;
+            for(int column=width/5;column<right;column++){
+                int gray=getGray(column, row);
+                buckets[gray]++;
+            }
+        }
+        int numBuckets=buckets.length;
+        int firstPeak=0;
+        int firstPeakSize=0;
+        for(int x=0;x<numBuckets;x++){
+            if(buckets[x]>firstPeakSize){
+                firstPeak=x;
+                firstPeakSize=buckets[x];
+            }
+        }
+        int secondPeak=0;
+        int secondPeakScore=0;
+        for(int x=0;x<numBuckets;x++){
+            int distanceToFirstPeak=x-firstPeak;
+            int score=buckets[x]*distanceToFirstPeak*distanceToFirstPeak;
+            if(score>secondPeakScore){
+                secondPeak=x;
+                secondPeakScore=score;
+            }
+        }
+        if(firstPeak>secondPeak){
+            int temp=firstPeak;
+            firstPeak=secondPeak;
+            secondPeak=temp;
+        }
+        if(secondPeak-firstPeak<=numBuckets/16){
+            throw NotFoundException.getNotFoundInstance();
+        }
+        int bestValley=0;
+        int bestValleyScore=-1;
+        for(int x=firstPeak+1;x<secondPeak;x++){
+            int fromSecond=secondPeak-x;
+            int score=(x-firstPeak)*fromSecond*fromSecond*(firstPeakSize-buckets[x]);
+            //int score=fromSecond*fromSecond*(firstPeakSize-buckets[x]);
+            if(score>bestValleyScore){
+                bestValley=x;
+                bestValleyScore=score;
+            }
+        }
+        if(VERBOSE){
+            Log.d(TAG, "threshold:" + bestValley);}
+        return bestValley;
+
     }
 }
