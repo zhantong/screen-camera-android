@@ -9,7 +9,7 @@ public final class BiMatrix {
     private final byte[] pixels;
     private int threshold =0;
     private int[] borders;
-    private GridSampler gs;
+    private PerspectiveTransform transform;
 
     public BiMatrix(int dimension){
         this(dimension,dimension);
@@ -30,13 +30,47 @@ public final class BiMatrix {
                                 float p2ToX, float p2ToY,
                                 float p3ToX, float p3ToY,
                                 float p4ToX, float p4ToY){
-        gs=new GridSampler(p1ToX, p1ToY, p2ToX, p2ToY, p3ToX, p3ToY, p4ToX, p4ToY, borders[0], borders[1], borders[2], borders[3], borders[4], borders[5], borders[6], borders[7]);
+        transform=PerspectiveTransform.quadrilateralToQuadrilateral(p1ToX, p1ToY, p2ToX, p2ToY, p3ToX, p3ToY, p4ToX, p4ToY, borders[0], borders[1], borders[2], borders[3], borders[4], borders[5], borders[6], borders[7]);
     }
     public String sampleRow(int dimensionX, int dimensionY, int row){
-        return gs.sampleRow(this,dimensionX,dimensionY,row);
+        StringBuilder stringBuilder=new StringBuilder();
+        float[] points=new float[2*dimensionX];
+        int max=points.length;
+        float rowValue=(float)row+0.5f;
+        for(int x=0;x<max;x+=2){
+            points[x]=(float)(x/2)+0.5f;
+            points[x+1]=rowValue;
+        }
+        transform.transformPoints(points);
+        for(int x=0;x<max;x+=2){
+            if(pixelEquals((int) points[x], (int) points[x + 1], 1)){
+                stringBuilder.append('1');
+            }
+            else{
+                stringBuilder.append('0');
+            }
+        }
+        return stringBuilder.toString();
     }
     public Matrix sampleGrid(int dimensionX,int dimensionY){
-        return gs.sampleGrid(this,dimensionX,dimensionY);
+        Matrix result=new Matrix(dimensionX,dimensionY);
+        //int[][] result=new int[dimensionX][dimensionY];
+        float[] points=new float[2*dimensionX];
+        int max=points.length;
+        for(int y=0;y<dimensionY;y++){
+            float iValue=(float)y+0.5f;
+            for(int x=0;x<max;x+=2){
+                points[x]=(float)(x/2)+0.5f;
+                points[x+1]=iValue;
+            }
+            transform.transformPoints(points);
+            for(int x=0;x<max;x+=2){
+                if(pixelEquals((int)points[x],(int)points[x+1],1)){
+                    result.set(x/2,y,1);
+                }
+            }
+        }
+        return result;
     }
     public int getGray(int x,int y){
         return pixels[y*width+x]&0xff;
