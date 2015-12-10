@@ -35,7 +35,36 @@ public final class BiMatrix {
                                 float p2ToX, float p2ToY,
                                 float p3ToX, float p3ToY,
                                 float p4ToX, float p4ToY){
-        transform=PerspectiveTransform.quadrilateralToQuadrilateral(p1ToX, p1ToY, p2ToX, p2ToY, p3ToX, p3ToY, p4ToX, p4ToY, borders[0], borders[1], borders[2], borders[3], borders[4], borders[5], borders[6], borders[7]);
+        transform=PerspectiveTransform.quadrilateralToQuadrilateral(p1ToX, p1ToY,
+                                                                    p2ToX, p2ToY,
+                                                                    p3ToX, p3ToY,
+                                                                    p4ToX, p4ToY,
+                                                            borders[0], borders[1],
+                                                            borders[2], borders[3],
+                                                            borders[4], borders[5],
+                                                            borders[6], borders[7]);
+    }
+
+    public int getGray(int x,int y){
+        return pixels[y*width+x]&0xff;
+    }
+    public int get(int x,int y){
+        int gray = pixels[y*width+x]&0xff;
+        if(gray<= threshold) {
+            return 0;
+        }
+        else{
+            return 1;
+        }
+    }
+    public boolean pixelEquals(int x,int y,int pixel){
+        return get(x,y)==pixel;
+    }
+    public int width(){
+        return width;
+    }
+    public int height(){
+        return height;
     }
     public String sampleRow(int dimensionX, int dimensionY, int row){
         StringBuilder stringBuilder=new StringBuilder();
@@ -58,7 +87,7 @@ public final class BiMatrix {
         return stringBuilder.toString();
     }
     public Matrix sampleGrid(int dimensionX,int dimensionY){
-        Matrix result=new Matrix(dimensionX,dimensionY);
+        Matrix matrix=new Matrix(dimensionX,dimensionY);
         //int[][] result=new int[dimensionX][dimensionY];
         float[] points=new float[2*dimensionX];
         int max=points.length;
@@ -71,54 +100,11 @@ public final class BiMatrix {
             transform.transformPoints(points);
             for(int x=0;x<max;x+=2){
                 if(pixelEquals((int)points[x],(int)points[x+1],1)){
-                    result.set(x/2,y,1);
+                    matrix.set(x/2,y,1);
                 }
             }
         }
-        return result;
-    }
-    public int getGray(int x,int y){
-        return pixels[y*width+x]&0xff;
-    }
-    public int get(int x,int y){
-        int offset=y*width+x;
-        int gray = pixels[offset]&0xff;
-        if(gray<= threshold){
-            return 0;
-        }
-        if(gray> threshold){
-            return 1;
-        }
-        return 0;
-    }
-    public void setThreshold(int threshold){
-        this.threshold = threshold;
-    }
-    public int get(int location){
-        return pixels[location];
-    }
-    /*
-    public void set(int x,int y,int pixel){
-        int offset=y*width+x;
-        pixels[offset]=pixel;
-    }
-    public void set(int location,int pixel){
-        pixels[location]=pixel;
-    }
-    */
-    public boolean pixelEquals(int x,int y,int pixel){
-        int res=get(x,y);
-        return res==pixel;
-    }
-    public boolean pixelEqualsBack(int x,int y,int pixel){
-        int offset=y*width+x;
-        return pixels[offset]==(byte)pixel;
-    }
-    public int width(){
-        return width;
-    }
-    public int height(){
-        return height;
+        return matrix;
     }
     private int getThreshold() throws NotFoundException{
         int[] buckets=new int[256];
@@ -169,9 +155,7 @@ public final class BiMatrix {
                 bestValleyScore=score;
             }
         }
-        if(VERBOSE){
-            Log.d(TAG, "threshold:" + bestValley);}
+        if(VERBOSE){Log.d(TAG, "threshold:" + bestValley);}
         return bestValley;
-
     }
 }
