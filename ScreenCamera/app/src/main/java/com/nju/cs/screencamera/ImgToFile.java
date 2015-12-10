@@ -1,7 +1,10 @@
 package com.nju.cs.screencamera;
 
 import android.graphics.Bitmap;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,6 +18,12 @@ import java.util.concurrent.TimeUnit;
  * Created by zhantong on 15/11/15.
  */
 public class ImgToFile extends FileToImg{
+    private TextView textView;
+    private Handler handler;
+    public ImgToFile(TextView textView,Handler handler){
+        this.textView=textView;
+        this.handler=handler;
+    }
     public void imgsToFile(BlockingDeque<byte[]> bitmaps,File file){
         long TIMEOUT=3000L;
         int count=0;
@@ -35,26 +44,35 @@ public class ImgToFile extends FileToImg{
                     break;
                 }
                 //Log.i("get picture", "caught...");
+                final int fCount=count+0;
+                final int fIndex=index+0;
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        textView.setText("frame "+fIndex+"/" + fCount+ "processing...");
+                    }
+                });
                 index=getIndex(img);
+
                 Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
                     Log.i("frame "+index+"/" + count, "same frame index!");
                     continue;
                 }
-                /*
+
                 byte[] stream;
                 stream = imgToArray(img);
                 if(index-lastSuccessIndex!=1){
                     //Log.e("frame "+index+"/" + count, "error lost frame!");
+                    Log.i("frame "+index+"/" + count, "bad frame index!");
                     //break;
                     continue;
                 }
                 lastSuccessIndex=index;
                 buffer.add(stream);
                 Log.i("frame "+index+"/" + count, "done!");
-                img.recycle();
                 img = null;
-                */
+
 
             }
             catch (Exception e){
@@ -62,8 +80,8 @@ public class ImgToFile extends FileToImg{
             }
         }
 
-        //Log.d("imgsToFile", "total length:" + buffer.size());
-        //bufferToFile(buffer, file);
+        Log.d("imgsToFile", "total length:" + buffer.size());
+        bufferToFile(buffer, file);
     }
 
     public int getIndex(byte[] img) throws NotFoundException{
