@@ -24,6 +24,15 @@ public class ImgToFile extends FileToImg{
         this.textView=textView;
         this.handler=handler;
     }
+    private void update(String info){
+        final String text=info;
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(text);
+            }
+        });
+    }
     public void imgsToFile(BlockingDeque<byte[]> bitmaps,File file){
         long TIMEOUT=3000L;
         int count=0;
@@ -44,14 +53,7 @@ public class ImgToFile extends FileToImg{
                     break;
                 }
                 //Log.i("get picture", "caught...");
-                final int fCount=count+0;
-                final int fIndex=index+0;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        textView.setText("frame "+fIndex+"/" + fCount+ "processing...");
-                    }
-                });
+                update("frame "+index+"/" + count+"same frame index!");
                 index=getIndex(img);
 
                 Log.i("frame "+index+"/" + count, "processing...");
