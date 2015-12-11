@@ -49,8 +49,7 @@ public final class Matrix {
         return pixels[y*width+x]&0xff;
     }
     public int get(int x,int y){
-        int gray = pixels[y*width+x]&0xff;
-        if(gray<= threshold) {
+        if(getGray(x,y)<= threshold) {
             return 0;
         }
         else{
@@ -88,7 +87,6 @@ public final class Matrix {
     }
     public BinaryMatrix sampleGrid(int dimensionX,int dimensionY){
         BinaryMatrix binaryMatrix=new BinaryMatrix(dimensionX,dimensionY);
-        //int[][] result=new int[dimensionX][dimensionY];
         float[] points=new float[2*dimensionX];
         int max=points.length;
         for(int y=0;y<dimensionY;y++){
