@@ -142,7 +142,7 @@ public final class BiMatrix {
             secondPeak=temp;
         }
         if(secondPeak-firstPeak<=numBuckets/16){
-            throw NotFoundException.getNotFoundInstance();
+            throw new NotFoundException("can't get proper binary threshold");
         }
         int bestValley=0;
         int bestValleyScore=-1;

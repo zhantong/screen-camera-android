@@ -7,7 +7,7 @@ import android.util.Log;
  */
 public class FindBoarder {
     private static final String TAG = "FindBoarder";
-    private static final boolean VERBOSE = true;
+    private static final boolean VERBOSE = false;
     public static boolean containsBlack(BiMatrix biMatrix,int a,int b,int fixed,boolean horizontal){
         if(horizontal){
             for(int x=a;x<=b;x++){
@@ -40,7 +40,7 @@ public class FindBoarder {
         int downOrig=down;
         if(VERBOSE){Log.d(TAG,"boarder init: up:"+up+"\t"+"right:"+right+"\t"+"down:"+down+"\t"+"left:"+left);}
         if(left<0||right>=width||up<0||down>=height){
-            throw NotFoundException.getNotFoundInstance();
+            throw new NotFoundException("frame size too small");
         }
         boolean flag;
         while(true){
@@ -67,11 +67,8 @@ public class FindBoarder {
             }
         }
         if(VERBOSE){Log.d(TAG,"find boarder: up:"+up+"\t"+"right:"+right+"\t"+"down:"+down+"\t"+"left:"+left);}
-        if(left==0||up==0||right==width||down==height){
-            throw NotFoundException.getNotFoundInstance();
-        }
-        if(left==width/2-init&&right==width/2+init&&up==height/2-init&&down==height/2+init){
-            throw NotFoundException.getNotFoundInstance();
+        if((left==0||up==0||right==width||down==height)||(left==leftOrig&&right==rightOrig&&up==upOrig&&down==downOrig)){
+            throw new NotFoundException("didn't find any possible bar code");
         }
         int[] vertexs=new int[8];
         left=findVertex(biMatrix,up,down,left,leftOrig,vertexs,0,3,false,false);
@@ -86,7 +83,7 @@ public class FindBoarder {
             Log.d(TAG,"vertexes: ("+vertexs[0]+","+vertexs[1]+")\t("+vertexs[2]+","+vertexs[3]+")\t("+vertexs[4]+","+vertexs[5]+")\t("+vertexs[6]+","+vertexs[7]+")");
         }
         if(vertexs[0]==0||vertexs[2]==0||vertexs[4]==0||vertexs[6]==0){
-            throw NotFoundException.getNotFoundInstance();
+            throw new NotFoundException("vertexs error");
         }
         return vertexs;
     }
@@ -113,13 +110,13 @@ public class FindBoarder {
                 if(sub){
                     fixed--;
                     if(fixed<=fixedOrig){
-                        throw NotFoundException.getNotFoundInstance();
+                        throw new NotFoundException("didn't find any possible bar code");
                     }
                 }
                 else{
                     fixed++;
                     if(fixed>=fixedOrig){
-                        throw NotFoundException.getNotFoundInstance();
+                        throw new NotFoundException("didn't find any possible bar code");
                     }
                 }
             }

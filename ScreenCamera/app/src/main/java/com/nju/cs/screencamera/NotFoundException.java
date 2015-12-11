@@ -14,4 +14,7 @@ public class NotFoundException extends Exception{
     public static NotFoundException getNotFoundInstance(){
         return INSTANCE;
     }
+    public NotFoundException(String msg){
+        super(msg);
+    }
 }

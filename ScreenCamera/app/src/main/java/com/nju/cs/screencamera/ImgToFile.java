@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
  * Created by zhantong on 15/11/15.
  */
 public class ImgToFile extends FileToImg{
+    private static final String TAG = "ImgToFile";
+    private static final boolean VERBOSE = false;
     private TextView debugView;
     private TextView infoView;
     private Handler handler;
@@ -53,7 +55,8 @@ public class ImgToFile extends FileToImg{
         int frameAmount=0;
         List<byte[]> buffer=new LinkedList<>();
         byte[] img={};
-        BiMatrix biMatrix;
+        BiMatrix biMatrix=new BiMatrix(1);
+        byte[] stream={};
         /*
         handler.post(new Runnable() {
             @Override
@@ -65,59 +68,61 @@ public class ImgToFile extends FileToImg{
         while (true){
             count++;
 
+            updateInfo("正在识别...");
             try {
-                updateInfo("正在识别...");
-                try {
-                    img = bitmaps.take();
-                }catch (InterruptedException e){
-                    e.printStackTrace();
+                img = bitmaps.take();
+            }catch (InterruptedException e){
+                Log.d(TAG, e.getMessage());
+            }
+            updateDebug(index, lastSuccessIndex, frameAmount, count);
+            try {
+            biMatrix=new BiMatrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
+            biMatrix.perspectiveTransform(0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth);
+            //Log.i("get picture", "caught...");
+            index = getIndex(biMatrix);
+            }catch (NotFoundException e){
+                if(lastSuccessIndex==0) {
+                    mPreview.focus();
                 }
-                if (img == null) {
-                    break;
-                }
-                try {
-                updateDebug(index, lastSuccessIndex, frameAmount, count);
-                biMatrix=new BiMatrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
-                biMatrix.perspectiveTransform(0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth);
-                //Log.i("get picture", "caught...");
-                index = getIndex(biMatrix);
-                }catch (NotFoundException e){
-                    if(lastSuccessIndex==0) {
-                        mPreview.focus();
-                    }
-                    throw  NotFoundException.getNotFoundInstance();
-                }
-                Log.i("frame "+index+"/" + count, "processing...");
-                if(lastSuccessIndex==index){
-                    Log.i("frame "+index+"/" + count, "same frame index!");
-                    continue;
-                }
+                Log.d(TAG, e.getMessage());
+            }catch (CRCCheckException e){
+                Log.d(TAG, "CRC check failed");
+            }
+            Log.i("frame "+index+"/" + count, "processing...");
+            if(lastSuccessIndex==index){
+                Log.i("frame "+index+"/" + count, "same frame index!");
+                continue;
+            }
 
-                byte[] stream;
+
+            try {
                 stream = imgToArray(biMatrix);
-                if(index-lastSuccessIndex!=1){
-                    //Log.e("frame "+index+"/" + count, "error lost frame!");
-                    Log.i("frame "+index+"/" + count, "bad frame index!");
-                    //break;
-                    continue;
-                }
-                buffer.add(stream);
-                Log.i("frame "+index+"/" + count, "done!");
-                if(frameAmount==0){
-                    frameAmount=getFrameAmount(biMatrix);
-                    System.out.println("frameAmount:"+frameAmount);
-                }
-                lastSuccessIndex = index;
-                updateDebug(index,lastSuccessIndex,frameAmount,count);
-                if(lastSuccessIndex==frameAmount){
-                    mPreview.stop();
-                    break;
-                }
-                biMatrix=null;
+            }catch (ReedSolomonException e){
+                Log.d(TAG, e.getMessage());
             }
-            catch (NotFoundException e){
-                Log.i("frame "+index+"/" + count, "code image not found!");
+            if(index-lastSuccessIndex!=1){
+                //Log.e("frame "+index+"/" + count, "error lost frame!");
+                Log.i("frame " + index + "/" + count, "bad frame index!");
+                //break;
+                continue;
             }
+            buffer.add(stream);
+            Log.i("frame " + index + "/" + count, "done!");
+            if(frameAmount==0){
+                try {
+                    frameAmount = getFrameAmount(biMatrix);
+                }catch (CRCCheckException e){
+                    Log.d(TAG, "CRC check failed");
+                }
+            }
+            lastSuccessIndex = index;
+            updateDebug(index, lastSuccessIndex, frameAmount, count);
+            if(lastSuccessIndex==frameAmount){
+                mPreview.stop();
+                break;
+            }
+            biMatrix=null;
+
         }
         updateInfo("识别完成!正在写入文件");
         Log.d("imgsToFile", "total length:" + buffer.size());
@@ -125,30 +130,30 @@ public class ImgToFile extends FileToImg{
         updateInfo("写入文件成功!");
     }
 
-    public int getIndex(BiMatrix biMatrix) throws NotFoundException{
+    public int getIndex(BiMatrix biMatrix) throws CRCCheckException{
 
         String row=biMatrix.sampleRow(imgWidth, imgWidth, frameBlackLength);
         int index=Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16),2);
         int crc=Integer.parseInt(row.substring(frameBlackLength + 16, frameBlackLength + 24), 2);
         if(crc!=CRC8.calcCrc8(index)){
-            throw  NotFoundException.getNotFoundInstance();
+            throw  CRCCheckException.getNotFoundInstance();
         }
         return index;
     }
-    public int getFrameAmount(BiMatrix biMatrix) throws NotFoundException{
+    public int getFrameAmount(BiMatrix biMatrix) throws CRCCheckException{
         String row=biMatrix.sampleRow(imgWidth, imgWidth, frameBlackLength);
         int frameAmount=Integer.parseInt(row.substring(frameBlackLength+24, frameBlackLength + 40),2);
         int crc=Integer.parseInt(row.substring(frameBlackLength + 40, frameBlackLength + 48), 2);
         if(crc!=CRC8.calcCrc8(frameAmount)){
-            throw  NotFoundException.getNotFoundInstance();
+            throw  CRCCheckException.getNotFoundInstance();
         }
         return frameAmount;
     }
-    public byte[] imgToArray(BiMatrix biMatrix) throws NotFoundException{
+    public byte[] imgToArray(BiMatrix biMatrix) throws ReedSolomonException{
         Matrix matrixStream=biMatrix.sampleGrid(imgWidth,imgWidth);
         return matrixToArray(matrixStream);
     }
-    public byte[] matrixToArray(Matrix biMatrix) throws NotFoundException{
+    public byte[] matrixToArray(Matrix biMatrix) throws ReedSolomonException{
         int startOffset=frameBlackLength+frameVaryLength;
         int stopOffset=startOffset+contentLength;
         int contentByteNum=contentLength*contentLength/8;
@@ -159,7 +164,7 @@ public class ImgToFile extends FileToImg{
         try{
             decoder.decode(result,ecByteNum);
         }catch (Exception e){
-            throw  NotFoundException.getNotFoundInstance();
+            throw new ReedSolomonException("error correcting failed");
         }
         byte[] res=new byte[realByteNum];
         for(int i=0;i<realByteNum;i++){
@@ -179,7 +184,7 @@ public class ImgToFile extends FileToImg{
             }
             os.close();
         }catch (Exception e){
-            e.printStackTrace();
+            Log.d(TAG, e.getMessage());
         }
     }
     private byte[] cutArrayBack(byte[] old,int intCut){
