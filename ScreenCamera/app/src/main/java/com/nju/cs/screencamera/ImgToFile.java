@@ -9,7 +9,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -45,7 +45,7 @@ public class ImgToFile extends FileToImg{
             }
         });
     }
-    public void imgsToFile(BlockingDeque<byte[]> bitmaps,File file){
+    public void imgsToFile(LinkedBlockingQueue<byte[]> bitmaps,File file){
         long TIMEOUT=3000L;
         int count=0;
         int lastSuccessIndex=0;
@@ -53,15 +53,22 @@ public class ImgToFile extends FileToImg{
         int frameAmount=0;
         List<byte[]> buffer=new LinkedList<>();
         byte[] img={};
+        /*
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                mPreview.startPreview();
+            }
+        });
+        */
         while (true){
             count++;
 
             try {
                 updateInfo("正在识别...");
                 try {
-                    img = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
-                }
-                catch (InterruptedException e){
+                    img = bitmaps.take();
+                }catch (InterruptedException e){
                     e.printStackTrace();
                 }
                 if (img == null) {
@@ -71,7 +78,7 @@ public class ImgToFile extends FileToImg{
                 BiMatrix biMatrix=new BiMatrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
                 biMatrix.perspectiveTransform(0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth);
                 //Log.i("get picture", "caught...");
-                index=getIndex(biMatrix);
+                index = getIndex(biMatrix);
                 Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
                     Log.i("frame "+index+"/" + count, "same frame index!");

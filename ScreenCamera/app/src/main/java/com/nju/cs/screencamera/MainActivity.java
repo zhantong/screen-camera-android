@@ -15,12 +15,11 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import java.io.File;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;
-    BlockingDeque<byte[]> rev=new LinkedBlockingDeque<>();
+    final static LinkedBlockingQueue<byte[]> rev=new LinkedBlockingQueue<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

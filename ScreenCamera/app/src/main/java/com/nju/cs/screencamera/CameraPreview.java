@@ -6,7 +6,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.io.IOException;
-import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by zhantong on 15/12/9.
@@ -15,9 +15,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static final String TAG = "main";
     private SurfaceHolder mHolder;
     private Camera mCamera;
-    private BlockingDeque<byte[]> frames;
-
-    public CameraPreview(Context context,BlockingDeque<byte[]> frames) {
+    private LinkedBlockingQueue<byte[]> frames;
+    private boolean pause=false;
+    public CameraPreview(Context context,LinkedBlockingQueue<byte[]> frames) {
         super(context);
         mHolder = getHolder();
         mHolder.addCallback(this);
@@ -28,7 +28,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder) {
         mCamera=Camera.open();
         mCamera.setPreviewCallback(this);
-
         try {
             mCamera.setPreviewDisplay(holder);
         } catch (IOException e) {
@@ -54,7 +53,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     }
     public void onPreviewFrame(byte[] data, Camera camera) {
-        frames.add(data);
+        try {
+            frames.put(data);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        //frames.add(data);
         //Log.d("queue length:", Integer.toString(frames.size()));
     }
     public void stop(){
