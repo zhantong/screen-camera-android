@@ -7,7 +7,7 @@ import android.util.Log;
  */
 public class FindBoarder {
     private static final String TAG = "FindBoarder";
-    private static final boolean VERBOSE = false;
+    private static final boolean VERBOSE = true;
     public static boolean containsBlack(BiMatrix biMatrix,int a,int b,int fixed,boolean horizontal){
         if(horizontal){
             for(int x=a;x<=b;x++){
@@ -34,6 +34,10 @@ public class FindBoarder {
         int right=width/2+init;
         int up=height/2-init;
         int down=height/2+init;
+        int leftOrig=left;
+        int rightOrig=right;
+        int upOrig=up;
+        int downOrig=down;
         if(VERBOSE){Log.d(TAG,"boarder init: up:"+up+"\t"+"right:"+right+"\t"+"down:"+down+"\t"+"left:"+left);}
         if(left<0||right>=width||up<0||down>=height){
             throw NotFoundException.getNotFoundInstance();
@@ -70,13 +74,13 @@ public class FindBoarder {
             throw NotFoundException.getNotFoundInstance();
         }
         int[] vertexs=new int[8];
-        left=findVertex(biMatrix,up,down,left,vertexs,0,3,false,false);
+        left=findVertex(biMatrix,up,down,left,leftOrig,vertexs,0,3,false,false);
         if(VERBOSE){Log.d(TAG,"found 1 vertex");}
-        up=findVertex(biMatrix,left,right,up,vertexs,0,1,true,false);
+        up=findVertex(biMatrix,left,right,up,upOrig,vertexs,0,1,true,false);
         if(VERBOSE){Log.d(TAG,"found 2 vertex");}
-        right=findVertex(biMatrix,up,down,right,vertexs,1,2,false,true);
+        right=findVertex(biMatrix,up,down,right,rightOrig,vertexs,1,2,false,true);
         if(VERBOSE){Log.d(TAG,"found 3 vertex");}
-        down=findVertex(biMatrix,left,right,down,vertexs,3,2,true,true);
+        down=findVertex(biMatrix,left,right,down,downOrig,vertexs,3,2,true,true);
         if(VERBOSE){Log.d(TAG,"found 4 vertex");}
         if(VERBOSE){
             Log.d(TAG,"vertexes: ("+vertexs[0]+","+vertexs[1]+")\t("+vertexs[2]+","+vertexs[3]+")\t("+vertexs[4]+","+vertexs[5]+")\t("+vertexs[6]+","+vertexs[7]+")");
@@ -86,7 +90,7 @@ public class FindBoarder {
         }
         return vertexs;
     }
-    public static int findVertex(BiMatrix biMatrix,int b1,int b2,int fixed,int[] vertexs,int p1,int p2,boolean horizontal,boolean sub){
+    public static int findVertex(BiMatrix biMatrix,int b1,int b2,int fixed,int fixedOrig,int[] vertexs,int p1,int p2,boolean horizontal,boolean sub) throws NotFoundException{
         int mid=(b2-b1)/2;
         if(horizontal){
             while(true){
@@ -108,9 +112,15 @@ public class FindBoarder {
                 }
                 if(sub){
                     fixed--;
+                    if(fixed<=fixedOrig){
+                        throw NotFoundException.getNotFoundInstance();
+                    }
                 }
                 else{
                     fixed++;
+                    if(fixed>=fixedOrig){
+                        throw NotFoundException.getNotFoundInstance();
+                    }
                 }
             }
         }
