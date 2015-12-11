@@ -16,21 +16,32 @@ import java.util.concurrent.TimeUnit;
  * Created by zhantong on 15/11/15.
  */
 public class ImgToFile extends FileToImg{
-    private TextView textView;
+    private TextView debugView;
+    private TextView infoView;
     private Handler handler;
     private CameraPreview mPreview;
     int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
-    public ImgToFile(CameraPreview mPreview,TextView textView,Handler handler){
-        this.textView=textView;
+    public ImgToFile(CameraPreview mPreview,TextView debugView,TextView infoView,Handler handler){
+        this.debugView=debugView;
+        this.infoView=infoView;
         this.handler=handler;
         this.mPreview=mPreview;
     }
-    private void update(String info){
-        final String text=info;
+    private void updateDebug(int index,int lastSuccessIndex,int frameAmount,int count){
+        final String text="当前:"+index+"已识别:"+lastSuccessIndex+"帧总数:"+frameAmount+"已处理:"+count;
         handler.post(new Runnable() {
             @Override
             public void run() {
-                textView.setText(text);
+                debugView.setText(text);
+            }
+        });
+    }
+    private void updateInfo(String msg){
+        final String text=msg;
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                infoView.setText(text);
             }
         });
     }
@@ -46,6 +57,7 @@ public class ImgToFile extends FileToImg{
             count++;
 
             try {
+                updateInfo("正在识别...");
                 try {
                     img = bitmaps.poll(TIMEOUT, TimeUnit.MILLISECONDS);
                 }
@@ -55,12 +67,11 @@ public class ImgToFile extends FileToImg{
                 if (img == null) {
                     break;
                 }
+                updateDebug(index, lastSuccessIndex, frameAmount, count);
                 BiMatrix biMatrix=new BiMatrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
                 biMatrix.perspectiveTransform(0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth);
                 //Log.i("get picture", "caught...");
-                update("frame "+index+"/" + count+"same frame index!");
                 index=getIndex(biMatrix);
-
                 Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
                     Log.i("frame "+index+"/" + count, "same frame index!");
@@ -81,7 +92,8 @@ public class ImgToFile extends FileToImg{
                     frameAmount=getFrameAmount(biMatrix);
                     System.out.println("frameAmount:"+frameAmount);
                 }
-                lastSuccessIndex=index;
+                lastSuccessIndex = index;
+                updateDebug(index,lastSuccessIndex,frameAmount,count);
                 if(lastSuccessIndex==frameAmount){
                     mPreview.stop();
                     break;
@@ -92,18 +104,17 @@ public class ImgToFile extends FileToImg{
                 Log.i("frame "+index+"/" + count, "code image not found!");
             }
         }
+        updateInfo("识别完成!正在写入文件");
         Log.d("imgsToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
+        updateInfo("写入文件成功!");
     }
 
     public int getIndex(BiMatrix biMatrix) throws NotFoundException{
 
         String row=biMatrix.sampleRow(imgWidth, imgWidth, frameBlackLength);
-        System.out.println(row);
         int index=Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16),2);
-        System.out.println("index:" + index);
         int crc=Integer.parseInt(row.substring(frameBlackLength + 16, frameBlackLength + 24), 2);
-        System.out.println(index+" "+crc+" "+CRC8.calcCrc8(index));
         if(crc!=CRC8.calcCrc8(index)){
             throw  NotFoundException.getNotFoundInstance();
         }

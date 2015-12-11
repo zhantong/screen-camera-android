@@ -21,23 +21,26 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;
     BlockingDeque<byte[]> rev=new LinkedBlockingDeque<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        final TextView editText=(TextView)findViewById(R.id.text_view);
-        editText.setGravity(Gravity.BOTTOM);
-        final Handler mHandler = new Handler();
         CameraSettings cameraSettings=new CameraSettings();
         cameraSettings=null;
+        TextView debugView=(TextView)findViewById(R.id.debug_view);
+        TextView infoView=(TextView)findViewById(R.id.info_view);
+        debugView.setGravity(Gravity.BOTTOM);
+        infoView.setGravity(Gravity.BOTTOM);
     }
     public void openCamera(View view){
+        final TextView debugView=(TextView)findViewById(R.id.debug_view);
+        final TextView infoView=(TextView)findViewById(R.id.info_view);
         final CameraPreview mPreview=new CameraPreview(this,rev);
         this.mPreview=mPreview;
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
-        final TextView editText=(TextView)findViewById(R.id.text_view);
         EditText editTextFileName=(EditText)findViewById(R.id.fileName);
         final String newFileName=editTextFileName.getText().toString();
         final Handler nHandler = new Handler();
@@ -45,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
-                ImgToFile imgToFile=new ImgToFile(mPreview,editText,nHandler);
+                ImgToFile imgToFile=new ImgToFile(mPreview,debugView,infoView,nHandler);
                 imgToFile.imgsToFile(rev, out);
             }
         };
@@ -134,8 +137,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void start(View view){
-        final TextView editText=(TextView)findViewById(R.id.text_view);
-        editText.setText("正在识别...");
+        //final TextView editText=(TextView)findViewById(R.id.text_view);
+        //editText.setText("正在识别...");
         EditText editTextVideoFilePath=(EditText)findViewById(R.id.videoFilePath);
         String videoFilePath=editTextVideoFilePath.getText().toString();
         EditText editTextFileName=(EditText)findViewById(R.id.fileName);
