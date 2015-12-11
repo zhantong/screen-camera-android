@@ -21,7 +21,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         super(context);
         mHolder = getHolder();
         mHolder.addCallback(this);
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         this.frames=frames;
     }
 
@@ -41,7 +40,16 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mCamera.release();
         mCamera=null;
     }
-
+    public void focus(){
+        pause=true;
+        mCamera.autoFocus(null);
+        try {
+            Thread.sleep(2000);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        pause=false;
+    }
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         Thread preview_thread = new Thread(new Runnable() {
             @Override
@@ -53,10 +61,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     }
     public void onPreviewFrame(byte[] data, Camera camera) {
-        try {
-            frames.put(data);
-        }catch (InterruptedException e){
-            e.printStackTrace();
+        if(!pause) {
+            try {
+                frames.put(data);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         //frames.add(data);
         //Log.d("queue length:", Integer.toString(frames.size()));

@@ -20,7 +20,7 @@ public class CameraSettings {
         parameters = mCamera.getParameters();
         getPreviewSize();
         parameters.setPreviewSize(previewWidth, previeHeight);
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        //parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         parameters.setRecordingHint(true);
         mCamera.release();
         mCamera=null;

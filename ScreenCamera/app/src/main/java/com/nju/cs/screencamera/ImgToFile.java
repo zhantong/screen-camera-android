@@ -53,6 +53,7 @@ public class ImgToFile extends FileToImg{
         int frameAmount=0;
         List<byte[]> buffer=new LinkedList<>();
         byte[] img={};
+        BiMatrix biMatrix;
         /*
         handler.post(new Runnable() {
             @Override
@@ -74,11 +75,18 @@ public class ImgToFile extends FileToImg{
                 if (img == null) {
                     break;
                 }
+                try {
                 updateDebug(index, lastSuccessIndex, frameAmount, count);
-                BiMatrix biMatrix=new BiMatrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
+                biMatrix=new BiMatrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
                 biMatrix.perspectiveTransform(0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth);
                 //Log.i("get picture", "caught...");
                 index = getIndex(biMatrix);
+                }catch (NotFoundException e){
+                    if(lastSuccessIndex==0) {
+                        mPreview.focus();
+                    }
+                    throw  NotFoundException.getNotFoundInstance();
+                }
                 Log.i("frame "+index+"/" + count, "processing...");
                 if(lastSuccessIndex==index){
                     Log.i("frame "+index+"/" + count, "same frame index!");
