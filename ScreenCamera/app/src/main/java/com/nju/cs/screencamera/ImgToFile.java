@@ -49,7 +49,7 @@ public class ImgToFile extends FileToImg{
             }
         });
     }
-    public void imgsToFile(LinkedBlockingQueue<byte[]> imgs,File file){
+    public void cameraToFile(LinkedBlockingQueue<byte[]> imgs, File file){
         int count=0;
         int lastSuccessIndex=0;
         int frameAmount=0;
@@ -114,7 +114,74 @@ public class ImgToFile extends FileToImg{
             matrix =null;
         }
         updateInfo("识别完成!正在写入文件");
-        Log.d("imgsToFile", "total length:" + buffer.size());
+        Log.d("cameraToFile", "total length:" + buffer.size());
+        bufferToFile(buffer, file);
+        updateInfo("写入文件成功!");
+    }
+    public void videoToFile(LinkedBlockingQueue<byte[]> imgs,File file){
+        int count=0;
+        int lastSuccessIndex=0;
+        int frameAmount=0;
+        List<byte[]> buffer=new LinkedList<>();
+        byte[] img={};
+        RGBMatrix rgbMatrix;
+        byte[] stream;
+        int index=0;
+        while (true){
+            count++;
+            updateInfo("正在识别...");
+            try {
+                img = imgs.take();
+            }catch (InterruptedException e){
+                Log.d(TAG, e.getMessage());
+            }
+            updateDebug(index, lastSuccessIndex, frameAmount, count);
+            try {
+                rgbMatrix =new RGBMatrix(img,imgWidth,imgHeight);
+                rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+                rgbMatrix.frameIndex = getIndex(rgbMatrix);
+            }catch (NotFoundException e){
+                Log.d(TAG, e.getMessage());
+                continue;
+            }catch (CRCCheckException e){
+                Log.d(TAG, "CRC check failed");
+                continue;
+            }
+            index=rgbMatrix.frameIndex;
+            Log.i("frame "+index+"/" + count, "processing...");
+            if(lastSuccessIndex==index){
+                Log.i("frame "+index+"/" + count, "same frame index!");
+                continue;
+            }
+            else if(index-lastSuccessIndex!=1){
+                Log.i("frame " + index + "/" + count, "bad frame index!");
+                continue;
+            }
+            try {
+                stream = imgToArray(rgbMatrix);
+            }catch (ReedSolomonException e){
+                Log.d(TAG, e.getMessage());
+                continue;
+            }
+            buffer.add(stream);
+            lastSuccessIndex = index;
+            Log.i("frame " + index + "/" + count, "done!");
+            updateDebug(index, lastSuccessIndex, frameAmount, count);
+            if(lastSuccessIndex==frameAmount){
+                break;
+            }
+            if(frameAmount==0){
+                try {
+                    frameAmount = getFrameAmount(rgbMatrix);
+                }catch (CRCCheckException e){
+                    Log.d(TAG, "CRC check failed");
+                    continue;
+                }
+            }
+            rgbMatrix =null;
+        }
+        updateInfo("识别完成!正在写入文件");
+        Log.d("videoToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
         updateInfo("写入文件成功!");
     }

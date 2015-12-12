@@ -43,7 +43,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
-import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 //20131122: minor tweaks to saveFrame() I/O
 //20131205: add alpha to EGLConfig (huge glReadPixels speedup); pre-allocate pixel buffers;
@@ -70,7 +70,7 @@ public class VideoToFrames extends AndroidTestCase {
     private static final int MAX_FRAMES = 10;       // stop extracting after this many
 
     /** test entry point */
-    public void testExtractMpegFrames(BlockingDeque<Bitmap> frames,String fileName) throws Throwable {
+    public void testExtractMpegFrames(LinkedBlockingQueue<byte[]> frames,String fileName) throws Throwable {
         INPUT_FILE=fileName;
         ExtractMpegFramesWrapper extractMpegFramesWrapper=new ExtractMpegFramesWrapper(this,frames);
         extractMpegFramesWrapper.runTest(this);
@@ -87,9 +87,9 @@ public class VideoToFrames extends AndroidTestCase {
     private class ExtractMpegFramesWrapper implements Runnable {
         private Throwable mThrowable;
         private VideoToFrames mTest;
-        private BlockingDeque<Bitmap> frames;
+        private LinkedBlockingQueue<byte[]> frames;
 
-        private ExtractMpegFramesWrapper(VideoToFrames test,BlockingDeque<Bitmap> frames) {
+        private ExtractMpegFramesWrapper(VideoToFrames test,LinkedBlockingQueue<byte[]> frames) {
             mTest = test;
             this.frames=frames;
         }
@@ -123,7 +123,7 @@ public class VideoToFrames extends AndroidTestCase {
      * it by adjusting the GL viewport to get letterboxing or pillarboxing, but generally if
      * you're extracting frames you don't want black bars.
      */
-    private void extractMpegFrames(BlockingDeque<Bitmap> frames) throws IOException {
+    private void extractMpegFrames(LinkedBlockingQueue<byte[]> frames) throws IOException {
         MediaCodec decoder = null;
         CodecOutputSurface outputSurface = null;
         MediaExtractor extractor = null;
@@ -210,7 +210,7 @@ public class VideoToFrames extends AndroidTestCase {
      * Work loop.
      */
     static void doExtract(MediaExtractor extractor, int trackIndex, MediaCodec decoder,
-                          CodecOutputSurface outputSurface,BlockingDeque<Bitmap> frames) throws IOException {
+                          CodecOutputSurface outputSurface,LinkedBlockingQueue<byte[]> frames) throws IOException {
         final int TIMEOUT_USEC = 10000;
         ByteBuffer[] decoderInputBuffers = decoder.getInputBuffers();
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
@@ -305,7 +305,8 @@ public class VideoToFrames extends AndroidTestCase {
 //                        }
                         long startWhen = System.nanoTime();
                         try {
-                            frames.put(outputSurface.getFrame());
+                            //frames.put(outputSurface.getFrame());
+                            frames.put(outputSurface.getPixels());
                             /*
                             File outputFile = new File(FILES_DIR,String.format("test/frame-%02d.png", decodeCount));
                             decodeCount++;
@@ -589,7 +590,6 @@ public class VideoToFrames extends AndroidTestCase {
             mPixelBuf.rewind();
             GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,
                     mPixelBuf);
-
             BufferedOutputStream bos = null;
             try {
                 bos = new BufferedOutputStream(new FileOutputStream(filename));
@@ -604,6 +604,12 @@ public class VideoToFrames extends AndroidTestCase {
             if (VERBOSE) {
                 Log.d(TAG, "Saved " + mWidth + "x" + mHeight + " frame as '" + filename + "'");
             }
+        }
+
+        public byte[] getPixels(){
+            mPixelBuf.rewind();
+            GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,mPixelBuf);
+            return mPixelBuf.array();
         }
 
         public Bitmap getFrame(){

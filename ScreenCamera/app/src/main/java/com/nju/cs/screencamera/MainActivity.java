@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -48,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
                 ImgToFile imgToFile=new ImgToFile(debugView,infoView,nHandler,CameraSettings.previewWidth,CameraSettings.previeHeight,mPreview);
-                imgToFile.imgsToFile(rev, out);
+                imgToFile.cameraToFile(rev, out);
             }
         };
         worker.start();
@@ -75,6 +74,30 @@ public class MainActivity extends AppCompatActivity {
                 return true;
         }
         return false;
+    }
+    public void start(View view){
+        final TextView debugView=(TextView)findViewById(R.id.debug_view);
+        final TextView infoView=(TextView)findViewById(R.id.info_view);
+        EditText editTextVideoFilePath=(EditText)findViewById(R.id.videoFilePath);
+        String videoFilePath=editTextVideoFilePath.getText().toString();
+        EditText editTextFileName=(EditText)findViewById(R.id.fileName);
+        final String newFileName=editTextFileName.getText().toString();
+        final Handler nHandler = new Handler();
+        Thread worker=new Thread(){
+            @Override
+            public void run() {
+                File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
+                ImgToFile imgToFile=new ImgToFile(debugView,infoView,nHandler,1280,720,null);
+                imgToFile.videoToFile(rev, out);
+            }
+        };
+        worker.start();
+        VideoToFrames videoToFrames=new VideoToFrames();
+        try {
+            videoToFrames.testExtractMpegFrames(rev,videoFilePath);
+        }catch (Throwable e){
+            e.printStackTrace();
+        }
     }
     public void openFile(View view){
         EditText editTextFileName=(EditText)findViewById(R.id.fileName);
@@ -135,29 +158,5 @@ public class MainActivity extends AppCompatActivity {
             new AlertDialog.Builder(this).setTitle("错误").setItems(new String[] {"对不起，这不是文件！"},null).setNegativeButton("确定",null).show();
         }
     }
-    public void start(View view){
-        //final TextView editText=(TextView)findViewById(R.id.text_view);
-        //editText.setText("正在识别...");
-        EditText editTextVideoFilePath=(EditText)findViewById(R.id.videoFilePath);
-        String videoFilePath=editTextVideoFilePath.getText().toString();
-        EditText editTextFileName=(EditText)findViewById(R.id.fileName);
-        final String newFileName=editTextFileName.getText().toString();
-        final Handler nHandler = new Handler();
-        Thread worker=new Thread(){
-            @Override
-            public void run() {
-                File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
-                //ImgToFile imgToFile=new ImgToFile(editText,nHandler);
-                //imgToFile.imgsToFile(rev, out);
-            }
-        };
-        worker.start();
-        System.out.println(videoFilePath);
-        VideoToFrames videoToFrames=new VideoToFrames();
-        try {
-            //videoToFrames.testExtractMpegFrames(rev,videoFilePath);
-        }catch (Throwable e){
-            e.printStackTrace();
-        }
-    }
+
 }
