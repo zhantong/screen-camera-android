@@ -1,11 +1,14 @@
 package com.nju.cs.screencamera;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -184,6 +187,45 @@ public class ImgToFile extends FileToImg{
         Log.d("videoToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
         updateInfo("写入文件成功!");
+    }
+    public void singleImg(String filePath){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        Bitmap bitmap= BitmapFactory.decodeFile(filePath,options);
+        ByteBuffer byteBuffer=ByteBuffer.allocateDirect(bitmap.getWidth()*bitmap.getHeight()*4);
+        bitmap.copyPixelsToBuffer(byteBuffer);
+        bitmap.recycle();
+        updateInfo("正在识别...");
+        RGBMatrix rgbMatrix;
+        try {
+            rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
+            rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+            rgbMatrix.frameIndex = getIndex(rgbMatrix);
+        }catch (NotFoundException e){
+            Log.d(TAG, e.getMessage());
+            return;
+        }catch (CRCCheckException e){
+            Log.d(TAG, "CRC check failed");
+            return;
+        }
+        Log.d(TAG,"frame index:"+rgbMatrix.frameIndex);
+        int frameAmount;
+        try {
+            frameAmount = getFrameAmount(rgbMatrix);
+        }catch (CRCCheckException e){
+            Log.d(TAG, "CRC check failed");
+            return;
+        }
+        Log.d(TAG,"frame amount:"+frameAmount);
+        byte[] stream;
+        try {
+            stream = imgToArray(rgbMatrix);
+        }catch (ReedSolomonException e){
+            Log.d(TAG, e.getMessage());
+            return;
+        }
+        Log.i(TAG,"done!");
+        updateInfo("识别完成!");
     }
     public Matrix imgToMatrix(byte[] img) throws NotFoundException,CRCCheckException{
         Matrix matrix =new Matrix(img,imgWidth,imgHeight);

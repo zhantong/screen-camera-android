@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
-    public void start(View view){
+    public void processVideo(View view){
         final TextView debugView=(TextView)findViewById(R.id.debug_view);
         final TextView infoView=(TextView)findViewById(R.id.info_view);
         EditText editTextVideoFilePath=(EditText)findViewById(R.id.videoFilePath);
@@ -98,6 +98,21 @@ public class MainActivity extends AppCompatActivity {
         }catch (Throwable e){
             e.printStackTrace();
         }
+    }
+    public void processImg(View view){
+        final TextView debugView=(TextView)findViewById(R.id.debug_view);
+        final TextView infoView=(TextView)findViewById(R.id.info_view);
+        EditText editTextVideoFilePath=(EditText)findViewById(R.id.videoFilePath);
+        final String videoFilePath=editTextVideoFilePath.getText().toString();
+        final Handler nHandler = new Handler();
+        Thread worker=new Thread(){
+            @Override
+            public void run() {
+                ImgToFile imgToFile=new ImgToFile(debugView,infoView,nHandler,0,0,null);
+                imgToFile.singleImg(videoFilePath);
+            }
+        };
+        worker.start();
     }
     public void openFile(View view){
         EditText editTextFileName=(EditText)findViewById(R.id.fileName);

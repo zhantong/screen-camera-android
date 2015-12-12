@@ -128,7 +128,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="选择视频文件"
+            android:text="选择视频/图片文件"
             android:onClick="selectVideoFile"/>
     </LinearLayout>
     <LinearLayout
@@ -137,18 +137,23 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="开始识别"
-            android:onClick="start"/>
+            android:text="识别视频"
+            android:onClick="processVideo"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="打开摄像头"
+            android:text="识别实时图像"
             android:onClick="openCamera"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="停止"
             android:onClick="stop"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="识别图片"
+            android:onClick="processImg"/>
     </LinearLayout>
 </LinearLayout>
 
