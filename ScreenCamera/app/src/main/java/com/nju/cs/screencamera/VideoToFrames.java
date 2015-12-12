@@ -50,6 +50,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 //          log time to run saveFrame()
 //20140123: correct error checks on glGet*Location() and program creation (they don't set error)
 //20140212: eliminate byte swap
+/**
+ * 读取视频文件,返回视频每一帧信息
+ * 来自于网上示例代码,用GPU硬件解码速度大大提高
+ */
 
 /**
  * Extract frames from an MP4 using MediaExtractor, MediaCodec, and GLES.  Put a .mp4 file
@@ -69,10 +73,12 @@ public class VideoToFrames extends AndroidTestCase {
     private static String INPUT_FILE = "test5.mp4";
     private static final int MAX_FRAMES = 10;       // stop extracting after this many
 
-    /** test entry point */
-    public void testExtractMpegFrames(LinkedBlockingQueue<byte[]> frames,String fileName) throws Throwable {
-        INPUT_FILE=fileName;
-        ExtractMpegFramesWrapper extractMpegFramesWrapper=new ExtractMpegFramesWrapper(this,frames);
+    /**
+     * test entry point
+     */
+    public void testExtractMpegFrames(LinkedBlockingQueue<byte[]> frames, String fileName) throws Throwable {
+        INPUT_FILE = fileName;
+        ExtractMpegFramesWrapper extractMpegFramesWrapper = new ExtractMpegFramesWrapper(this, frames);
         extractMpegFramesWrapper.runTest(this);
         //ExtractMpegFramesWrapper.runTest(this);
     }
@@ -81,7 +87,7 @@ public class VideoToFrames extends AndroidTestCase {
      * Wraps extractMpegFrames().  This is necessary because SurfaceTexture will try to use
      * the looper in the current thread if one exists, and the CTS tests create one on the
      * test thread.
-     *
+     * <p>
      * The wrapper propagates exceptions thrown by the worker thread back to the caller.
      */
     private class ExtractMpegFramesWrapper implements Runnable {
@@ -89,9 +95,9 @@ public class VideoToFrames extends AndroidTestCase {
         private VideoToFrames mTest;
         private LinkedBlockingQueue<byte[]> frames;
 
-        private ExtractMpegFramesWrapper(VideoToFrames test,LinkedBlockingQueue<byte[]> frames) {
+        private ExtractMpegFramesWrapper(VideoToFrames test, LinkedBlockingQueue<byte[]> frames) {
             mTest = test;
-            this.frames=frames;
+            this.frames = frames;
         }
 
         @Override
@@ -103,9 +109,11 @@ public class VideoToFrames extends AndroidTestCase {
             }
         }
 
-        /** Entry point. */
+        /**
+         * Entry point.
+         */
         public void runTest(VideoToFrames obj) throws Throwable {
-            ExtractMpegFramesWrapper wrapper = new ExtractMpegFramesWrapper(obj,frames);
+            ExtractMpegFramesWrapper wrapper = new ExtractMpegFramesWrapper(obj, frames);
             Thread th = new Thread(wrapper, "codec test");
             th.start();
             //th.join();
@@ -147,8 +155,8 @@ public class VideoToFrames extends AndroidTestCase {
             extractor.selectTrack(trackIndex);
 
             MediaFormat format = extractor.getTrackFormat(trackIndex);
-            saveWidth=format.getInteger(MediaFormat.KEY_WIDTH);
-            saveHeight=format.getInteger(MediaFormat.KEY_HEIGHT);
+            saveWidth = format.getInteger(MediaFormat.KEY_WIDTH);
+            saveHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
             if (VERBOSE) {
                 Log.d(TAG, "Video size is " + format.getInteger(MediaFormat.KEY_WIDTH) + "x" +
                         format.getInteger(MediaFormat.KEY_HEIGHT));
@@ -165,7 +173,7 @@ public class VideoToFrames extends AndroidTestCase {
             decoder.configure(format, outputSurface.getSurface(), null, 0);
             decoder.start();
 
-            doExtract(extractor, trackIndex, decoder, outputSurface,frames);
+            doExtract(extractor, trackIndex, decoder, outputSurface, frames);
         } finally {
             // release everything we grabbed
             if (outputSurface != null) {
@@ -210,14 +218,14 @@ public class VideoToFrames extends AndroidTestCase {
      * Work loop.
      */
     static void doExtract(MediaExtractor extractor, int trackIndex, MediaCodec decoder,
-                          CodecOutputSurface outputSurface,LinkedBlockingQueue<byte[]> frames) throws IOException {
+                          CodecOutputSurface outputSurface, LinkedBlockingQueue<byte[]> frames) throws IOException {
         final int TIMEOUT_USEC = 10000;
         ByteBuffer[] decoderInputBuffers = decoder.getInputBuffers();
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
         int inputChunk = 0;
         int decodeCount = 0;
         long frameSaveTime = 0;
-        int count=0;
+        int count = 0;
 
         boolean outputDone = false;
         boolean inputDone = false;
@@ -312,7 +320,7 @@ public class VideoToFrames extends AndroidTestCase {
                             decodeCount++;
                             outputSurface.saveFrame(outputFile.toString());
                             */
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                         frameSaveTime += System.nanoTime() - startWhen;
@@ -606,13 +614,13 @@ public class VideoToFrames extends AndroidTestCase {
             }
         }
 
-        public byte[] getPixels(){
+        public byte[] getPixels() {
             mPixelBuf.rewind();
-            GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,mPixelBuf);
+            GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mPixelBuf);
             return mPixelBuf.array();
         }
 
-        public Bitmap getFrame(){
+        public Bitmap getFrame() {
             mPixelBuf.rewind();
             GLES20.glReadPixels(0, 0, mWidth, mHeight, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE,
                     mPixelBuf);
@@ -620,7 +628,7 @@ public class VideoToFrames extends AndroidTestCase {
             mPixelBuf.rewind();
             bmp.copyPixelsFromBuffer(mPixelBuf);
             if (VERBOSE) {
-                Log.d(TAG, "Get " + mWidth + "x" + mHeight +" Bitmap frame successfully");
+                Log.d(TAG, "Get " + mWidth + "x" + mHeight + " Bitmap frame successfully");
             }
             return bmp;
         }
@@ -649,8 +657,8 @@ public class VideoToFrames extends AndroidTestCase {
                 // X, Y, Z, U, V
                 -1.0f, -1.0f, 0, 0.f, 0.f,
                 1.0f, -1.0f, 0, 1.f, 0.f,
-                -1.0f,  1.0f, 0, 0.f, 1.f,
-                1.0f,  1.0f, 0, 1.f, 1.f,
+                -1.0f, 1.0f, 0, 0.f, 1.f,
+                1.0f, 1.0f, 0, 1.f, 1.f,
         };
 
         private FloatBuffer mTriangleVertices;
