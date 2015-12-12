@@ -22,6 +22,7 @@ public class CameraSettings {
         parameters.setPreviewSize(previewWidth, previeHeight);
         //parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         parameters.setRecordingHint(true);
+        parameters.setExposureCompensation(getMinExposureCompensation());
         mCamera.release();
         mCamera=null;
     }
@@ -51,5 +52,10 @@ public class CameraSettings {
                 if(VERBOSE){Log.i(TAG,j+" ");}
             }
         }
+    }
+    public static int getMinExposureCompensation(){
+        int min=parameters.getMinExposureCompensation();
+        if(VERBOSE){Log.i(TAG,"MinExposureCompensation:"+min);}
+        return min;
     }
 }
