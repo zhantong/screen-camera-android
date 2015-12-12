@@ -348,19 +348,23 @@ public class Matrix {
         int[] vertexs = new int[8];
         left = findVertex(up, down, left, vertexs, 0, 3, false, false);
         if (VERBOSE) {
-            Log.d(TAG, "found 1 vertex");
+            Log.d(TAG, "found 1 vertex,left border now is:" + left);
+            Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
         }
         up = findVertex(left, right, up, vertexs, 0, 1, true, false);
+
         if (VERBOSE) {
-            Log.d(TAG, "found 2 vertex");
+            Log.d(TAG, "found 2 vertex,up border now is:" + up);
+            Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
         }
         right = findVertex(up, down, right, vertexs, 1, 2, false, true);
         if (VERBOSE) {
-            Log.d(TAG, "found 3 vertex");
+            Log.d(TAG, "found 3 vertex,right border now is:" + right);
+            Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
         }
         down = findVertex(left, right, down, vertexs, 3, 2, true, true);
         if (VERBOSE) {
-            Log.d(TAG, "found 4 vertex");
+            Log.d(TAG, "found 4 vertex,down border now is:" + down);
         }
         if (VERBOSE) {
             Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
@@ -388,18 +392,23 @@ public class Matrix {
      */
     public int findVertex(int b1, int b2, int fixed, int[] vertexs, int p1, int p2, boolean horizontal, boolean sub) throws NotFoundException {
         int mid = (b2 - b1) / 2;
+        boolean checkP1 = vertexs[p1 * 2] == 0;
+        boolean checkP2 = vertexs[p2 * 2] == 0;
+
         if (horizontal) {
             while (true) {
-                for (int i = 1; i <= mid; i++) {
-                    if (pixelEquals(b1 + i, fixed, 0)) {
-                        if (!isSinglePoint(b1 + i, fixed)) {
+                if (checkP1) {
+                    for (int i = 1; i <= mid; i++) {
+                        if (pixelEquals(b1 + i, fixed, 0) && !isSinglePoint(b1 + i, fixed)) {
                             vertexs[p1 * 2] = b1 + i;
                             vertexs[p1 * 2 + 1] = fixed;
                             return fixed;
                         }
                     }
-                    if (pixelEquals(b2 - i, fixed, 0)) {
-                        if (!isSinglePoint(b2 - i, fixed)) {
+                }
+                if (checkP2) {
+                    for (int i = 1; i <= mid; i++) {
+                        if (pixelEquals(b2 - i, fixed, 0) && !isSinglePoint(b2 - i, fixed)) {
                             vertexs[p2 * 2] = b2 - i;
                             vertexs[p2 * 2 + 1] = fixed;
                             return fixed;
@@ -420,16 +429,18 @@ public class Matrix {
             }
         } else {
             while (true) {
-                for (int i = 1; i <= mid; i++) {
-                    if (pixelEquals(fixed, b1 + i, 0)) {
-                        if (!isSinglePoint(fixed, b1 + i)) {
+                if (checkP1) {
+                    for (int i = 1; i <= mid; i++) {
+                        if (pixelEquals(fixed, b1 + i, 0) && !isSinglePoint(fixed, b1 + i)) {
                             vertexs[p1 * 2] = fixed;
                             vertexs[p1 * 2 + 1] = b1 + i;
                             return fixed;
                         }
                     }
-                    if (pixelEquals(fixed, b2 - i, 0)) {
-                        if (!isSinglePoint(fixed, b2 - i)) {
+                }
+                if (checkP2) {
+                    for (int i = 1; i <= mid; i++) {
+                        if (pixelEquals(fixed, b2 - i, 0) && !isSinglePoint(fixed, b2 - i)) {
                             vertexs[p2 * 2] = fixed;
                             vertexs[p2 * 2 + 1] = b2 - i;
                             return fixed;
