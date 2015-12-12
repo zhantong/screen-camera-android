@@ -5,15 +5,16 @@ import android.util.Log;
 /**
  * Created by zhantong on 15/11/21.
  */
-public final class Matrix {
+public class Matrix {
     private static final boolean VERBOSE = false;
     private static final String TAG = "Matrix";
-    private final int width;
-    private final int height;
-    private final byte[] pixels;
+    protected final int width;
+    protected final int height;
+    protected final byte[] pixels;
     private int threshold =0;
     private int[] borders;
     private PerspectiveTransform transform;
+    public int frameIndex;
 
     public Matrix(int dimension){
         this(dimension,dimension);
@@ -256,13 +257,13 @@ public final class Matrix {
                 }
                 if(sub){
                     fixed--;
-                    if(fixed<=fixedOrig){
+                    if(fixed<=0){
                         throw new NotFoundException("didn't find any possible bar code");
                     }
                 }
                 else{
                     fixed++;
-                    if(fixed>=fixedOrig){
+                    if(fixed>=height){
                         throw new NotFoundException("didn't find any possible bar code");
                     }
                 }
@@ -288,9 +289,15 @@ public final class Matrix {
                 }
                 if(sub){
                     fixed--;
+                    if(fixed<=0){
+                        throw new NotFoundException("didn't find any possible bar code");
+                    }
                 }
                 else{
                     fixed++;
+                    if(fixed>=width){
+                        throw new NotFoundException("didn't find any possible bar code");
+                    }
                 }
             }
         }
