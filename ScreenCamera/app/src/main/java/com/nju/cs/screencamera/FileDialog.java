@@ -6,7 +6,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Environment;
 import android.util.Log;
-import android.view.View.OnClickListener;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -14,19 +13,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by zhantong on 15/11/29.
+ * 简单的文件浏览器
+ * 从网上找到的代码,还没来得及进行定制修改
  */
 public class FileDialog {
     private static final String PARENT_DIR = "..";
     private final String TAG = getClass().getName();
     private String[] fileList;
     private File currentPath;
+
     public interface FileSelectedListener {
         void fileSelected(File file);
     }
+
     public interface DirectorySelectedListener {
         void directorySelected(File directory);
     }
+
     private ListenerList<FileSelectedListener> fileListenerList = new ListenerList<>();
     private ListenerList<DirectorySelectedListener> dirListenerList = new ListenerList<>();
     private final Activity activity;
