@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 File out=new File(Environment.getExternalStorageDirectory()+"/Download/"+newFileName);
-                ImgToFile imgToFile=new ImgToFile(debugView,infoView,nHandler,CameraSettings.previewWidth,CameraSettings.previeHeight,mPreview);
+                ImgToFile imgToFile=new ImgToFile(debugView,infoView,nHandler,CameraSettings.previewWidth,CameraSettings.previewHeight,mPreview);
                 imgToFile.cameraToFile(rev, out);
             }
         };
