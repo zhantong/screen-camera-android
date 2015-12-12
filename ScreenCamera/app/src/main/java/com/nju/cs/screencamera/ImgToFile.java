@@ -20,12 +20,16 @@ public class ImgToFile extends FileToImg{
     private TextView infoView;
     private Handler handler;
     private CameraPreview mPreview;
-    int imgWidth=(frameBlackLength+frameVaryLength)*2+contentLength;
-    public ImgToFile(CameraPreview mPreview,TextView debugView,TextView infoView,Handler handler){
+    private final int imgWidth;
+    private final int imgHeight;
+    int barCodeWidth =(frameBlackLength+frameVaryLength)*2+contentLength;
+    public ImgToFile(TextView debugView,TextView infoView,Handler handler,int imgWidth,int imgHeight,CameraPreview mPreview){
         this.debugView=debugView;
         this.infoView=infoView;
         this.handler=handler;
         this.mPreview=mPreview;
+        this.imgWidth=imgWidth;
+        this.imgHeight=imgHeight;
     }
     private void updateDebug(int index,int lastSuccessIndex,int frameAmount,int count){
         final String text="当前:"+index+"已识别:"+lastSuccessIndex+"帧总数:"+frameAmount+"已处理:"+count;
@@ -45,101 +49,95 @@ public class ImgToFile extends FileToImg{
             }
         });
     }
-    public void imgsToFile(LinkedBlockingQueue<byte[]> bitmaps,File file){
-        long TIMEOUT=3000L;
+    public void imgsToFile(LinkedBlockingQueue<byte[]> imgs,File file){
         int count=0;
         int lastSuccessIndex=0;
-        int index=0;
         int frameAmount=0;
         List<byte[]> buffer=new LinkedList<>();
         byte[] img={};
-        Matrix matrix =new Matrix(1);
-        byte[] stream={};
-        /*
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                mPreview.startPreview();
-            }
-        });
-        */
+        Matrix matrix;
+        byte[] stream;
+        int index=0;
         while (true){
             count++;
-
             updateInfo("正在识别...");
             try {
-                img = bitmaps.take();
+                img = imgs.take();
             }catch (InterruptedException e){
                 Log.d(TAG, e.getMessage());
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
-            matrix =new Matrix(img,CameraSettings.previewWidth,CameraSettings.previeHeight);
-            matrix.perspectiveTransform(0, 0, imgWidth, 0, imgWidth, imgWidth, 0, imgWidth);
-            //Log.i("get picture", "caught...");
-            index = getIndex(matrix);
+                matrix =imgToMatrix(img);
             }catch (NotFoundException e){
                 if(lastSuccessIndex==0) {
                     mPreview.focus();
                 }
                 Log.d(TAG, e.getMessage());
+                continue;
             }catch (CRCCheckException e){
                 Log.d(TAG, "CRC check failed");
+                continue;
             }
+            index=matrix.frameIndex;
             Log.i("frame "+index+"/" + count, "processing...");
             if(lastSuccessIndex==index){
                 Log.i("frame "+index+"/" + count, "same frame index!");
                 continue;
             }
-
-
+            else if(index-lastSuccessIndex!=1){
+                Log.i("frame " + index + "/" + count, "bad frame index!");
+                continue;
+            }
             try {
                 stream = imgToArray(matrix);
             }catch (ReedSolomonException e){
                 Log.d(TAG, e.getMessage());
-            }
-            if(index-lastSuccessIndex!=1){
-                //Log.e("frame "+index+"/" + count, "error lost frame!");
-                Log.i("frame " + index + "/" + count, "bad frame index!");
-                //break;
                 continue;
             }
             buffer.add(stream);
-            Log.i("frame " + index + "/" + count, "done!");
-            if(frameAmount==0){
-                try {
-                    frameAmount = getFrameAmount(matrix);
-                }catch (CRCCheckException e){
-                    Log.d(TAG, "CRC check failed");
-                }
-            }
             lastSuccessIndex = index;
+            Log.i("frame " + index + "/" + count, "done!");
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             if(lastSuccessIndex==frameAmount){
                 mPreview.stop();
                 break;
             }
+            if(frameAmount==0){
+                try {
+                    frameAmount = getFrameAmount(matrix);
+                }catch (CRCCheckException e){
+                    Log.d(TAG, "CRC check failed");
+                    continue;
+                }
+            }
             matrix =null;
-
         }
         updateInfo("识别完成!正在写入文件");
         Log.d("imgsToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
         updateInfo("写入文件成功!");
     }
-
+    public Matrix imgToMatrix(byte[] img) throws NotFoundException,CRCCheckException{
+        Matrix matrix =new Matrix(img,imgWidth,imgHeight);
+        matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+        matrix.frameIndex = getIndex(matrix);
+        return matrix;
+    }
     public int getIndex(Matrix matrix) throws CRCCheckException{
-
-        String row= matrix.sampleRow(imgWidth, imgWidth, frameBlackLength);
-        int index=Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16),2);
+        String row= matrix.sampleRow(barCodeWidth, barCodeWidth, frameBlackLength);
+        if(VERBOSE){Log.d(TAG,"index row:"+row);}
+        int index=Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16), 2);
         int crc=Integer.parseInt(row.substring(frameBlackLength + 16, frameBlackLength + 24), 2);
-        if(crc!=CRC8.calcCrc8(index)){
+        int truth=CRC8.calcCrc8(index);
+        if(VERBOSE){Log.d(TAG,"CRC check: index:"+index+" CRC:"+crc+" truth:"+truth);}
+        if(crc!=truth){
             throw  CRCCheckException.getNotFoundInstance();
         }
         return index;
     }
     public int getFrameAmount(Matrix matrix) throws CRCCheckException{
-        String row= matrix.sampleRow(imgWidth, imgWidth, frameBlackLength);
+        String row= matrix.sampleRow(barCodeWidth, barCodeWidth, frameBlackLength);
         int frameAmount=Integer.parseInt(row.substring(frameBlackLength+24, frameBlackLength + 40),2);
         int crc=Integer.parseInt(row.substring(frameBlackLength + 40, frameBlackLength + 48), 2);
         if(crc!=CRC8.calcCrc8(frameAmount)){
@@ -148,7 +146,7 @@ public class ImgToFile extends FileToImg{
         return frameAmount;
     }
     public byte[] imgToArray(Matrix matrix) throws ReedSolomonException{
-        BinaryMatrix binaryMatrix= matrix.sampleGrid(imgWidth,imgWidth);
+        BinaryMatrix binaryMatrix= matrix.sampleGrid(barCodeWidth, barCodeWidth);
         return binaryMatrixToArray(binaryMatrix);
     }
     public byte[] binaryMatrixToArray(BinaryMatrix binaryMatrix) throws ReedSolomonException{
