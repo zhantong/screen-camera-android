@@ -2,6 +2,8 @@ package com.nju.cs.screencamera;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaExtractor;
+import android.media.MediaFormat;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
@@ -25,8 +27,8 @@ public class ImgToFile extends FileToImg {
     private TextView infoView;//输出全局信息的TextView
     private Handler handler;//与UI进程通信
     private CameraPreview mPreview;//相机
-    private final int imgWidth;//图像宽度
-    private final int imgHeight;//图像高度
+    private int imgWidth;//图像宽度
+    private int imgHeight;//图像高度
     int barCodeWidth = (frameBlackLength + frameVaryLength) * 2 + contentLength;//二维码边长
 
     /**
@@ -158,13 +160,41 @@ public class ImgToFile extends FileToImg {
     }
 
     /**
+     * 帧转换为Matrix,Matrix实例化时进行一些图像操作
+     *
+     * @param img 帧
+     * @return 保存有此帧信息的Matrix
+     * @throws NotFoundException 对图像处理时,不能找到二维码则抛出未找到异常
+     * @throws CRCCheckException 解析帧编号时,如果CRC校验失败,则抛出异常
+     */
+    public Matrix imgToMatrix(byte[] img) throws NotFoundException, CRCCheckException {
+        Matrix matrix = new Matrix(img, imgWidth, imgHeight);
+        matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+        matrix.frameIndex = getIndex(matrix);
+        return matrix;
+    }
+
+    /**
      * 对视频解码的帧队列处理
      * 所有帧都识别成功后写入到文件
      *
      * @param imgs 帧队列
      * @param file 需要写入的文件
      */
-    public void videoToFile(LinkedBlockingQueue<byte[]> imgs, File file) {
+    public void videoToFile(String videoFilePath, LinkedBlockingQueue<byte[]> imgs, File file) {
+        File inputFile = new File(videoFilePath);
+        MediaExtractor extractor = new MediaExtractor();
+        try {
+            extractor.setDataSource(inputFile.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        int trackIndex = selectTrack(extractor);
+        extractor.selectTrack(trackIndex);
+        MediaFormat format = extractor.getTrackFormat(trackIndex);
+        imgWidth = format.getInteger(MediaFormat.KEY_WIDTH);
+        imgHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
+
         int count = 0;
         int lastSuccessIndex = 0;
         int frameAmount = 0;
@@ -229,6 +259,24 @@ public class ImgToFile extends FileToImg {
         Log.d("videoToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
         updateInfo("写入文件成功!");
+
+    }
+
+    private int selectTrack(MediaExtractor extractor) {
+        // Select the first video track we find, ignore the rest.
+        int numTracks = extractor.getTrackCount();
+        for (int i = 0; i < numTracks; i++) {
+            MediaFormat format = extractor.getTrackFormat(i);
+            String mime = format.getString(MediaFormat.KEY_MIME);
+            if (mime.startsWith("video/")) {
+                if (VERBOSE) {
+                    Log.d(TAG, "Extractor selected track " + i + " (" + mime + "): " + format);
+                }
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /**
@@ -277,20 +325,6 @@ public class ImgToFile extends FileToImg {
         updateInfo("识别完成!");
     }
 
-    /**
-     * 帧转换为Matrix,Matrix实例化时进行一些图像操作
-     *
-     * @param img 帧
-     * @return 保存有此帧信息的Matrix
-     * @throws NotFoundException 对图像处理时,不能找到二维码则抛出未找到异常
-     * @throws CRCCheckException 解析帧编号时,如果CRC校验失败,则抛出异常
-     */
-    public Matrix imgToMatrix(byte[] img) throws NotFoundException, CRCCheckException {
-        Matrix matrix = new Matrix(img, imgWidth, imgHeight);
-        matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-        matrix.frameIndex = getIndex(matrix);
-        return matrix;
-    }
 
     /**
      * 获取此帧的二维码帧编号

@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.videoFilePath);
-        String videoFilePath = editTextVideoFilePath.getText().toString();
+        final String videoFilePath = editTextVideoFilePath.getText().toString();
         EditText editTextFileName = (EditText) findViewById(R.id.fileName);
         final String newFileName = editTextFileName.getText().toString();
         final Handler nHandler = new Handler();
@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 File out = new File(Environment.getExternalStorageDirectory() + "/Download/" + newFileName);
                 ImgToFile imgToFile = new ImgToFile(debugView, infoView, nHandler, 1280, 720, null);
-                imgToFile.videoToFile(rev, out);
+                imgToFile.videoToFile(videoFilePath,rev, out);
             }
         };
         worker.start();
