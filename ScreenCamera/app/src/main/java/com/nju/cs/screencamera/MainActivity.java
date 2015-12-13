@@ -64,8 +64,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 File out = new File(Environment.getExternalStorageDirectory() + "/Download/" + newFileName);
-                ImgToFile imgToFile = new ImgToFile(debugView, infoView, nHandler, CameraSettings.previewWidth, CameraSettings.previewHeight, mPreview);
-                imgToFile.cameraToFile(rev, out);
+                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler, CameraSettings.previewWidth, CameraSettings.previewHeight, mPreview);
+                cameraToFile.cameraToFile(rev, out);
             }
         };
         worker.start();
@@ -131,8 +131,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 File out = new File(Environment.getExternalStorageDirectory() + "/Download/" + newFileName);
-                ImgToFile imgToFile = new ImgToFile(debugView, infoView, nHandler, 1280, 720, null);
-                imgToFile.videoToFile(videoFilePath,rev, out);
+                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler, 1280, 720);
+                videoToFile.videoToFile(videoFilePath,rev, out);
             }
         };
         worker.start();
@@ -158,8 +158,8 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                ImgToFile imgToFile = new ImgToFile(debugView, infoView, nHandler, 0, 0, null);
-                imgToFile.singleImg(videoFilePath);
+                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler, 0, 0);
+                singleImgToFile.singleImg(videoFilePath);
             }
         };
         worker.start();
