@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 File out = new File(Environment.getExternalStorageDirectory() + "/Download/" + newFileName);
-                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler, 1280, 720);
+                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler);
                 videoToFile.videoToFile(videoFilePath,rev, out);
             }
         };
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler, 0, 0);
+                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler);
                 singleImgToFile.singleImg(videoFilePath);
             }
         };

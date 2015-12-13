@@ -12,23 +12,23 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Created by zhantong on 15/12/13.
+ * 识别视频中的二维码,处理后写入文件
  */
 public class VideoToFile extends MediaToFile {
-    private static final String TAG = "ImgToFile";//log tag
+    private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+
     /**
      * 构造函数,获取必须的参数
      *
      * @param debugView 实例
      * @param infoView  实例
      * @param handler   实例
-     * @param imgWidth  图像宽度
-     * @param imgHeight 图像高度
      */
-    public VideoToFile(TextView debugView, TextView infoView, Handler handler, int imgWidth, int imgHeight) {
-        super(debugView,infoView,handler,imgWidth,imgHeight);
+    public VideoToFile(TextView debugView, TextView infoView, Handler handler) {
+        super(debugView, infoView, handler);
     }
+
     /**
      * 对视频解码的帧队列处理
      * 所有帧都识别成功后写入到文件
@@ -47,8 +47,8 @@ public class VideoToFile extends MediaToFile {
         int trackIndex = selectTrack(extractor);
         extractor.selectTrack(trackIndex);
         MediaFormat format = extractor.getTrackFormat(trackIndex);
-        imgWidth = format.getInteger(MediaFormat.KEY_WIDTH);
-        imgHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
+        int imgWidth = format.getInteger(MediaFormat.KEY_WIDTH);
+        int imgHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
 
         int count = 0;
         int lastSuccessIndex = 0;
@@ -116,6 +116,7 @@ public class VideoToFile extends MediaToFile {
         updateInfo("写入文件成功!");
 
     }
+
     private int selectTrack(MediaExtractor extractor) {
         // Select the first video track we find, ignore the rest.
         int numTracks = extractor.getTrackCount();

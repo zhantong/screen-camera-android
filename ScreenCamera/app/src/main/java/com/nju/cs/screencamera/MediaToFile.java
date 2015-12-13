@@ -10,16 +10,15 @@ import java.io.OutputStream;
 import java.util.List;
 
 /**
- * Created by zhantong on 15/12/13.
+ * 从相机,视频,图片识别二维码的基础类
+ * 包含通用的UI通信显示方法,和图像处理方法等
  */
 public class MediaToFile extends FileToImg {
-    private static final String TAG = "ImgToFile";//log tag
+    private static final String TAG = "MediaToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     private TextView debugView;//输出处理信息的TextView
     private TextView infoView;//输出全局信息的TextView
     private Handler handler;//与UI进程通信
-    protected int imgWidth;//图像宽度
-    protected int imgHeight;//图像高度
     int barCodeWidth = (frameBlackLength + frameVaryLength) * 2 + contentLength;//二维码边长
     /**
      * 构造函数,获取必须的参数
@@ -27,15 +26,11 @@ public class MediaToFile extends FileToImg {
      * @param debugView 实例
      * @param infoView  实例
      * @param handler   实例
-     * @param imgWidth  图像宽度
-     * @param imgHeight 图像高度
      */
-    public MediaToFile(TextView debugView, TextView infoView, Handler handler, int imgWidth, int imgHeight) {
+    public MediaToFile(TextView debugView, TextView infoView, Handler handler) {
         this.debugView = debugView;
         this.infoView = infoView;
         this.handler = handler;
-        this.imgWidth = imgWidth;
-        this.imgHeight = imgHeight;
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI

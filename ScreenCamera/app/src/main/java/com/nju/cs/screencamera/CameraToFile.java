@@ -1,7 +1,5 @@
 package com.nju.cs.screencamera;
 
-import android.hardware.Camera;
-import android.media.MediaCodec;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
@@ -12,26 +10,32 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Created by zhantong on 15/12/13.
+ * 识别相机中的二维码,处理后写入文件
  */
-public class CameraToFile extends MediaToFile{
-    private static final String TAG = "ImgToFile";//log tag
+public class CameraToFile extends MediaToFile {
+    private static final String TAG = "CameraToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+    private int imgWidth;//相机分辨率宽度
+    private int imgHeight;//相机分辨率高度
     private CameraPreview mPreview;//相机
+
     /**
      * 构造函数,获取必须的参数
      *
      * @param debugView 实例
      * @param infoView  实例
      * @param handler   实例
-     * @param imgWidth  图像宽度
-     * @param imgHeight 图像高度
+     * @param imgWidth  相机分辨率宽度
+     * @param imgHeight 相机分辨率高度
      * @param mPreview  实例
      */
-    public CameraToFile(TextView debugView, TextView infoView, Handler handler, int imgWidth, int imgHeight, CameraPreview mPreview){
-        super(debugView, infoView, handler,imgWidth,imgHeight);
+    public CameraToFile(TextView debugView, TextView infoView, Handler handler, int imgWidth, int imgHeight, CameraPreview mPreview) {
+        super(debugView, infoView, handler);
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
         this.mPreview = mPreview;
     }
+
     /**
      * 从队列中取出预览帧进行处理,根据处理情况控制相机
      * 所有帧都识别成功后写入到文件

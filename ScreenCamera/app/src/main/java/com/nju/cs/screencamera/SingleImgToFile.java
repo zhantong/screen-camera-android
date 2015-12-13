@@ -9,23 +9,23 @@ import android.widget.TextView;
 import java.nio.ByteBuffer;
 
 /**
- * Created by zhantong on 15/12/13.
+ * 识别图片中的二维码,测试用
  */
 public class SingleImgToFile extends MediaToFile {
-    private static final String TAG = "ImgToFile";//log tag
+    private static final String TAG = "SingleImgToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+
     /**
      * 构造函数,获取必须的参数
      *
      * @param debugView 实例
      * @param infoView  实例
      * @param handler   实例
-     * @param imgWidth  图像宽度
-     * @param imgHeight 图像高度
      */
-    public SingleImgToFile(TextView debugView, TextView infoView, Handler handler, int imgWidth, int imgHeight) {
-        super(debugView,infoView,handler,imgWidth,imgHeight);
+    public SingleImgToFile(TextView debugView, TextView infoView, Handler handler) {
+        super(debugView, infoView, handler);
     }
+
     /**
      * 对单个图片进行解码识别二维码
      * 注意这个方法只是拿来测试识别算法等
