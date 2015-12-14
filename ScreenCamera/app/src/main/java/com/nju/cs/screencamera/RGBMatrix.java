@@ -28,11 +28,9 @@ public class RGBMatrix extends Matrix {
     @Override
     public int getGray(int x, int y) {
         int offset = (y * width + x) * 4;
-        int p = pixels[offset];
         int r = pixels[offset] & 0xFF;
         int g = pixels[offset + 1] & 0xFF;
         int b = pixels[offset + 2] & 0xFF;
-        int gray = ((b * 29 + g * 150 + r * 77 + 128) >> 8);
-        return gray;
+        return ((b * 29 + g * 150 + r * 77 + 128) >> 8);
     }
 }
