@@ -8,7 +8,7 @@ package com.nju.cs.screencamera;
 public class BinaryMatrix {
     private final int width;//二维码宽度
     private final int height;//二维码高度
-    private final int[] pixels;//二进制数据
+    public int[] pixels;//二进制数据
 
     /**
      * 基本构造函数,作为正方形,且无二进制数据,生成默认值
@@ -119,6 +119,15 @@ public class BinaryMatrix {
                 }
                 index++;
             }
+        }
+    }
+    public void print(){
+        for(int h=0;h<height;h++){
+            int hValue=h*width;
+            for(int w=0;w<width;w++){
+                System.out.print(pixels[hValue+w]);
+            }
+            System.out.println();
         }
     }
 }

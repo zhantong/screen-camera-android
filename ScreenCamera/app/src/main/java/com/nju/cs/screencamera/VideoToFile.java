@@ -17,6 +17,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class VideoToFile extends MediaToFile {
     private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+    String lastRow=null;
+    StringBuffer lastBuffer=null;
 
     /**
      * 构造函数,获取必须的参数
@@ -37,6 +39,9 @@ public class VideoToFile extends MediaToFile {
      * @param file 需要写入的文件
      */
     public void videoToFile(String videoFilePath, LinkedBlockingQueue<byte[]> imgs, File file) {
+        int startOffset = frameBlackLength + frameVaryLength;
+        int stopOffset = startOffset + contentLength;
+        int contentByteNum = contentLength * contentLength / 8;
         File inputFile = new File(videoFilePath);
         MediaExtractor extractor = new MediaExtractor();
         try {
@@ -70,16 +75,18 @@ public class VideoToFile extends MediaToFile {
             try {
                 rgbMatrix = new RGBMatrix(img, imgWidth, imgHeight);
                 rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-                rgbMatrix.frameIndex = getIndex(rgbMatrix);
+                //rgbMatrix.frameIndex = getIndex(rgbMatrix);
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 continue;
-            } catch (CRCCheckException e) {
+            } catch (Exception e) {
                 Log.d(TAG, "CRC check failed");
                 continue;
             }
+            /*
             index = rgbMatrix.frameIndex;
             Log.i("frame " + index + "/" + count, "processing...");
+
             if (lastSuccessIndex == index) {
                 Log.i("frame " + index + "/" + count, "same frame index!");
                 continue;
@@ -87,19 +94,75 @@ public class VideoToFile extends MediaToFile {
                 Log.i("frame " + index + "/" + count, "bad frame index!");
                 continue;
             }
+            */
+            //BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
+            /*
+            int[] data=binaryMatrix.pixels;
+            index = 0;
+            int c=0;
+            if(lastBuffer!=null) {
+                for (int j = startOffset; j < stopOffset; j++) {
+                    int jValue = j * binaryMatrix.width();
+                    for (int i = startOffset; i < stopOffset; i++) {
+                        if (data[jValue + i] == -1) {
+                            System.out.println(i+" "+j);
+                            c++;
+                            int t = Integer.parseInt(lastBuffer.charAt(index) + "");
+                            if (t == 0) {
+                                data[jValue + i] = 1;
+                            } else if (t == 1) {
+                                data[jValue + i] = 0;
+                            } else {
+                                System.out.println("WRONG");
+                            }
+                        }
+                        //System.out.println(data[jValue+i]+" "+c);
+                        index++;
+                    }
+                }
+            }
+
+            System.out.println("reverse count:"+c);
+            binaryMatrix.pixels=data;
+            */
+            /*
+            int[] result = new int[contentByteNum];
+            binaryMatrix.toArray(startOffset, startOffset, stopOffset, stopOffset, result);
+            ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
+            try {
+                decoder.decode(result, ecByteNum);
+            } catch (ReedSolomonException e) {
+                System.out.println("error correcting failed");
+                continue;
+            }
+            StringBuffer stringBuffer=new StringBuffer();
+            for(int b:result){
+                String s=Integer.toBinaryString(b);
+                int temp=Integer.parseInt(s);
+                stringBuffer.append(String.format("%1$08d",temp));
+            }
+            lastBuffer=stringBuffer;
+            */
+
             try {
                 stream = imgToArray(rgbMatrix);
             } catch (ReedSolomonException e) {
                 Log.d(TAG, e.getMessage());
                 continue;
             }
+            System.out.println("done "+count);
+            /*
             buffer.add(stream);
+
             lastSuccessIndex = index;
             Log.i("frame " + index + "/" + count, "done!");
             updateDebug(index, lastSuccessIndex, frameAmount, count);
+            */
+            /*
             if (lastSuccessIndex == frameAmount) {
                 break;
             }
+
             if (frameAmount == 0) {
                 try {
                     frameAmount = getFrameAmount(rgbMatrix);
@@ -108,15 +171,51 @@ public class VideoToFile extends MediaToFile {
                     continue;
                 }
             }
+            */
             rgbMatrix = null;
         }
+        /*
         updateInfo("识别完成!正在写入文件");
         Log.d("videoToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
         updateInfo("写入文件成功!");
-
+        */
     }
-
+    /*
+    public int getIndex(Matrix matrix) throws CRCCheckException {
+        String row = matrix.sampleRow(barCodeWidth, barCodeWidth, frameBlackLength);
+        if(lastRow!=null){
+            StringBuilder stringBuilder = new StringBuilder();
+            for(int i=0;i<row.length();i++){
+                if(row.charAt(i)=='2'){
+                    if(lastRow.charAt(i)=='0'){
+                        stringBuilder.append('1');
+                    }else{
+                        stringBuilder.append('0');
+                    }
+                }else{
+                    stringBuilder.append(row.charAt(i));
+                }
+            }
+            row=stringBuilder.toString();
+        }
+        if (VERBOSE) {
+            Log.d(TAG, "index row:" + row);
+        }
+        int index = Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16), 2);
+        int crc = Integer.parseInt(row.substring(frameBlackLength + 16, frameBlackLength + 24), 2);
+        int truth = CRC8.calcCrc8(index);
+        if (VERBOSE) {
+            Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
+        }
+        if (crc != truth) {
+            System.out.println("lastRow:"+lastRow+" row:"+row);
+            throw CRCCheckException.getNotFoundInstance();
+        }
+        lastRow=row;
+        return index;
+    }
+    */
     private int selectTrack(MediaExtractor extractor) {
         // Select the first video track we find, ignore the rest.
         int numTracks = extractor.getTrackCount();

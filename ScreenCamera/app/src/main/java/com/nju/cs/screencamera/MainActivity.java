@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler);
                 singleImgToFile.singleImg(videoFilePath);
+                //singleImgToFile.driver();
             }
         };
         worker.start();

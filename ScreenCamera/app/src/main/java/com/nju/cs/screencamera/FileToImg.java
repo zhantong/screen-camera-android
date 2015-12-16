@@ -11,5 +11,5 @@ public class FileToImg {
     int frameVaryLength=1;
     int contentLength=76;
     int blockLength=4;
-    int ecByteNum=38;
+    int ecByteNum=76;
 }

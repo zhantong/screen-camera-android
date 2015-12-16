@@ -2,6 +2,13 @@ package com.nju.cs.screencamera;
 
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * 保存YUV格式图像的相关信息,如原始像素信息
  * 以及一些对原始图像操作的方法
@@ -13,6 +20,8 @@ public class Matrix {
     protected final int height;//图像高度
     protected final byte[] pixels;//图像每个像素点原始值
     private int threshold = 0;//二值化阈值
+    private int threshold1 = 0;
+    private int threshold2=0;
     private int[] borders;//图像中二维码的四个顶点坐标值
     private PerspectiveTransform transform;//透视变换参数
     public int frameIndex;//此图像中二维码的帧编号
@@ -157,16 +166,31 @@ public class Matrix {
             points[x + 1] = rowValue;
         }
         transform.transformPoints(points);
+        test(points);
         for (int x = 0; x < max; x += 2) {
+
             if (pixelEquals((int) points[x], (int) points[x + 1], 1)) {
                 stringBuilder.append('1');
             } else {
                 stringBuilder.append('0');
             }
+
+            /*
+            int gray=getGray((int) points[x], (int) points[x + 1]);
+            if(gray<threshold1){
+                stringBuilder.append('0');
+            }
+            else if(gray>threshold2){
+                stringBuilder.append('1');
+            }
+            else{
+                //System.out.println(gray);
+                stringBuilder.append('2');
+            }
+            */
         }
         return stringBuilder.toString();
     }
-
     /**
      * 对透视变换后区域采样
      * 即对二维码每个block采样,保存到BinaryMatrix中
@@ -186,15 +210,105 @@ public class Matrix {
                 points[x + 1] = iValue;
             }
             transform.transformPoints(points);
+            //test(points);
+            Map<Integer,Integer> map=new HashMap<>();
+            int[] grays=new int[dimensionX];
             for (int x = 0; x < max; x += 2) {
+                /*
                 if (pixelEquals((int) points[x], (int) points[x + 1], 1)) {
                     binaryMatrix.set(x / 2, y, 1);
                 }
+                */
+                int gray=getGray((int) points[x], (int) points[x + 1]);
+                grays[x/2]=gray;
+                if(map.containsKey(gray)){
+                    map.put(gray,map.get(gray)+1);
+                }else{
+                    map.put(gray,1);
+                }
+                /*
+                if(gray<threshold1){
+                    binaryMatrix.set(x / 2, y, 0);
+                }
+                else if(gray>threshold2){
+                    binaryMatrix.set(x / 2, y, 1);
+                }
+                else{
+                    //System.out.println(gray);
+                    binaryMatrix.set(x / 2, y, -1);
+                }
+                */
+                /*
+                if(gray<threshold2){
+                    binaryMatrix.set(x / 2, y, 0);
+                }else {
+                    binaryMatrix.set(x / 2, y, 1);
+                }
+                */
             }
+            clustering(map);
+            for (int i = 0; i < dimensionX; i++) {
+                binaryMatrix.set(i, y, map.get(grays[i]));
+            }
+            //System.out.println(map.toString());
         }
         return binaryMatrix;
     }
-
+    public void clustering(Map<Integer,Integer> map){
+        Set set=map.keySet();
+        List<Integer> list=new ArrayList(set);
+        Collections.sort(list);
+        int setSize=set.size();
+        int[] c={list.get(0),list.get(setSize/3),list.get(setSize*2/3),list.get(setSize-1)};
+        ArrayList<Integer>[] lists=new ArrayList[4];
+        for(int i=0;i<2;i++){
+            for(int j=0;j<4;j++){
+                lists[j]=new ArrayList<>();
+            }
+            for(int key:map.keySet()){
+                int min=255;
+                int index=-1;
+                for(int j=0;j<4;j++){
+                    int length=Math.abs(key-c[j]);
+                    if(length<min){
+                        min=length;
+                        index=j;
+                    }
+                }
+                lists[index].add(key);
+            }
+            for(int j=0;j<4;j++){
+                int sumItems=0;
+                int sum=0;
+                for(int k:lists[j]){
+                    int v=map.get(k);
+                    sum+=v*k;
+                    sumItems+=v;
+                }
+                if(sumItems!=0) {
+                    c[j] = sum / sumItems;
+                }
+            }
+        }
+        for(int i=0;i<2;i++){
+            for(int k:lists[i]){
+                map.put(k,0);
+            }
+        }
+        for(int i=2;i<4;i++){
+            for(int k:lists[i]){
+                map.put(k,1);
+            }
+        }
+    }
+    public void test(float points[]){
+        int last=points.length;
+        int front=getGray((int)points[0],(int)points[1]);
+        int rear=getGray((int)points[last-4],(int)points[last-3]);
+        //System.out.println("front:"+front+" rear:"+rear);
+        threshold1=(int)(front+256*0.15);
+        threshold2=(int)(rear-256*0.2);
+    }
     /**
      * 获取图像的阈值
      * 阈值由灰度值确定,获得阈值的方法为双峰法
