@@ -289,7 +289,12 @@ public class Matrix {
                     c[j] = sum / sumItems;
                 }
             }
+            for(int v:c){
+                System.out.print(v + " ");
+            }
+            System.out.println();
         }
+        /*
         for(int i=0;i<2;i++){
             for(int k:lists[i]){
                 map.put(k,0);
@@ -299,6 +304,19 @@ public class Matrix {
             for(int k:lists[i]){
                 map.put(k,1);
             }
+        }
+        */
+        for(int k:lists[0]){
+            map.put(k,0);
+        }
+        for(int k:lists[3]){
+            map.put(k,1);
+        }
+        for(int k:lists[1]){
+            map.put(k,0);
+        }
+        for(int k:lists[2]){
+            map.put(k,1);
         }
     }
     public void test(float points[]){

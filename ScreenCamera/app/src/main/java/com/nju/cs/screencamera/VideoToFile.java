@@ -150,14 +150,14 @@ public class VideoToFile extends MediaToFile {
                 Log.d(TAG, e.getMessage());
                 continue;
             }
-            System.out.println("done "+count);
-            /*
+            //System.out.println("done "+count);
+
             buffer.add(stream);
 
             lastSuccessIndex = index;
             Log.i("frame " + index + "/" + count, "done!");
             updateDebug(index, lastSuccessIndex, frameAmount, count);
-            */
+
             /*
             if (lastSuccessIndex == frameAmount) {
                 break;
