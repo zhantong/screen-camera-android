@@ -68,8 +68,8 @@ public class MediaToFile extends FileToImg {
         if (VERBOSE) {
             Log.d(TAG, "index row:" + row);
         }
-        int index = Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16), 2);
-        int crc = Integer.parseInt(row.substring(frameBlackLength + 16, frameBlackLength + 24), 2);
+        int index = Integer.parseInt(row.substring(frameBlackLength+frameVaryLength+1, frameBlackLength+frameVaryLength+1 + 16), 2);
+        int crc = Integer.parseInt(row.substring(frameBlackLength+frameVaryLength+1 + 16, frameBlackLength+frameVaryLength+1 + 24), 2);
         int truth = CRC8.calcCrc8(index);
         if (VERBOSE) {
             Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
@@ -88,9 +88,12 @@ public class MediaToFile extends FileToImg {
      */
     public int getFrameAmount(Matrix matrix) throws CRCCheckException {
         String row = matrix.sampleRow(barCodeWidth, barCodeWidth, frameBlackLength);
-        int frameAmount = Integer.parseInt(row.substring(frameBlackLength + 24, frameBlackLength + 40), 2);
-        int crc = Integer.parseInt(row.substring(frameBlackLength + 40, frameBlackLength + 48), 2);
+        int frameAmount = Integer.parseInt(row.substring(frameBlackLength+frameVaryLength+1 + 24, frameBlackLength+frameVaryLength+1 + 40), 2);
+        int crc = Integer.parseInt(row.substring(frameBlackLength+frameVaryLength+1 + 40, frameBlackLength+frameVaryLength+1 + 48), 2);
         if (crc != CRC8.calcCrc8(frameAmount)) {
+            System.out.println(row);
+            System.out.println(frameAmount);
+            System.out.println(crc+" "+CRC8.calcCrc8(frameAmount));
             throw CRCCheckException.getNotFoundInstance();
         }
         return frameAmount;

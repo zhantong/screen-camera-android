@@ -25,6 +25,8 @@ public class Matrix {
     private int[] borders;//图像中二维码的四个顶点坐标值
     private PerspectiveTransform transform;//透视变换参数
     public int frameIndex;//此图像中二维码的帧编号
+    public GrayMatrix grayMatrix;
+    public boolean reverse;
 
     /**
      * 基本构造函数,作为正方形,且无原始像素数据,生成默认值
@@ -157,7 +159,13 @@ public class Matrix {
      * @return 此行的二值化值
      */
     public String sampleRow(int dimensionX, int dimensionY, int row) {
-        StringBuilder stringBuilder = new StringBuilder();
+        grayMatrix=new GrayMatrix(dimensionX);
+        if(reverse){
+            grayMatrix.reverse=true;
+        }else {
+            grayMatrix.reverse=false;
+        }
+        //StringBuilder stringBuilder = new StringBuilder();
         float[] points = new float[2 * dimensionX];
         int max = points.length;
         float rowValue = (float) row + 0.5f;
@@ -166,15 +174,16 @@ public class Matrix {
             points[x + 1] = rowValue;
         }
         transform.transformPoints(points);
-        test(points);
+        int[] grays=new int[dimensionX];
         for (int x = 0; x < max; x += 2) {
-
+            grays[x/2]=getGray((int) points[x], (int) points[x + 1]);
+            /*
             if (pixelEquals((int) points[x], (int) points[x + 1], 1)) {
                 stringBuilder.append('1');
             } else {
                 stringBuilder.append('0');
             }
-
+            */
             /*
             int gray=getGray((int) points[x], (int) points[x + 1]);
             if(gray<threshold1){
@@ -189,7 +198,7 @@ public class Matrix {
             }
             */
         }
-        return stringBuilder.toString();
+        return grayMatrix.getRow(grays);
     }
     /**
      * 对透视变换后区域采样
@@ -200,7 +209,7 @@ public class Matrix {
      * @return 返回存有二维码二值化数据的BinaryMatrix
      */
     public BinaryMatrix sampleGrid(int dimensionX, int dimensionY) {
-        BinaryMatrix binaryMatrix = new BinaryMatrix(dimensionX, dimensionY);
+        GrayMatrix grayMatrix=new GrayMatrix(dimensionX);
         float[] points = new float[2 * dimensionX];
         int max = points.length;
         for (int y = 0; y < dimensionY; y++) {
@@ -220,12 +229,15 @@ public class Matrix {
                 }
                 */
                 int gray=getGray((int) points[x], (int) points[x + 1]);
+                grayMatrix.set(x/2,y,gray);
+                /*
                 grays[x/2]=gray;
                 if(map.containsKey(gray)){
                     map.put(gray,map.get(gray)+1);
                 }else{
                     map.put(gray,1);
                 }
+                */
                 /*
                 if(gray<threshold1){
                     binaryMatrix.set(x / 2, y, 0);
@@ -246,13 +258,15 @@ public class Matrix {
                 }
                 */
             }
+            /*
             clustering(map);
             for (int i = 0; i < dimensionX; i++) {
                 binaryMatrix.set(i, y, map.get(grays[i]));
             }
             //System.out.println(map.toString());
+            */
         }
-        return binaryMatrix;
+        return grayMatrix.toBinaryMatrix();
     }
     public void clustering(Map<Integer,Integer> map){
         Set set=map.keySet();

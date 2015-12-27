@@ -75,27 +75,44 @@ public class VideoToFile extends MediaToFile {
             try {
                 rgbMatrix = new RGBMatrix(img, imgWidth, imgHeight);
                 rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-                //rgbMatrix.frameIndex = getIndex(rgbMatrix);
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 continue;
-            } catch (Exception e) {
-                Log.d(TAG, "CRC check failed");
-                continue;
             }
-            /*
-            index = rgbMatrix.frameIndex;
-            Log.i("frame " + index + "/" + count, "processing...");
+            try {
+                rgbMatrix.reverse=false;
+                int unre = getIndex(rgbMatrix);
+                rgbMatrix.reverse=true;
+                int re=getIndex(rgbMatrix);
+                if(unre<re){
+                    rgbMatrix.reverse=true;
+                }else{
+                    rgbMatrix.reverse=false;
+                }
+                //System.out.println(unre+" "+re);
+            }catch (CRCCheckException e){
+            }
 
-            if (lastSuccessIndex == index) {
-                Log.i("frame " + index + "/" + count, "same frame index!");
-                continue;
-            } else if (index - lastSuccessIndex != 1) {
-                Log.i("frame " + index + "/" + count, "bad frame index!");
-                continue;
-            }
-            */
-            //BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
+            for(int i=0;i<2;i++) {
+                rgbMatrix.reverse=!rgbMatrix.reverse;
+                try{
+                    rgbMatrix.frameIndex = getIndex(rgbMatrix);
+                }catch (CRCCheckException e){
+                    Log.d(TAG, "failed to get frame index: CRC check failed");
+                    continue;
+                }
+                index = rgbMatrix.frameIndex;
+                Log.i("frame " + index + "/" + count, "processing...");
+
+                if (lastSuccessIndex == index) {
+                    Log.i("frame " + index + "/" + count, "same frame index!");
+                    continue;
+                } else if (index - lastSuccessIndex != 1) {
+                    Log.i("frame " + index + "/" + count, "bad frame index!");
+                    continue;
+                }
+
+                //BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
             /*
             int[] data=binaryMatrix.pixels;
             index = 0;
@@ -144,34 +161,35 @@ public class VideoToFile extends MediaToFile {
             lastBuffer=stringBuffer;
             */
 
-            try {
-                stream = imgToArray(rgbMatrix);
-            } catch (ReedSolomonException e) {
-                Log.d(TAG, e.getMessage());
-                continue;
-            }
-            //System.out.println("done "+count);
-
-            buffer.add(stream);
-
-            lastSuccessIndex = index;
-            Log.i("frame " + index + "/" + count, "done!");
-            updateDebug(index, lastSuccessIndex, frameAmount, count);
-
-            /*
-            if (lastSuccessIndex == frameAmount) {
-                break;
-            }
-
-            if (frameAmount == 0) {
                 try {
-                    frameAmount = getFrameAmount(rgbMatrix);
-                } catch (CRCCheckException e) {
-                    Log.d(TAG, "CRC check failed");
+                    stream = imgToArray(rgbMatrix);
+                } catch (ReedSolomonException e) {
+                    Log.d(TAG, e.getMessage());
                     continue;
                 }
+                //System.out.println("done "+count);
+
+                buffer.add(stream);
+
+                lastSuccessIndex = index;
+                Log.i("frame " + index + "/" + count, "done!");
+                updateDebug(index, lastSuccessIndex, frameAmount, count);
+
+
+                if (lastSuccessIndex == frameAmount) {
+                    break;
+                }
+
+                if (frameAmount == 0) {
+                    try {
+                        frameAmount = getFrameAmount(rgbMatrix);
+                    } catch (CRCCheckException e) {
+                        Log.d(TAG, "failed to get frame amount: CRC check failed");
+                        continue;
+                    }
+                }
+
             }
-            */
             rgbMatrix = null;
         }
         /*

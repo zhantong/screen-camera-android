@@ -45,13 +45,12 @@ public class SingleImgToFile extends MediaToFile {
         try {
             rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
             rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-            //rgbMatrix.frameIndex = getIndex(rgbMatrix);
+            rgbMatrix.frameIndex = getIndex(rgbMatrix);
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
         }
-        /*
         catch (CRCCheckException e) {
-            Log.d(TAG, "CRC check failed");
+            Log.d(TAG, "failed to get frame index: CRC check failed");
             return;
         }
 
@@ -60,11 +59,11 @@ public class SingleImgToFile extends MediaToFile {
         try {
             frameAmount = getFrameAmount(rgbMatrix);
         } catch (CRCCheckException e) {
-            Log.d(TAG, "CRC check failed");
+            Log.d(TAG, "failed to get frame amount: CRC check failed");
             return;
         }
         Log.d(TAG, "frame amount:" + frameAmount);
-        */
+
 
         try {
             stream=imgToArray(rgbMatrix);
