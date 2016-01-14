@@ -45,35 +45,53 @@ public class SingleImgToFile extends MediaToFile {
         try {
             rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
             rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-            rgbMatrix.frameIndex = getIndex(rgbMatrix);
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
         }
-        catch (CRCCheckException e) {
-            Log.d(TAG, "failed to get frame index: CRC check failed");
-            return;
-        }
-
-        Log.d(TAG, "frame index:" + rgbMatrix.frameIndex);
-        int frameAmount;
         try {
-            frameAmount = getFrameAmount(rgbMatrix);
-        } catch (CRCCheckException e) {
-            Log.d(TAG, "failed to get frame amount: CRC check failed");
-            return;
+            rgbMatrix.reverse=false;
+            int unre = getIndex(rgbMatrix);
+            rgbMatrix.reverse=true;
+            int re=getIndex(rgbMatrix);
+            if(unre<re){
+                rgbMatrix.reverse=true;
+            }else{
+                rgbMatrix.reverse=false;
+            }
+            //System.out.println(unre+" "+re);
+        }catch (CRCCheckException e){
         }
-        Log.d(TAG, "frame amount:" + frameAmount);
+        for(int i=0;i<2;i++) {
+            rgbMatrix.reverse=!rgbMatrix.reverse;
+            try{
+                rgbMatrix.frameIndex = getIndex(rgbMatrix);
+            }catch (CRCCheckException e){
+                Log.d(TAG, "failed to get frame index: CRC check failed");
+                continue;
+            }
+            Log.d(TAG, "frame index:" + rgbMatrix.frameIndex);
+            /*
+            int frameAmount;
+            try {
+                frameAmount = getFrameAmount(rgbMatrix);
+            } catch (CRCCheckException e) {
+                Log.d(TAG, "failed to get frame amount: CRC check failed");
+                return;
+            }
+            Log.d(TAG, "frame amount:" + frameAmount);
+            */
 
-
-        try {
-            stream=imgToArray(rgbMatrix);
-            //stream = imgToIntArray(rgbMatrix);
-        } catch (ReedSolomonException e) {
-            Log.d(TAG, e.getMessage());
+            try {
+                stream = imgToArray(rgbMatrix);
+                //stream = imgToIntArray(rgbMatrix);
+            } catch (ReedSolomonException e) {
+                Log.d(TAG, e.getMessage());
+                continue;
+            }
+            Log.i(TAG, "done!");
+            updateInfo("识别完成!");
+            System.out.println(stream);
         }
-        Log.i(TAG, "done!");
-        updateInfo("识别完成!");
-        System.out.println(stream);
     }
     public void driver(){
         String filePath="/storage/emulated/0/test/frame-19.png";

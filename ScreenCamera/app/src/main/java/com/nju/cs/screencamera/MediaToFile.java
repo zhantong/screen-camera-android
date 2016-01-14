@@ -107,6 +107,7 @@ public class MediaToFile extends FileToImg {
      */
     public byte[] imgToArray(Matrix matrix) throws ReedSolomonException {
         BinaryMatrix binaryMatrix = matrix.sampleGrid(barCodeWidth, barCodeWidth);
+        //binaryMatrix.print();
         return binaryMatrixToArray(binaryMatrix);
     }
     /**
