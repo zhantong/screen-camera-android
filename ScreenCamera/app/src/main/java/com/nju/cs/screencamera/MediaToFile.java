@@ -91,20 +91,20 @@ public class MediaToFile extends FileToImg {
         }
         System.out.println();
     }
-    public void test2(Matrix matrix){
+    public byte[] test2(Matrix matrix) throws ReedSolomonException{
         byte[] content=matrix.getContent(barCodeWidth, barCodeWidth);
         int[] con=new int[content.length];
         for(int i=0;i<con.length;i++){
             con[i]=content[i]&0xff;
         }
         ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
-        try {
-            decoder.decode(con, ecByteNum);
-            System.out.println("error correcting success");
-        } catch (Exception e) {
-            System.out.println("error correcting failed");
+        decoder.decode(con, ecByteNum);
+        int realByteNum=contentLength*contentLength/8-ecByteNum;
+        byte[] res = new byte[realByteNum];
+        for (int i = 0; i < realByteNum; i++) {
+            res[i] = (byte) con[i];
         }
-
+        return res;
     }
     /**
      * 获取此帧中二维码记录的帧总数

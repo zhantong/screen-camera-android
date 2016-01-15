@@ -6,7 +6,15 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
+import net.fec.openrq.ArrayDataDecoder;
+import net.fec.openrq.EncodingPacket;
+import net.fec.openrq.OpenRQ;
+import net.fec.openrq.decoder.SourceBlockState;
+import net.fec.openrq.parameters.FECParameters;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -39,6 +47,12 @@ public class VideoToFile extends MediaToFile {
      * @param file 需要写入的文件
      */
     public void videoToFile(String videoFilePath, LinkedBlockingQueue<byte[]> imgs, File file) {
+
+        FECParameters parameters=FECParameters.newParameters(26776,638,4);
+        ArrayDataDecoder dataDecoder= OpenRQ.newDecoder(parameters, 0);
+
+
+
         int startOffset = frameBlackLength + frameVaryLength;
         int stopOffset = startOffset + contentLength;
         int contentByteNum = contentLength * contentLength / 8;
@@ -99,7 +113,24 @@ public class VideoToFile extends MediaToFile {
                 rgbMatrix.reverse=!rgbMatrix.reverse;
                 System.out.println("current:"+count);
                 test(rgbMatrix);
-                test2(rgbMatrix);
+                byte[] current=null;
+                try {
+                    current = test2(rgbMatrix);
+                }catch (ReedSolomonException e){
+                    System.out.println("error correction failed");
+                    continue;
+                }
+                SourceBlockState sourceBlockState=null;
+                try {
+                    EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
+                    sourceBlockState = dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+                }catch (Exception e){
+                    e.printStackTrace();
+                    continue;
+                }
+                System.out.println(sourceBlockState);
+                System.out.println(dataDecoder.isDataDecoded());
+
                 /*
                 try{
                     rgbMatrix.frameIndex = getIndex(rgbMatrix);
@@ -196,7 +227,18 @@ public class VideoToFile extends MediaToFile {
                 }
                 */
             }
+            if(dataDecoder.isDataDecoded()){
+                break;
+            }
             rgbMatrix = null;
+        }
+        OutputStream os;
+        try {
+            os = new FileOutputStream(file);
+            os.write(dataDecoder.dataArray());
+            os.close();
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
         }
         /*
         updateInfo("识别完成!正在写入文件");
