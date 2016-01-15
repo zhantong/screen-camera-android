@@ -20,8 +20,6 @@ public class Matrix {
     protected final int height;//图像高度
     protected final byte[] pixels;//图像每个像素点原始值
     private int threshold = 0;//二值化阈值
-    private int threshold1 = 0;
-    private int threshold2=0;
     private int[] borders;//图像中二维码的四个顶点坐标值
     private PerspectiveTransform transform;//透视变换参数
     public int frameIndex;//此图像中二维码的帧编号
@@ -200,6 +198,14 @@ public class Matrix {
         }
         return grayMatrix.getRow(grays);
     }
+    public byte[] getHead(int dimensionX, int dimensionY){
+
+        if(grayMatrix==null){
+            initGrayMatrix(dimensionX,dimensionY);
+        }
+        grayMatrix.reverse=reverse;
+        return grayMatrix.getHead();
+    }
     /**
      * 对透视变换后区域采样
      * 即对二维码每个block采样,保存到BinaryMatrix中
@@ -268,6 +274,29 @@ public class Matrix {
         }
         return grayMatrix.toBinaryMatrix();
     }
+    public void initGrayMatrix(int dimensionX, int dimensionY){
+        grayMatrix=new GrayMatrix(dimensionX);
+        float[] points = new float[2 * dimensionX];
+        int max = points.length;
+        for (int y = 0; y < dimensionY; y++) {
+            float iValue = (float) y + 0.5f;
+            for (int x = 0; x < max; x += 2) {
+                points[x] = (float) (x / 2) + 0.5f;
+                points[x + 1] = iValue;
+            }
+            transform.transformPoints(points);
+            for (int x = 0; x < max; x += 2) {
+                int gray = getGray((int) points[x], (int) points[x + 1]);
+                grayMatrix.set(x / 2, y, gray);
+            }
+        }
+    }
+    public byte[] getContent(int dimensionX, int dimensionY){
+        if(grayMatrix==null){
+            initGrayMatrix(dimensionX,dimensionY);
+        }
+        return grayMatrix.getContent();
+    }
     public void clustering(Map<Integer,Integer> map){
         Set set=map.keySet();
         List<Integer> list=new ArrayList(set);
@@ -332,14 +361,6 @@ public class Matrix {
         for(int k:lists[2]){
             map.put(k,1);
         }
-    }
-    public void test(float points[]){
-        int last=points.length;
-        int front=getGray((int)points[0],(int)points[1]);
-        int rear=getGray((int)points[last-4],(int)points[last-3]);
-        //System.out.println("front:"+front+" rear:"+rear);
-        threshold1=(int)(front+256*0.15);
-        threshold2=(int)(rear-256*0.2);
     }
     /**
      * 获取图像的阈值

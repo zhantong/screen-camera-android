@@ -75,10 +75,12 @@ public class VideoToFile extends MediaToFile {
             try {
                 rgbMatrix = new RGBMatrix(img, imgWidth, imgHeight);
                 rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+                //test(rgbMatrix);
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 continue;
             }
+            /*
             try {
                 rgbMatrix.reverse=false;
                 int unre = getIndex(rgbMatrix);
@@ -92,9 +94,13 @@ public class VideoToFile extends MediaToFile {
                 //System.out.println(unre+" "+re);
             }catch (CRCCheckException e){
             }
-
+            */
             for(int i=0;i<2;i++) {
                 rgbMatrix.reverse=!rgbMatrix.reverse;
+                System.out.println("current:"+count);
+                test(rgbMatrix);
+                test2(rgbMatrix);
+                /*
                 try{
                     rgbMatrix.frameIndex = getIndex(rgbMatrix);
                 }catch (CRCCheckException e){
@@ -111,7 +117,7 @@ public class VideoToFile extends MediaToFile {
                     Log.i("frame " + index + "/" + count, "bad frame index!");
                     continue;
                 }
-
+                */
                 //BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
             /*
             int[] data=binaryMatrix.pixels;
@@ -160,7 +166,7 @@ public class VideoToFile extends MediaToFile {
             }
             lastBuffer=stringBuffer;
             */
-
+                /*
                 try {
                     stream = imgToArray(rgbMatrix);
                 } catch (ReedSolomonException e) {
@@ -188,7 +194,7 @@ public class VideoToFile extends MediaToFile {
                         continue;
                     }
                 }
-
+                */
             }
             rgbMatrix = null;
         }

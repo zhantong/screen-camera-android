@@ -79,6 +79,33 @@ public class MediaToFile extends FileToImg {
         }
         return index;
     }
+    public void test(Matrix matrix){
+        byte[] head=matrix.getHead(barCodeWidth, barCodeWidth);
+        int index=head[0]<<8|head[1];
+        int crc=head[2]&0xff;
+        int truth=CRC8.calcCrc8(index);
+        Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
+        System.out.println("test:");
+        for(byte b:head){
+            System.out.print(b+" ");
+        }
+        System.out.println();
+    }
+    public void test2(Matrix matrix){
+        byte[] content=matrix.getContent(barCodeWidth, barCodeWidth);
+        int[] con=new int[content.length];
+        for(int i=0;i<con.length;i++){
+            con[i]=content[i]&0xff;
+        }
+        ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
+        try {
+            decoder.decode(con, ecByteNum);
+            System.out.println("error correcting success");
+        } catch (Exception e) {
+            System.out.println("error correcting failed");
+        }
+
+    }
     /**
      * 获取此帧中二维码记录的帧总数
      *

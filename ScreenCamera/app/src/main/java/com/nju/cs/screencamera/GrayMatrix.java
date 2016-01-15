@@ -3,7 +3,7 @@ package com.nju.cs.screencamera;
 /**
  * Created by zhantong on 15/12/27.
  */
-public class GrayMatrix {
+public class GrayMatrix extends FileToImg{
     public int[] pixels;
     public int width;
     public int height;
@@ -74,6 +74,30 @@ public class GrayMatrix {
         }
         return stringBuilder.toString();
     }
+    public byte[] getHead(){
+        whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
+        //System.out.println("white value:"+whiteValue);
+        blackValue=get(frameBlackLength+frameVaryLength+1,frameBlackLength);
+        //System.out.println("black value:"+blackValue);
+        int index=0;
+        int y=frameBlackLength;
+        int left=get(1,y);
+        int right=get(width-2,y);
+        if(left>right){
+            ordered =false;
+        }else {
+            ordered=true;
+        }
+        byte[] array=new byte[contentLength/8];
+        for(int x=frameBlackLength+frameVaryLength+1;x<frameBlackLength+frameVaryLength+1+array.length*8;x++){
+            array[index/8]<<=1;
+            if(toBinary(get(x,y),left,right)==1){
+                array[index / 8] |= 0x01;
+            }
+            index++;
+        }
+        return array;
+    }
     public BinaryMatrix toBinaryMatrix(){
         BinaryMatrix binaryMatrix=new BinaryMatrix(width,height);
         /*
@@ -96,5 +120,26 @@ public class GrayMatrix {
         }
         //System.out.println("whiteValue:"+whiteValue+"\tblackValue:"+blackValue);
         return binaryMatrix;
+    }
+    public byte[] getContent(){
+        whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
+        blackValue=get(frameBlackLength+frameVaryLength+1,frameBlackLength);
+        if(get(1,2)>get(width-2,2)){
+            ordered =false;
+        }
+        int index=0;
+        byte[] array=new byte[contentLength*contentLength/8];
+        for(int y=frameBlackLength+frameVaryLength;y<frameBlackLength+frameVaryLength+contentLength;y++){
+            int left=get(1,y);
+            int right=get(width-2,y);
+            for(int x=frameBlackLength+frameVaryLength;x<frameBlackLength+frameVaryLength+contentLength;x++){
+                array[index/8]<<=1;
+                if(toBinary(get(x,y),left,right)==1){
+                    array[index / 8] |= 0x01;
+                }
+                index++;
+            }
+        }
+        return array;
     }
 }
