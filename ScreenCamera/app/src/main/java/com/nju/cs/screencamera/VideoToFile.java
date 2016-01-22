@@ -240,14 +240,33 @@ public class VideoToFile extends MediaToFile {
             }
             rgbMatrix = null;
         }
+        byte[] out=dataDecoder.dataArray();
+        int last=out.length;
+        for(int i=out.length-1;i>0;i--){
+            byte current=out[i];
+            if(current==0){
+                continue;
+            }
+            else if(current==-128){
+                last=current;
+                break;
+            }
+            else{
+                break;
+            }
+        }
         OutputStream os;
         try {
             os = new FileOutputStream(file);
-            os.write(dataDecoder.dataArray());
+            for(int i=0;i<last;i++){
+                os.write(out[i]);
+            }
             os.close();
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
         }
+        String sha1=FileVerification.fileToSHA1(file.getAbsolutePath());
+        System.out.println(sha1);
         /*
         updateInfo("识别完成!正在写入文件");
         Log.d("videoToFile", "total length:" + buffer.size());
