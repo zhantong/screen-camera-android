@@ -48,9 +48,8 @@ public class VideoToFile extends MediaToFile {
      */
     public void videoToFile(String videoFilePath, LinkedBlockingQueue<byte[]> imgs, File file) {
 
-        FECParameters parameters=FECParameters.newParameters(26776,638,4);
-        ArrayDataDecoder dataDecoder= OpenRQ.newDecoder(parameters, 0);
-
+        ArrayDataDecoder dataDecoder=null;
+        int fileByteNum=-1;
 
 
         int startOffset = frameBlackLength + frameVaryLength;
@@ -112,7 +111,16 @@ public class VideoToFile extends MediaToFile {
             for(int i=0;i<2;i++) {
                 rgbMatrix.reverse=!rgbMatrix.reverse;
                 System.out.println("current:"+count);
-                test(rgbMatrix);
+                if(fileByteNum==-1){
+                    try {
+                        fileByteNum = test(rgbMatrix);
+                        int length=contentLength*contentLength/8-ecByteNum-8;
+                        FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10));
+                        dataDecoder = OpenRQ.newDecoder(parameters, 0);
+                    }catch (CRCCheckException e){
+                        System.out.println("CRC check failed");
+                    }
+                }
                 byte[] current=null;
                 try {
                     current = test2(rgbMatrix);

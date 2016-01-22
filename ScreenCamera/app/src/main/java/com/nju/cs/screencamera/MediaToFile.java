@@ -79,10 +79,10 @@ public class MediaToFile extends FileToImg {
         }
         return index;
     }
-    public void test(Matrix matrix){
+    public int test(Matrix matrix) throws CRCCheckException{
         byte[] head=matrix.getHead(barCodeWidth, barCodeWidth);
-        int index=head[0]<<8|head[1];
-        int crc=head[2]&0xff;
+        int index=(head[0]&0xff)<<24|(head[1]&0xff)<<16|(head[2]&0xff)<<8|(head[3]&0xff);
+        int crc=head[4]&0xff;
         int truth=CRC8.calcCrc8(index);
         Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
         System.out.println("test:");
@@ -90,6 +90,10 @@ public class MediaToFile extends FileToImg {
             System.out.print(b+" ");
         }
         System.out.println();
+        if(crc!=truth){
+            throw CRCCheckException.getNotFoundInstance();
+        }
+        return index;
     }
     public byte[] test2(Matrix matrix) throws ReedSolomonException{
         byte[] content=matrix.getContent(barCodeWidth, barCodeWidth);
