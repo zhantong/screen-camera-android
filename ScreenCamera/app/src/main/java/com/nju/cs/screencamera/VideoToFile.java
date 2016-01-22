@@ -114,8 +114,12 @@ public class VideoToFile extends MediaToFile {
                 if(fileByteNum==-1){
                     try {
                         fileByteNum = test(rgbMatrix);
+                        if(fileByteNum==0){
+                            fileByteNum=-1;
+                            continue;
+                        }
                         int length=contentLength*contentLength/8-ecByteNum-8;
-                        FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10));
+                        FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10)+1);
                         dataDecoder = OpenRQ.newDecoder(parameters, 0);
                     }catch (CRCCheckException e){
                         System.out.println("CRC check failed");
