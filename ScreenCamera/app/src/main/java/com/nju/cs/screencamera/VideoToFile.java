@@ -9,14 +9,12 @@ import android.widget.TextView;
 import net.fec.openrq.ArrayDataDecoder;
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
-import net.fec.openrq.decoder.SourceBlockState;
+import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -53,8 +51,6 @@ public class VideoToFile extends MediaToFile {
 
 
         int startOffset = frameBlackLength + frameVaryLength;
-        int stopOffset = startOffset + contentLength;
-        int contentByteNum = contentLength * contentLength / 8;
         File inputFile = new File(videoFilePath);
         MediaExtractor extractor = new MediaExtractor();
         try {
@@ -71,10 +67,8 @@ public class VideoToFile extends MediaToFile {
         int count = 0;
         int lastSuccessIndex = 0;
         int frameAmount = 0;
-        List<byte[]> buffer = new LinkedList<>();
         byte[] img = {};
         RGBMatrix rgbMatrix;
-        byte[] stream;
         int index = 0;
         while (true) {
             count++;
@@ -88,32 +82,17 @@ public class VideoToFile extends MediaToFile {
             try {
                 rgbMatrix = new RGBMatrix(img, imgWidth, imgHeight);
                 rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-                //test(rgbMatrix);
+                //getFileByteNum(rgbMatrix);
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 continue;
             }
-            /*
-            try {
-                rgbMatrix.reverse=false;
-                int unre = getIndex(rgbMatrix);
-                rgbMatrix.reverse=true;
-                int re=getIndex(rgbMatrix);
-                if(unre<re){
-                    rgbMatrix.reverse=true;
-                }else{
-                    rgbMatrix.reverse=false;
-                }
-                //System.out.println(unre+" "+re);
-            }catch (CRCCheckException e){
-            }
-            */
+            System.out.println("current:"+count);
             for(int i=0;i<2;i++) {
                 rgbMatrix.reverse=!rgbMatrix.reverse;
-                System.out.println("current:"+count);
                 if(fileByteNum==-1){
                     try {
-                        fileByteNum = test(rgbMatrix);
+                        fileByteNum = getFileByteNum(rgbMatrix);
                         if(fileByteNum==0){
                             fileByteNum=-1;
                             continue;
@@ -125,120 +104,26 @@ public class VideoToFile extends MediaToFile {
                         System.out.println("CRC check failed");
                     }
                 }
-                byte[] current=null;
+                byte[] current;
                 try {
-                    current = test2(rgbMatrix);
+                    current = getContent(rgbMatrix);
                 }catch (ReedSolomonException e){
                     System.out.println("error correction failed");
                     continue;
                 }
-                SourceBlockState sourceBlockState=null;
                 try {
                     EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-                    sourceBlockState = dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+                    System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID());
+                    dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
                 }catch (Exception e){
                     e.printStackTrace();
                     continue;
                 }
-                System.out.println(sourceBlockState);
-                System.out.println(dataDecoder.isDataDecoded());
-
-                /*
-                try{
-                    rgbMatrix.frameIndex = getIndex(rgbMatrix);
-                }catch (CRCCheckException e){
-                    Log.d(TAG, "failed to get frame index: CRC check failed");
-                    continue;
-                }
-                index = rgbMatrix.frameIndex;
-                Log.i("frame " + index + "/" + count, "processing...");
-
-                if (lastSuccessIndex == index) {
-                    Log.i("frame " + index + "/" + count, "same frame index!");
-                    continue;
-                } else if (index - lastSuccessIndex != 1) {
-                    Log.i("frame " + index + "/" + count, "bad frame index!");
-                    continue;
-                }
-                */
-                //BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
-            /*
-            int[] data=binaryMatrix.pixels;
-            index = 0;
-            int c=0;
-            if(lastBuffer!=null) {
-                for (int j = startOffset; j < stopOffset; j++) {
-                    int jValue = j * binaryMatrix.width();
-                    for (int i = startOffset; i < stopOffset; i++) {
-                        if (data[jValue + i] == -1) {
-                            System.out.println(i+" "+j);
-                            c++;
-                            int t = Integer.parseInt(lastBuffer.charAt(index) + "");
-                            if (t == 0) {
-                                data[jValue + i] = 1;
-                            } else if (t == 1) {
-                                data[jValue + i] = 0;
-                            } else {
-                                System.out.println("WRONG");
-                            }
-                        }
-                        //System.out.println(data[jValue+i]+" "+c);
-                        index++;
-                    }
-                }
             }
-
-            System.out.println("reverse count:"+c);
-            binaryMatrix.pixels=data;
-            */
-            /*
-            int[] result = new int[contentByteNum];
-            binaryMatrix.toArray(startOffset, startOffset, stopOffset, stopOffset, result);
-            ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
-            try {
-                decoder.decode(result, ecByteNum);
-            } catch (ReedSolomonException e) {
-                System.out.println("error correcting failed");
-                continue;
+            for(SourceBlockDecoder sourceBlockDecoder:dataDecoder.sourceBlockIterable()){
+                System.out.println("source block number:"+sourceBlockDecoder.sourceBlockNumber()+"\tstate:"+sourceBlockDecoder.latestState());
             }
-            StringBuffer stringBuffer=new StringBuffer();
-            for(int b:result){
-                String s=Integer.toBinaryString(b);
-                int temp=Integer.parseInt(s);
-                stringBuffer.append(String.format("%1$08d",temp));
-            }
-            lastBuffer=stringBuffer;
-            */
-                /*
-                try {
-                    stream = imgToArray(rgbMatrix);
-                } catch (ReedSolomonException e) {
-                    Log.d(TAG, e.getMessage());
-                    continue;
-                }
-                //System.out.println("done "+count);
-
-                buffer.add(stream);
-
-                lastSuccessIndex = index;
-                Log.i("frame " + index + "/" + count, "done!");
-                updateDebug(index, lastSuccessIndex, frameAmount, count);
-
-
-                if (lastSuccessIndex == frameAmount) {
-                    break;
-                }
-
-                if (frameAmount == 0) {
-                    try {
-                        frameAmount = getFrameAmount(rgbMatrix);
-                    } catch (CRCCheckException e) {
-                        Log.d(TAG, "failed to get frame amount: CRC check failed");
-                        continue;
-                    }
-                }
-                */
-            }
+            System.out.println("is decoded:"+dataDecoder.isDataDecoded());
             if(dataDecoder.isDataDecoded()){
                 break;
             }
@@ -246,19 +131,24 @@ public class VideoToFile extends MediaToFile {
         }
         byte[] out=dataDecoder.dataArray();
         int last=out.length;
+        System.out.println("before:"+last);
         for(int i=out.length-1;i>0;i--){
             byte current=out[i];
+            System.out.println(current);
             if(current==0){
                 continue;
             }
             else if(current==-128){
-                last=current;
+                last=i;
                 break;
             }
+            /*
             else{
                 break;
             }
+            */
         }
+        System.out.println("after:"+last);
         OutputStream os;
         try {
             os = new FileOutputStream(file);
@@ -278,41 +168,6 @@ public class VideoToFile extends MediaToFile {
         updateInfo("写入文件成功!");
         */
     }
-    /*
-    public int getIndex(Matrix matrix) throws CRCCheckException {
-        String row = matrix.sampleRow(barCodeWidth, barCodeWidth, frameBlackLength);
-        if(lastRow!=null){
-            StringBuilder stringBuilder = new StringBuilder();
-            for(int i=0;i<row.length();i++){
-                if(row.charAt(i)=='2'){
-                    if(lastRow.charAt(i)=='0'){
-                        stringBuilder.append('1');
-                    }else{
-                        stringBuilder.append('0');
-                    }
-                }else{
-                    stringBuilder.append(row.charAt(i));
-                }
-            }
-            row=stringBuilder.toString();
-        }
-        if (VERBOSE) {
-            Log.d(TAG, "index row:" + row);
-        }
-        int index = Integer.parseInt(row.substring(frameBlackLength, frameBlackLength + 16), 2);
-        int crc = Integer.parseInt(row.substring(frameBlackLength + 16, frameBlackLength + 24), 2);
-        int truth = CRC8.calcCrc8(index);
-        if (VERBOSE) {
-            Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
-        }
-        if (crc != truth) {
-            System.out.println("lastRow:"+lastRow+" row:"+row);
-            throw CRCCheckException.getNotFoundInstance();
-        }
-        lastRow=row;
-        return index;
-    }
-    */
     private int selectTrack(MediaExtractor extractor) {
         // Select the first video track we find, ignore the rest.
         int numTracks = extractor.getTrackCount();
@@ -326,7 +181,6 @@ public class VideoToFile extends MediaToFile {
                 return i;
             }
         }
-
         return -1;
     }
 }

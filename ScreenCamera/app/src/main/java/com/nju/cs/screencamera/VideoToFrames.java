@@ -74,7 +74,7 @@ public class VideoToFrames extends AndroidTestCase {
     private static final int MAX_FRAMES = 10;       // stop extracting after this many
 
     /**
-     * test entry point
+     * getFileByteNum entry point
      */
     public void testExtractMpegFrames(LinkedBlockingQueue<byte[]> frames, String fileName) throws Throwable {
         INPUT_FILE = fileName;
@@ -86,7 +86,7 @@ public class VideoToFrames extends AndroidTestCase {
     /**
      * Wraps extractMpegFrames().  This is necessary because SurfaceTexture will try to use
      * the looper in the current thread if one exists, and the CTS tests create one on the
-     * test thread.
+     * getFileByteNum thread.
      * <p>
      * The wrapper propagates exceptions thrown by the worker thread back to the caller.
      */
@@ -114,7 +114,7 @@ public class VideoToFrames extends AndroidTestCase {
          */
         public void runTest(VideoToFrames obj) throws Throwable {
             ExtractMpegFramesWrapper wrapper = new ExtractMpegFramesWrapper(obj, frames);
-            Thread th = new Thread(wrapper, "codec test");
+            Thread th = new Thread(wrapper, "codec getFileByteNum");
             th.start();
             //th.join();
             if (wrapper.mThrowable != null) {
@@ -316,7 +316,7 @@ public class VideoToFrames extends AndroidTestCase {
                             //frames.put(outputSurface.getFrame());
                             frames.put(outputSurface.getPixels());
                             /*
-                            File outputFile = new File(FILES_DIR,String.format("test/frame-%02d.png", decodeCount));
+                            File outputFile = new File(FILES_DIR,String.format("getFileByteNum/frame-%02d.png", decodeCount));
                             decodeCount++;
                             outputSurface.saveFrame(outputFile.toString());
                             */
@@ -391,7 +391,7 @@ public class VideoToFrames extends AndroidTestCase {
             mSurfaceTexture = new SurfaceTexture(mTextureRender.getTextureId());
 
             // This doesn't work if this object is created on the thread that CTS started for
-            // these test cases.
+            // these getFileByteNum cases.
             //
             // The CTS-created thread has a Looper, and the SurfaceTexture constructor will
             // create a Handler that uses it.  The "frame available" message is delivered
@@ -518,7 +518,7 @@ public class VideoToFrames extends AndroidTestCase {
                 while (!mFrameAvailable) {
                     try {
                         // Wait for onFrameAvailable() to signal us.  Use a timeout to avoid
-                        // stalling the test if it doesn't arrive.
+                        // stalling the getFileByteNum if it doesn't arrive.
                         mFrameSyncObject.wait(TIMEOUT_MS);
                         if (!mFrameAvailable) {
                             // TODO: if "spurious wakeup", continue while loop

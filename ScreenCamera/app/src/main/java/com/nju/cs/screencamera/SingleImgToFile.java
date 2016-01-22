@@ -94,7 +94,7 @@ public class SingleImgToFile extends MediaToFile {
         }
     }
     public void driver(){
-        String filePath="/storage/emulated/0/test/frame-19.png";
+        String filePath="/storage/emulated/0/getFileByteNum/frame-19.png";
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
@@ -140,7 +140,7 @@ public class SingleImgToFile extends MediaToFile {
             stringBuffer.append(String.format("%1$08d",temp));
         }
 
-        filePath="/storage/emulated/0/test/frame-21.png";
+        filePath="/storage/emulated/0/getFileByteNum/frame-21.png";
         bitmap = BitmapFactory.decodeFile(filePath, options);
         byteBuffer = ByteBuffer.allocateDirect(bitmap.getWidth() * bitmap.getHeight() * 4);
         bitmap.copyPixelsToBuffer(byteBuffer);
@@ -179,7 +179,7 @@ public class SingleImgToFile extends MediaToFile {
         }
 
 
-        filePath="/storage/emulated/0/test/frame-20.png";
+        filePath="/storage/emulated/0/getFileByteNum/frame-20.png";
         bitmap = BitmapFactory.decodeFile(filePath, options);
         byteBuffer = ByteBuffer.allocateDirect(bitmap.getWidth() * bitmap.getHeight() * 4);
         bitmap.copyPixelsToBuffer(byteBuffer);

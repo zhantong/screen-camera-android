@@ -225,7 +225,7 @@ public class Matrix {
                 points[x + 1] = iValue;
             }
             transform.transformPoints(points);
-            //test(points);
+            //getFileByteNum(points);
             Map<Integer,Integer> map=new HashMap<>();
             int[] grays=new int[dimensionX];
             for (int x = 0; x < max; x += 2) {

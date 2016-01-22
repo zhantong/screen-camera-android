@@ -79,23 +79,23 @@ public class MediaToFile extends FileToImg {
         }
         return index;
     }
-    public int test(Matrix matrix) throws CRCCheckException{
+    public int getFileByteNum(Matrix matrix) throws CRCCheckException{
         byte[] head=matrix.getHead(barCodeWidth, barCodeWidth);
         int index=(head[0]&0xff)<<24|(head[1]&0xff)<<16|(head[2]&0xff)<<8|(head[3]&0xff);
         int crc=head[4]&0xff;
         int truth=CRC8.calcCrc8(index);
         Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
-        System.out.println("test:");
+        Log.d(TAG, "head:");
+        System.out.println("getFileByteNum:");
         for(byte b:head){
-            System.out.print(b+" ");
+            Log.d(TAG,Byte.toString(b));
         }
-        System.out.println();
         if(crc!=truth){
             throw CRCCheckException.getNotFoundInstance();
         }
         return index;
     }
-    public byte[] test2(Matrix matrix) throws ReedSolomonException{
+    public byte[] getContent(Matrix matrix) throws ReedSolomonException{
         byte[] content=matrix.getContent(barCodeWidth, barCodeWidth);
         int[] con=new int[content.length];
         for(int i=0;i<con.length;i++){
@@ -209,5 +209,21 @@ public class MediaToFile extends FileToImg {
         byte[] array = new byte[stopIndex];
         System.arraycopy(old, 0, array, 0, stopIndex);
         return array;
+    }
+    protected int getLastIndex(byte[] data){
+        int last=data.length;
+        for(int i=data.length-1;i>0;i--){
+            byte current=data[i];
+            if(current==0){
+            }
+            else if(current==-128){
+                last=current;
+                break;
+            }
+            else{
+                break;
+            }
+        }
+        return last;
     }
 }
