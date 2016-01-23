@@ -122,14 +122,23 @@ public class GrayMatrix extends FileToImg{
         return binaryMatrix;
     }
     public byte[] getContent(){
-        whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
-        blackValue=get(frameBlackLength+frameVaryLength+1,frameBlackLength);
+        //whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
+        //blackValue=get(frameBlackLength+frameVaryLength+1,frameBlackLength);
         if(get(1,2)>get(width-2,2)){
             ordered =false;
         }
         int index=0;
         byte[] array=new byte[contentLength*contentLength/8];
         for(int y=frameBlackLength+frameVaryLength;y<frameBlackLength+frameVaryLength+contentLength;y++){
+            if(get(0,y)<125){
+                blackValue=get(0,y);
+                whiteValue=get(0,y+1);
+            }
+            else{
+                blackValue=get(0,y+1);
+                whiteValue=get(0,y);
+            }
+            //System.out.println("black value:"+blackValue+"\twhite value:"+whiteValue);
             int left=get(1,y);
             int right=get(width-2,y);
             for(int x=frameBlackLength+frameVaryLength;x<frameBlackLength+frameVaryLength+contentLength;x++){

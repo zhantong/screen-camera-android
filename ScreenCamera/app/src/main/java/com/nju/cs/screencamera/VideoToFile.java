@@ -1,5 +1,6 @@
 package com.nju.cs.screencamera;
 
+import android.graphics.Path;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Handler;
@@ -99,6 +100,7 @@ public class VideoToFile extends MediaToFile {
                         }
                         int length=contentLength*contentLength/8-ecByteNum-8;
                         FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10)+1);
+                        System.out.println(parameters.toString());
                         dataDecoder = OpenRQ.newDecoder(parameters, 0);
                     }catch (CRCCheckException e){
                         System.out.println("CRC check failed");
@@ -113,7 +115,7 @@ public class VideoToFile extends MediaToFile {
                 }
                 try {
                     EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-                    System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID());
+                    System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
                     dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
                 }catch (Exception e){
                     e.printStackTrace();
@@ -124,17 +126,20 @@ public class VideoToFile extends MediaToFile {
                 System.out.println("source block number:"+sourceBlockDecoder.sourceBlockNumber()+"\tstate:"+sourceBlockDecoder.latestState());
             }
             System.out.println("is decoded:"+dataDecoder.isDataDecoded());
+
             if(dataDecoder.isDataDecoded()){
                 break;
             }
+
             rgbMatrix = null;
         }
+
         byte[] out=dataDecoder.dataArray();
+        /*
         int last=out.length;
         System.out.println("before:"+last);
         for(int i=out.length-1;i>0;i--){
             byte current=out[i];
-            System.out.println(current);
             if(current==0){
                 continue;
             }
@@ -142,25 +147,37 @@ public class VideoToFile extends MediaToFile {
                 last=i;
                 break;
             }
-            /*
             else{
                 break;
             }
-            */
         }
         System.out.println("after:"+last);
         OutputStream os;
+        int c=0;
         try {
             os = new FileOutputStream(file);
             for(int i=0;i<last;i++){
+                c++;
                 os.write(out[i]);
             }
             os.close();
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
         }
+        System.out.println("file byte length:"+c);
+        */
+
+        OutputStream os;
+        try {
+            os = new FileOutputStream(file);
+            os.write(out);
+            os.close();
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
         String sha1=FileVerification.fileToSHA1(file.getAbsolutePath());
         System.out.println(sha1);
+
         /*
         updateInfo("识别完成!正在写入文件");
         Log.d("videoToFile", "total length:" + buffer.size());
