@@ -297,6 +297,7 @@ public class Matrix {
         }
         grayMatrix.reverse=reverse;
         System.out.println("reverse:"+reverse);
+        //grayMatrix.print();
         return grayMatrix.getContent();
     }
     public void clustering(Map<Integer,Integer> map){

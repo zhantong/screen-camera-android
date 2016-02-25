@@ -74,6 +74,7 @@ public class GrayMatrix extends FileToImg{
         }
         return stringBuilder.toString();
     }
+    /*
     public byte[] getHead(){
         whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
         //System.out.println("white value:"+whiteValue);
@@ -96,6 +97,21 @@ public class GrayMatrix extends FileToImg{
             }
             index++;
         }
+        return array;
+    }
+    */
+    public byte[] getHead(){
+        int index=0;
+        byte[] array=new byte[contentLength/8];
+        for(int x=0;x<array.length*8;x++){
+            //System.out.print(get(x, 0));
+            array[index/8]<<=1;
+            if(get(x,0)>130){
+                array[index / 8] |= 0x01;
+            }
+            index++;
+        }
+        //System.out.println();
         return array;
     }
     public BinaryMatrix toBinaryMatrix(){
@@ -141,14 +157,35 @@ public class GrayMatrix extends FileToImg{
             //System.out.println("black value:"+blackValue+"\twhite value:"+whiteValue);
             int left=get(1,y);
             int right=get(width-2,y);
+            //System.out.println("left:"+left+"\tright:"+right);
             for(int x=frameBlackLength+frameVaryLength;x<frameBlackLength+frameVaryLength+contentLength;x++){
                 array[index/8]<<=1;
                 if(toBinary(get(x,y),left,right)==1){
                     array[index / 8] |= 0x01;
+                    if(false&&y==frameBlackLength+frameVaryLength) {
+                        System.out.print("1 ");
+                    }
+                }
+                else{
+                    if(false&&y==frameBlackLength+frameVaryLength) {
+                        System.out.print("0 ");
+                    }
                 }
                 index++;
             }
+            if(false&&y==frameBlackLength+frameVaryLength) {
+                System.out.println();
+            }
         }
         return array;
+    }
+    public void print(){
+        System.out.println("width:"+width+"\theight:"+height);
+        for(int y=0;y<height;y++){
+            for(int x=0;x<width;x++){
+                System.out.print(get(x,y)+" ");
+            }
+            System.out.println();
+        }
     }
 }

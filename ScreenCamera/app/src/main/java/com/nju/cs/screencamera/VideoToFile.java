@@ -122,14 +122,16 @@ public class VideoToFile extends MediaToFile {
                     continue;
                 }
             }
-            for(SourceBlockDecoder sourceBlockDecoder:dataDecoder.sourceBlockIterable()){
-                System.out.println("source block number:"+sourceBlockDecoder.sourceBlockNumber()+"\tstate:"+sourceBlockDecoder.latestState());
+            if(fileByteNum!=-1) {
+                for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
+                    System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
+                }
+                System.out.println("is decoded:" + dataDecoder.isDataDecoded());
+                if(dataDecoder.isDataDecoded()){
+                    break;
+                }
             }
-            System.out.println("is decoded:"+dataDecoder.isDataDecoded());
 
-            if(dataDecoder.isDataDecoded()){
-                break;
-            }
 
             rgbMatrix = null;
         }

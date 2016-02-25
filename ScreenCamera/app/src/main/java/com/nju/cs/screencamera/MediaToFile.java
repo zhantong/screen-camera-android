@@ -68,7 +68,7 @@ public class MediaToFile extends FileToImg {
         if (VERBOSE) {
             Log.d(TAG, "index row:" + row);
         }
-        int index = Integer.parseInt(row.substring(frameBlackLength+frameVaryLength+1, frameBlackLength+frameVaryLength+1 + 16), 2);
+        int index = Integer.parseInt(row.substring(frameBlackLength + frameVaryLength + 1, frameBlackLength + frameVaryLength + 1 + 16), 2);
         int crc = Integer.parseInt(row.substring(frameBlackLength+frameVaryLength+1 + 16, frameBlackLength+frameVaryLength+1 + 24), 2);
         int truth = CRC8.calcCrc8(index);
         if (VERBOSE) {
