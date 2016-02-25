@@ -19,7 +19,7 @@ public class MediaToFile extends FileToImg {
     private TextView debugView;//输出处理信息的TextView
     private TextView infoView;//输出全局信息的TextView
     private Handler handler;//与UI进程通信
-    int barCodeWidth = (frameBlackLength + frameVaryLength) * 2 + contentLength;//二维码边长
+    int barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;//二维码边长
     /**
      * 构造函数,获取必须的参数
      *

@@ -9,6 +9,7 @@ public class FileToImg {
     int frameWhiteLength=10;
     int frameBlackLength=1;
     int frameVaryLength=1;
+    int frameVaryTwoLength=1;
     int contentLength=76;
     int blockLength=4;
     int ecByteNum=76;

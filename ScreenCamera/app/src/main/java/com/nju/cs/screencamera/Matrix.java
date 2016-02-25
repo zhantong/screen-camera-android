@@ -286,10 +286,63 @@ public class Matrix {
             }
             transform.transformPoints(points);
             for (int x = 0; x < max; x += 2) {
-                int gray = getGray((int) points[x], (int) points[x + 1]);
-                grayMatrix.set(x / 2, y, gray);
+                int gray = getGray(Math.round(points[x]), Math.round(points[x + 1]));
+                grayMatrix.set(x / 2, y, gray,Math.round(points[x]),Math.round(points[x + 1]));
             }
         }
+        HashMap<Integer,Point>[] bars=new HashMap[4];
+        bars[0]=getVary(1.5f);
+        bars[1]=getVary(2.5f);
+        bars[2]=getVary(79.5f);
+        bars[3]=getVary(80.5f);
+        /*
+        for(Point p:bars[3].values()){
+            p.print();
+        }
+        */
+        grayMatrix.bars=bars;
+    }
+    public HashMap<Integer,Point> getVary(float offsetX){
+        float[] points=new float[76*2];
+        int index=0;
+        for(int y=3;y<3+76;y++){
+            points[index]=offsetX;
+            index++;
+            points[index]=(float)y+0.5f;
+            index++;
+        }
+        transform.transformPoints(points);
+        int[] a=new int[76];
+        int[] b=new int[76];
+        for(int x=0;x<76*2;x+=2){
+            a[x/2]=Math.round(points[x]);
+            b[x/2]=Math.round(points[x+1]);
+        }
+        for(int i=0;i<76;i++){
+            ;
+            //System.out.println(a[i]+" "+b[i]+" "+getGray(a[i],b[i]));
+        }
+        HashMap<Integer,Point> map=new HashMap<>();
+        for(int y=b[0];y<=b[75];y++){
+            int x=getX(a,b,y);
+            //System.out.println(x+" "+y+" "+getGray(x,y));
+            map.put(y,new Point(x,y,getGray(x,y)));
+        }
+        return map;
+    }
+    public int getX(int[] a,int[] b,int y){
+        int i;
+        for(i=0;i<b.length-1;i++){
+            if(y<b[i]){
+                break;
+            }
+        }
+        if(a[i-1]==a[i]){
+            return a[i];
+        }
+        float res=(float)(y-b[i-1])/(b[i]-b[i-1])*(a[i]-a[i-1])+a[i-1];
+        //System.out.println(res);
+        return Math.round(res);
     }
     public byte[] getContent(int dimensionX, int dimensionY){
         if(grayMatrix==null){
