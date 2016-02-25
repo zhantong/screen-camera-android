@@ -24,8 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class VideoToFile extends MediaToFile {
     private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
-    String lastRow=null;
-    StringBuffer lastBuffer=null;
 
     /**
      * 构造函数,获取必须的参数
@@ -51,7 +49,6 @@ public class VideoToFile extends MediaToFile {
         int fileByteNum=-1;
 
 
-        int startOffset = frameBlackLength + frameVaryLength;
         File inputFile = new File(videoFilePath);
         MediaExtractor extractor = new MediaExtractor();
         try {
@@ -131,43 +128,10 @@ public class VideoToFile extends MediaToFile {
                     break;
                 }
             }
-
-
             rgbMatrix = null;
         }
 
         byte[] out=dataDecoder.dataArray();
-        /*
-        int last=out.length;
-        System.out.println("before:"+last);
-        for(int i=out.length-1;i>0;i--){
-            byte current=out[i];
-            if(current==0){
-                continue;
-            }
-            else if(current==-128){
-                last=i;
-                break;
-            }
-            else{
-                break;
-            }
-        }
-        System.out.println("after:"+last);
-        OutputStream os;
-        int c=0;
-        try {
-            os = new FileOutputStream(file);
-            for(int i=0;i<last;i++){
-                c++;
-                os.write(out[i]);
-            }
-            os.close();
-        } catch (Exception e) {
-            Log.d(TAG, e.getMessage());
-        }
-        System.out.println("file byte length:"+c);
-        */
 
         OutputStream os;
         try {

@@ -6,6 +6,12 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
+import net.fec.openrq.ArrayDataDecoder;
+import net.fec.openrq.EncodingPacket;
+import net.fec.openrq.OpenRQ;
+import net.fec.openrq.decoder.SourceBlockDecoder;
+import net.fec.openrq.parameters.FECParameters;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -42,196 +48,57 @@ public class SingleImgToFile extends MediaToFile {
         updateInfo("正在识别...");
         RGBMatrix rgbMatrix=null;
         byte[] stream=null;
+        ArrayDataDecoder dataDecoder=null;
+        int fileByteNum=-1;
+
         try {
             rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
             rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
-        }
-        try {
-            rgbMatrix.reverse=false;
-            int unre = getIndex(rgbMatrix);
-            rgbMatrix.reverse=true;
-            int re=getIndex(rgbMatrix);
-            if(unre<re){
-                rgbMatrix.reverse=true;
-            }else{
-                rgbMatrix.reverse=false;
-            }
-            //System.out.println(unre+" "+re);
-        }catch (CRCCheckException e){
         }
         for(int i=0;i<2;i++) {
             rgbMatrix.reverse=!rgbMatrix.reverse;
-            try{
-                rgbMatrix.frameIndex = getIndex(rgbMatrix);
-            }catch (CRCCheckException e){
-                Log.d(TAG, "failed to get frame index: CRC check failed");
-                continue;
-            }
-            Log.d(TAG, "frame index:" + rgbMatrix.frameIndex);
-            /*
-            int frameAmount;
-            try {
-                frameAmount = getFrameAmount(rgbMatrix);
-            } catch (CRCCheckException e) {
-                Log.d(TAG, "failed to get frame amount: CRC check failed");
-                return;
-            }
-            Log.d(TAG, "frame amount:" + frameAmount);
-            */
-
-            try {
-                stream = imgToArray(rgbMatrix);
-                //stream = imgToIntArray(rgbMatrix);
-            } catch (ReedSolomonException e) {
-                Log.d(TAG, e.getMessage());
-                continue;
-            }
-            Log.i(TAG, "done!");
-            updateInfo("识别完成!");
-            System.out.println(stream);
-        }
-    }
-    public void driver(){
-        String filePath="/storage/emulated/0/getFileByteNum/frame-19.png";
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-        Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(bitmap.getWidth() * bitmap.getHeight() * 4);
-        bitmap.copyPixelsToBuffer(byteBuffer);
-        bitmap.recycle();
-        updateInfo("正在识别...");
-        RGBMatrix rgbMatrix=null;
-        int startOffset = frameBlackLength + frameVaryLength;
-        int stopOffset = startOffset + contentLength;
-        int contentByteNum = contentLength * contentLength / 8;
-        int[] stream=null;
-        try {
-            rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
-            rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-            //rgbMatrix.frameIndex = getIndex(rgbMatrix);
-        } catch (NotFoundException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        try {
-            //imgToArray(rgbMatrix);
-            BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
-
-            int realByteNum = contentByteNum - ecByteNum;
-            int[] result = new int[contentByteNum];
-            binaryMatrix.toArray(startOffset, startOffset, stopOffset, stopOffset, result);
-            ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
-            try {
-                decoder.decode(result, ecByteNum);
-            } catch (Exception e) {
-                throw new ReedSolomonException("error correcting failed");
-            }
-            stream = result;
-        } catch (ReedSolomonException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        Log.i(TAG, "done!");
-        updateInfo("识别完成!");
-        StringBuffer stringBuffer=new StringBuffer();
-        for(int b:stream){
-            String s=Integer.toBinaryString(b);
-            int temp=Integer.parseInt(s);
-            stringBuffer.append(String.format("%1$08d",temp));
-        }
-
-        filePath="/storage/emulated/0/getFileByteNum/frame-21.png";
-        bitmap = BitmapFactory.decodeFile(filePath, options);
-        byteBuffer = ByteBuffer.allocateDirect(bitmap.getWidth() * bitmap.getHeight() * 4);
-        bitmap.copyPixelsToBuffer(byteBuffer);
-        bitmap.recycle();
-        try {
-            rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
-            rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-            //rgbMatrix.frameIndex = getIndex(rgbMatrix);
-        } catch (NotFoundException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        try {
-            //imgToArray(rgbMatrix);
-            BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
-
-            int realByteNum = contentByteNum - ecByteNum;
-            int[] result = new int[contentByteNum];
-            binaryMatrix.toArray(startOffset, startOffset, stopOffset, stopOffset, result);
-            ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
-            try {
-                decoder.decode(result, ecByteNum);
-            } catch (Exception e) {
-                throw new ReedSolomonException("error correcting failed");
-            }
-            stream = result;
-        } catch (ReedSolomonException e) {
-            Log.d(TAG, e.getMessage());
-        }
-        Log.i(TAG, "done!");
-        updateInfo("识别完成!");
-        StringBuffer stringBuffer2=new StringBuffer();
-        for(int b:stream){
-            String s=Integer.toBinaryString(b);
-            int temp=Integer.parseInt(s);
-            stringBuffer2.append(String.format("%1$08d",temp));
-        }
-
-
-        filePath="/storage/emulated/0/getFileByteNum/frame-20.png";
-        bitmap = BitmapFactory.decodeFile(filePath, options);
-        byteBuffer = ByteBuffer.allocateDirect(bitmap.getWidth() * bitmap.getHeight() * 4);
-        bitmap.copyPixelsToBuffer(byteBuffer);
-        bitmap.recycle();
-        try {
-            rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-        BinaryMatrix binaryMatrix = rgbMatrix.sampleGrid(barCodeWidth, barCodeWidth);
-        int[] data=binaryMatrix.pixels;
-        System.out.println(stringBuffer.length()+" "+data.length);
-        int index = 0;
-        int countWrong=0;
-        for (int j = startOffset; j < stopOffset; j++) {
-            int jValue=j*binaryMatrix.width();
-            for (int i = startOffset; i < stopOffset; i++) {
-                int c=Integer.parseInt(stringBuffer2.charAt(index)+"");
-                if(data[jValue+i]==-1){
-                    int t=Integer.parseInt(stringBuffer.charAt(index)+"");
-                    if(t==0){
-                        data[jValue+i]=1;
-                    }else if(t==1){
-                        data[jValue+i]=0;
-                    }else{
-                        System.out.println("WRONG");
+            if(fileByteNum==-1){
+                try {
+                    fileByteNum = getFileByteNum(rgbMatrix);
+                    if(fileByteNum==0){
+                        fileByteNum=-1;
+                        continue;
                     }
-                    System.out.println(data[jValue+i]+" "+c);
+                    int length=contentLength*contentLength/8-ecByteNum-8;
+                    FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10)+1);
+                    System.out.println(parameters.toString());
+                    dataDecoder = OpenRQ.newDecoder(parameters, 0);
+                }catch (CRCCheckException e){
+                    System.out.println("CRC check failed");
                 }
-                if(data[jValue+i]!=c){
-                    countWrong++;
-                }
-                //System.out.println(data[jValue+i]+" "+c);
-                index++;
             }
+            byte[] current;
+            try {
+                current = getContent(rgbMatrix);
+            }catch (ReedSolomonException e){
+                System.out.println("error correction failed");
+                continue;
+            }
+            try {
+                EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
+                System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
+                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+            }catch (Exception e){
+                e.printStackTrace();
+                continue;
+            }
+            if(fileByteNum!=-1) {
+                for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
+                    System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
+                }
+                System.out.println("is decoded:" + dataDecoder.isDataDecoded());
+                if(dataDecoder.isDataDecoded()){
+                    break;
+                }
+            }
+            rgbMatrix = null;
         }
-        System.out.println("countWrong:"+countWrong);
-        binaryMatrix.pixels=data;
-        binaryMatrix.print();
-        int[] result = new int[contentByteNum];
-        binaryMatrix.toArray(startOffset, startOffset, stopOffset, stopOffset, result);
-        ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.QR_CODE_FIELD_256);
-        try {
-            decoder.decode(result, ecByteNum);
-        } catch (ReedSolomonException e) {
-            System.out.println("error correcting failed");
-        }
-    }
-    public int[] imgToIntArray(Matrix matrix) throws ReedSolomonException {
-        BinaryMatrix binaryMatrix = matrix.sampleGrid(barCodeWidth, barCodeWidth);
-        binaryMatrix.print();
-        return binaryMatrix.pixels;
     }
 }

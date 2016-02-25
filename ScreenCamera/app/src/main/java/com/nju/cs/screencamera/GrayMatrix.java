@@ -31,41 +31,6 @@ public class GrayMatrix extends FileToImg{
         int offset = y * width + x;
         pixels[offset] = new Point(origX,origY,pixel);
     }
-
-    public int toBinary(int value,int left,int right){
-        int minDistance=10000;
-        int index=-1;
-        int distance=Math.abs(value-blackValue);
-        if(distance<minDistance){
-            minDistance=distance;
-            index=0;
-        }
-        distance=Math.abs(value-whiteValue);
-        if(distance<minDistance){
-            minDistance=distance;
-            index=1;
-        }
-        distance=Math.abs(value-left);
-        if(distance<minDistance){
-            minDistance=distance;
-            if((ordered&&!reverse)||(!ordered&&reverse)){
-                index=0;
-            }else {
-                index=1;
-            }
-        }
-        distance=Math.abs(value-right);
-        if(distance<minDistance){
-            minDistance=distance;
-            if((ordered&&!reverse)||(!ordered&&reverse)){
-                index=1;
-            }else {
-                index=0;
-            }
-        }
-        return index;
-    }
-
     public int toBinary(int x,int y){
         int value=get(x,y);
         int origY=pixels[y * width + x].y;
@@ -119,24 +84,6 @@ public class GrayMatrix extends FileToImg{
         return index;
     }
 
-    public String getRow(int[] row){
-        whiteValue=row[2];
-        blackValue=row[3];
-        int left=row[1];
-        int right=row[width-2];
-        if(left>right){
-            ordered =false;
-        }else {
-            ordered=true;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        for(int v:row){
-            int b=toBinary(v,left,right);
-            stringBuilder.append(b);
-        }
-        return stringBuilder.toString();
-    }
-
     /*
     public byte[] getHead(){
         whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
@@ -176,30 +123,6 @@ public class GrayMatrix extends FileToImg{
         }
         //System.out.println();
         return array;
-    }
-
-    public BinaryMatrix toBinaryMatrix(){
-        BinaryMatrix binaryMatrix=new BinaryMatrix(width,height);
-        /*
-        whiteValue=get(width-2,height-2);
-        blackValue=get(width-3,height-2);
-        */
-        if(get(1,2)>get(width-2,2)){
-            ordered =false;
-        }
-
-        for(int y=0;y<height;y++){
-            int left=get(1,y);
-            int right=get(width-2,y);
-            for(int x=0;x<width;x++){
-                int b=toBinary(x,y);
-                binaryMatrix.set(x,y,b);
-                //System.out.print(b);
-            }
-            //System.out.println();
-        }
-        //System.out.println("whiteValue:"+whiteValue+"\tblackValue:"+blackValue);
-        return binaryMatrix;
     }
 
     public byte[] getContent(){

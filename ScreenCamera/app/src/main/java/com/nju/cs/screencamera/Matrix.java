@@ -148,56 +148,6 @@ public class Matrix {
         return height;
     }
 
-    /**
-     * 对透视变换后指定行采样
-     *
-     * @param dimensionX 透视变换后宽度
-     * @param dimensionY 透视变换后高度
-     * @param row        指定行
-     * @return 此行的二值化值
-     */
-    public String sampleRow(int dimensionX, int dimensionY, int row) {
-        grayMatrix=new GrayMatrix(dimensionX);
-        if(reverse){
-            grayMatrix.reverse=true;
-        }else {
-            grayMatrix.reverse=false;
-        }
-        //StringBuilder stringBuilder = new StringBuilder();
-        float[] points = new float[2 * dimensionX];
-        int max = points.length;
-        float rowValue = (float) row + 0.5f;
-        for (int x = 0; x < max; x += 2) {
-            points[x] = (float) (x / 2) + 0.5f;
-            points[x + 1] = rowValue;
-        }
-        transform.transformPoints(points);
-        int[] grays=new int[dimensionX];
-        for (int x = 0; x < max; x += 2) {
-            grays[x/2]=getGray((int) points[x], (int) points[x + 1]);
-            /*
-            if (pixelEquals((int) points[x], (int) points[x + 1], 1)) {
-                stringBuilder.append('1');
-            } else {
-                stringBuilder.append('0');
-            }
-            */
-            /*
-            int gray=getGray((int) points[x], (int) points[x + 1]);
-            if(gray<threshold1){
-                stringBuilder.append('0');
-            }
-            else if(gray>threshold2){
-                stringBuilder.append('1');
-            }
-            else{
-                //System.out.println(gray);
-                stringBuilder.append('2');
-            }
-            */
-        }
-        return grayMatrix.getRow(grays);
-    }
     public byte[] getHead(int dimensionX, int dimensionY){
 
         if(grayMatrix==null){
@@ -205,74 +155,6 @@ public class Matrix {
         }
         grayMatrix.reverse=reverse;
         return grayMatrix.getHead();
-    }
-    /**
-     * 对透视变换后区域采样
-     * 即对二维码每个block采样,保存到BinaryMatrix中
-     *
-     * @param dimensionX 透视变换后宽度
-     * @param dimensionY 透视变换后高度
-     * @return 返回存有二维码二值化数据的BinaryMatrix
-     */
-    public BinaryMatrix sampleGrid(int dimensionX, int dimensionY) {
-        GrayMatrix grayMatrix=new GrayMatrix(dimensionX);
-        float[] points = new float[2 * dimensionX];
-        int max = points.length;
-        for (int y = 0; y < dimensionY; y++) {
-            float iValue = (float) y + 0.5f;
-            for (int x = 0; x < max; x += 2) {
-                points[x] = (float) (x / 2) + 0.5f;
-                points[x + 1] = iValue;
-            }
-            transform.transformPoints(points);
-            //getFileByteNum(points);
-            Map<Integer,Integer> map=new HashMap<>();
-            int[] grays=new int[dimensionX];
-            for (int x = 0; x < max; x += 2) {
-                /*
-                if (pixelEquals((int) points[x], (int) points[x + 1], 1)) {
-                    binaryMatrix.set(x / 2, y, 1);
-                }
-                */
-                int gray=getGray((int) points[x], (int) points[x + 1]);
-                grayMatrix.set(x/2,y,gray);
-                /*
-                grays[x/2]=gray;
-                if(map.containsKey(gray)){
-                    map.put(gray,map.get(gray)+1);
-                }else{
-                    map.put(gray,1);
-                }
-                */
-                /*
-                if(gray<threshold1){
-                    binaryMatrix.set(x / 2, y, 0);
-                }
-                else if(gray>threshold2){
-                    binaryMatrix.set(x / 2, y, 1);
-                }
-                else{
-                    //System.out.println(gray);
-                    binaryMatrix.set(x / 2, y, -1);
-                }
-                */
-                /*
-                if(gray<threshold2){
-                    binaryMatrix.set(x / 2, y, 0);
-                }else {
-                    binaryMatrix.set(x / 2, y, 1);
-                }
-                */
-            }
-            /*
-            clustering(map);
-            for (int i = 0; i < dimensionX; i++) {
-                binaryMatrix.set(i, y, map.get(grays[i]));
-            }
-            //System.out.println(map.toString());
-            */
-        }
-        return grayMatrix.toBinaryMatrix();
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         grayMatrix=new GrayMatrix(dimensionX);
@@ -352,71 +234,6 @@ public class Matrix {
         System.out.println("reverse:"+reverse);
         //grayMatrix.print();
         return grayMatrix.getContent();
-    }
-    public void clustering(Map<Integer,Integer> map){
-        Set set=map.keySet();
-        List<Integer> list=new ArrayList(set);
-        Collections.sort(list);
-        int setSize=set.size();
-        int[] c={list.get(0),list.get(setSize/3),list.get(setSize*2/3),list.get(setSize-1)};
-        ArrayList<Integer>[] lists=new ArrayList[4];
-        for(int i=0;i<2;i++){
-            for(int j=0;j<4;j++){
-                lists[j]=new ArrayList<>();
-            }
-            for(int key:map.keySet()){
-                int min=255;
-                int index=-1;
-                for(int j=0;j<4;j++){
-                    int length=Math.abs(key-c[j]);
-                    if(length<min){
-                        min=length;
-                        index=j;
-                    }
-                }
-                lists[index].add(key);
-            }
-            for(int j=0;j<4;j++){
-                int sumItems=0;
-                int sum=0;
-                for(int k:lists[j]){
-                    int v=map.get(k);
-                    sum+=v*k;
-                    sumItems+=v;
-                }
-                if(sumItems!=0) {
-                    c[j] = sum / sumItems;
-                }
-            }
-            for(int v:c){
-                System.out.print(v + " ");
-            }
-            System.out.println();
-        }
-        /*
-        for(int i=0;i<2;i++){
-            for(int k:lists[i]){
-                map.put(k,0);
-            }
-        }
-        for(int i=2;i<4;i++){
-            for(int k:lists[i]){
-                map.put(k,1);
-            }
-        }
-        */
-        for(int k:lists[0]){
-            map.put(k,0);
-        }
-        for(int k:lists[3]){
-            map.put(k,1);
-        }
-        for(int k:lists[1]){
-            map.put(k,0);
-        }
-        for(int k:lists[2]){
-            map.put(k,1);
-        }
     }
     /**
      * 获取图像的阈值

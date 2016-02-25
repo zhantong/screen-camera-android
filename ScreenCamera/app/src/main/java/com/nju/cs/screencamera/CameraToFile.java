@@ -4,7 +4,15 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
+import net.fec.openrq.ArrayDataDecoder;
+import net.fec.openrq.EncodingPacket;
+import net.fec.openrq.OpenRQ;
+import net.fec.openrq.decoder.SourceBlockDecoder;
+import net.fec.openrq.parameters.FECParameters;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -47,11 +55,11 @@ public class CameraToFile extends MediaToFile {
         int count = 0;
         int lastSuccessIndex = 0;
         int frameAmount = 0;
-        List<byte[]> buffer = new LinkedList<>();
         byte[] img = {};
-        Matrix matrix;
-        byte[] stream;
         int index = 0;
+        RGBMatrix rgbMatrix;
+        ArrayDataDecoder dataDecoder=null;
+        int fileByteNum=-1;
         while (true) {
             count++;
             updateInfo("正在识别...");
@@ -62,68 +70,75 @@ public class CameraToFile extends MediaToFile {
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
-                matrix = imgToMatrix(img);
+                rgbMatrix = new RGBMatrix(img, imgWidth, imgHeight);
+                rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+                //getFileByteNum(rgbMatrix);
             } catch (NotFoundException e) {
-                if (lastSuccessIndex == 0) {
-                    mPreview.focus();
+                Log.d(TAG, e.getMessage());
+                continue;
+            }
+            System.out.println("current:"+count);
+            for(int i=0;i<2;i++) {
+                rgbMatrix.reverse=!rgbMatrix.reverse;
+                if(fileByteNum==-1){
+                    try {
+                        fileByteNum = getFileByteNum(rgbMatrix);
+                        if(fileByteNum==0){
+                            fileByteNum=-1;
+                            continue;
+                        }
+                        int length=contentLength*contentLength/8-ecByteNum-8;
+                        FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10)+1);
+                        System.out.println(parameters.toString());
+                        dataDecoder = OpenRQ.newDecoder(parameters, 0);
+                    }catch (CRCCheckException e){
+                        System.out.println("CRC check failed");
+                    }
                 }
-                Log.d(TAG, e.getMessage());
-                continue;
-            } catch (CRCCheckException e) {
-                Log.d(TAG, "CRC check failed");
-                continue;
-            }
-            index = matrix.frameIndex;
-            Log.i("frame " + index + "/" + count, "processing...");
-            if (lastSuccessIndex == index) {
-                Log.i("frame " + index + "/" + count, "same frame index!");
-                continue;
-            } else if (index - lastSuccessIndex != 1) {
-                Log.i("frame " + index + "/" + count, "bad frame index!");
-                continue;
-            }
-            try {
-                stream = imgToArray(matrix);
-            } catch (ReedSolomonException e) {
-                Log.d(TAG, e.getMessage());
-                continue;
-            }
-            buffer.add(stream);
-            lastSuccessIndex = index;
-            Log.i("frame " + index + "/" + count, "done!");
-            updateDebug(index, lastSuccessIndex, frameAmount, count);
-            if (lastSuccessIndex == frameAmount) {
-                mPreview.stop();
-                break;
-            }
-            if (frameAmount == 0) {
+                byte[] current;
                 try {
-                    frameAmount = getFrameAmount(matrix);
-                } catch (CRCCheckException e) {
-                    Log.d(TAG, "CRC check failed");
+                    current = getContent(rgbMatrix);
+                }catch (ReedSolomonException e){
+                    System.out.println("error correction failed");
+                    continue;
+                }
+                try {
+                    EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
+                    System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
+                    dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+                }catch (Exception e){
+                    e.printStackTrace();
                     continue;
                 }
             }
-            matrix = null;
+            if(fileByteNum!=-1) {
+                for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
+                    System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
+                }
+                System.out.println("is decoded:" + dataDecoder.isDataDecoded());
+                if(dataDecoder.isDataDecoded()){
+                    break;
+                }
+            }
+            rgbMatrix = null;
         }
+        byte[] out=dataDecoder.dataArray();
+
+        OutputStream os;
+        try {
+            os = new FileOutputStream(file);
+            os.write(out);
+            os.close();
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
+        String sha1=FileVerification.fileToSHA1(file.getAbsolutePath());
+        System.out.println(sha1);
+        /*
         updateInfo("识别完成!正在写入文件");
         Log.d("cameraToFile", "total length:" + buffer.size());
         bufferToFile(buffer, file);
         updateInfo("写入文件成功!");
-    }
-
-    /**
-     * 帧转换为Matrix,Matrix实例化时进行一些图像操作
-     *
-     * @param img 帧
-     * @return 保存有此帧信息的Matrix
-     * @throws NotFoundException 对图像处理时,不能找到二维码则抛出未找到异常
-     * @throws CRCCheckException 解析帧编号时,如果CRC校验失败,则抛出异常
-     */
-    public Matrix imgToMatrix(byte[] img) throws NotFoundException, CRCCheckException {
-        Matrix matrix = new Matrix(img, imgWidth, imgHeight);
-        matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
-        matrix.frameIndex = getIndex(matrix);
-        return matrix;
+        */
     }
 }
