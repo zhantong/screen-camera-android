@@ -28,7 +28,7 @@ public class FileToImg {
     int contentLength=80;
     int blockLength=4;
     int ecNum=80;
-    int ecLength=8;
+    int ecLength=10;
     int fileByteNum;
     public List<int[]> readFile(String filePath){
         List<byte[]> buffer=new LinkedList<>();

@@ -27,7 +27,8 @@ public class MediaToFile extends FileToImg {
     private Handler handler;//与UI进程通信
     int barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;//二维码边长
     FileToImg fileToImg=new FileToImg();
-    ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
+    //ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
+    ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
     public List<int[]> out=fileToImg.reading(Environment.getExternalStorageDirectory() + "/test.txt");
     /**
      * 构造函数,获取必须的参数
@@ -140,7 +141,7 @@ public class MediaToFile extends FileToImg {
     public boolean check(int[] con,int[] orig){
         //System.out.println("con length:"+con.length);
         int maxCount=-1;
-        int realLength=700;
+        int realLength=contentLength*contentLength/ecLength-ecNum;
         for (int[] current:out){
             //System.out.println("current length:"+current.length);
             int count=0;
