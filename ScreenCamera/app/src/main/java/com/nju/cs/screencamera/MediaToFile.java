@@ -97,29 +97,9 @@ public class MediaToFile extends FileToImg {
                 con[i/ecLength]|=1<<(i%ecLength);
             }
         }
-        /*
-        int[] con=new int[content.length];
-        for(int i=0;i<con.length;i++){
-            con[i]=content[i]&0xff;
-        }
-        */
         int[] orig=new int[contentLength*contentLength/ecLength];
         System.arraycopy(con, 0, orig, 0, contentLength*contentLength/ecLength);
         decoder.decode(con, ecNum);
-
-        /*
-        decoder.decode(con, ecByteNum);
-
-        int count=0;
-        for(int i=0;i<646;i++){
-            if(con[i]==orig[i]){
-                count++;
-            }
-        }
-        if(count!=646){
-            System.out.println("------");
-        }
-        */
         System.out.println("check:" + check(con,orig));
         int realByteNum=contentLength*contentLength/8-ecNum*ecLength/8;
         byte[] res=new byte[realByteNum];
@@ -129,12 +109,6 @@ public class MediaToFile extends FileToImg {
             }
         }
         System.out.println("content length:"+con.length+"\tecByteNum:"+ecNum+"\treal byte num:"+realByteNum);
-        /*
-        byte[] res = new byte[realByteNum];
-        for (int i = 0; i < realByteNum; i++) {
-            res[i] = (byte) con[i];
-        }
-        */
         return res;
     }
 

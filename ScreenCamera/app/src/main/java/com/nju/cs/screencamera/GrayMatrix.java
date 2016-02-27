@@ -127,13 +127,10 @@ public class GrayMatrix extends FileToImg{
     }
 
     public BitSet getContent(){
-        //whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
-        //blackValue=get(frameBlackLength+frameVaryLength+1,frameBlackLength);
         if(get(1,2)>get(width-2,2)){
             ordered =false;
         }
         int index=0;
-        //byte[] array=new byte[contentLength*contentLength/8];
         BitSet bitSet=new BitSet();
         for(int y=frameBlackLength+frameVaryLength+frameVaryTwoLength;y<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;y++){
             if(get(0,y)<125){
@@ -145,32 +142,9 @@ public class GrayMatrix extends FileToImg{
                 whiteValue=get(0,y);
             }
             //System.out.println("black value:"+blackValue+"\twhite value:"+whiteValue);
-            //int left=get(1,y);
-            //int right=get(width-2,y);
-            int left=0;
-            int right=0;
-            //System.out.println("left:"+left+"\tright:"+right);
             for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
-
                 //System.out.println(x+" "+y+" "+get(x,y)+" "+pixels[y * width + x].x+" "+pixels[y * width + x].y+" "+pixels[y * width + x].value);
-                /*
-                int origY=pixels[y * width + x].y;
-                if(bars[0].containsKey(origY)){
-                    left=bars[0].get(origY).value;
-                }
-                else {
-                    left=bars[2].get(origY).value;
-                }
-                if(bars[1].containsKey(origY)){
-                    right=bars[1].get(origY).value;
-                }
-                else {
-                    right=bars[3].get(origY).value;
-                }
-                */
-                //array[index/8]<<=1;
                 if(toBinary(x,y)==1){
-                    //array[index / 8] |= 0x01;
                     bitSet.set(index);
                     if(false&&y==frameBlackLength+frameVaryLength+frameVaryTwoLength) {
                         System.out.print("1 ");

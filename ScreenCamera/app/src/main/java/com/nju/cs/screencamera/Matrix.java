@@ -203,10 +203,11 @@ public class Matrix {
             a[x/2]=Math.round(points[x]);
             b[x/2]=Math.round(points[x+1]);
         }
+        /*
         for(int i=0;i<length;i++){
-            ;
             //System.out.println(a[i]+" "+b[i]+" "+getGray(a[i],b[i]));
         }
+        */
         HashMap<Integer,Point> map=new HashMap<>();
         for(int y=b[0];y<=b[length-1];y++){
             int x=getX(a,b,y);
