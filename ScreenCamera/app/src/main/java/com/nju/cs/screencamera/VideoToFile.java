@@ -95,7 +95,7 @@ public class VideoToFile extends MediaToFile {
                             fileByteNum=-1;
                             continue;
                         }
-                        int length=contentLength*contentLength/8-ecByteNum-8;
+                        int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
                         FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10)+1);
                         System.out.println(parameters.toString());
                         dataDecoder = OpenRQ.newDecoder(parameters, 0);

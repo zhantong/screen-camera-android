@@ -25,9 +25,10 @@ public class FileToImg {
     int frameBlackLength=1;
     int frameVaryLength=1;
     int frameVaryTwoLength=1;
-    int contentLength=44;
+    int contentLength=80;
     int blockLength=4;
-    int ecByteNum=42;
+    int ecNum=80;
+    int ecLength=8;
     int fileByteNum;
     public List<int[]> readFile(String filePath){
         List<byte[]> buffer=new LinkedList<>();
@@ -46,7 +47,7 @@ public class FileToImg {
         }
         fileByteNum=byteData.length;
         System.out.println("file byte number:"+fileByteNum);
-        int length=contentLength*contentLength/8-ecByteNum-8;
+        int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
         FECParameters parameters= FECParameters.newParameters(byteData.length, length, byteData.length / (length * 10) + 1);
         System.out.println(parameters.toString());
         System.out.println("length:"+byteData.length+"\tblock length:"+length+"\tblocks:"+parameters.numberOfSourceBlocks());
@@ -76,7 +77,7 @@ public class FileToImg {
             for(int i=0;i<b.length;i++){
                 c[i]=b[i]&0xff;
             }
-            encoder.encode(c,ecByteNum);
+            encoder.encode(c,ecNum);
             out.add(c);
         }
         return out;

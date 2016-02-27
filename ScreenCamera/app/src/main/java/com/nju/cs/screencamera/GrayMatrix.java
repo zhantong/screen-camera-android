@@ -1,5 +1,6 @@
 package com.nju.cs.screencamera;
 
+import java.util.BitSet;
 import java.util.HashMap;
 
 /**
@@ -125,14 +126,15 @@ public class GrayMatrix extends FileToImg{
         return array;
     }
 
-    public byte[] getContent(){
+    public BitSet getContent(){
         //whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
         //blackValue=get(frameBlackLength+frameVaryLength+1,frameBlackLength);
         if(get(1,2)>get(width-2,2)){
             ordered =false;
         }
         int index=0;
-        byte[] array=new byte[contentLength*contentLength/8];
+        //byte[] array=new byte[contentLength*contentLength/8];
+        BitSet bitSet=new BitSet();
         for(int y=frameBlackLength+frameVaryLength+frameVaryTwoLength;y<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;y++){
             if(get(0,y)<125){
                 blackValue=get(0,y);
@@ -166,9 +168,10 @@ public class GrayMatrix extends FileToImg{
                     right=bars[3].get(origY).value;
                 }
                 */
-                array[index/8]<<=1;
+                //array[index/8]<<=1;
                 if(toBinary(x,y)==1){
-                    array[index / 8] |= 0x01;
+                    //array[index / 8] |= 0x01;
+                    bitSet.set(index);
                     if(false&&y==frameBlackLength+frameVaryLength+frameVaryTwoLength) {
                         System.out.print("1 ");
                     }
@@ -184,7 +187,7 @@ public class GrayMatrix extends FileToImg{
                 System.out.println();
             }
         }
-        return array;
+        return bitSet;
     }
     public void print(){
         System.out.println("width:"+width+"\theight:"+height);

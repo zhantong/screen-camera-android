@@ -3,6 +3,7 @@ package com.nju.cs.screencamera;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -157,6 +158,7 @@ public class Matrix {
         return grayMatrix.getHead();
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
+        int length=80;
         grayMatrix=new GrayMatrix(dimensionX);
         float[] points = new float[2 * dimensionX];
         int max = points.length;
@@ -175,8 +177,8 @@ public class Matrix {
         HashMap<Integer,Point>[] bars=new HashMap[4];
         bars[0]=getVary(1.5f);
         bars[1]=getVary(2.5f);
-        bars[2]=getVary(47.5f);
-        bars[3]=getVary(48.5f);
+        bars[2]=getVary((float)length+3.5f);
+        bars[3]=getVary((float)length+4.5f);
         /*
         for(Point p:bars[3].values()){
             p.print();
@@ -185,27 +187,28 @@ public class Matrix {
         grayMatrix.bars=bars;
     }
     public HashMap<Integer,Point> getVary(float offsetX){
-        float[] points=new float[44*2];
+        int length=80;
+        float[] points=new float[length*2];
         int index=0;
-        for(int y=3;y<3+44;y++){
+        for(int y=3;y<3+length;y++){
             points[index]=offsetX;
             index++;
             points[index]=(float)y+0.5f;
             index++;
         }
         transform.transformPoints(points);
-        int[] a=new int[44];
-        int[] b=new int[44];
-        for(int x=0;x<44*2;x+=2){
+        int[] a=new int[length];
+        int[] b=new int[length];
+        for(int x=0;x<length*2;x+=2){
             a[x/2]=Math.round(points[x]);
             b[x/2]=Math.round(points[x+1]);
         }
-        for(int i=0;i<44;i++){
+        for(int i=0;i<length;i++){
             ;
             //System.out.println(a[i]+" "+b[i]+" "+getGray(a[i],b[i]));
         }
         HashMap<Integer,Point> map=new HashMap<>();
-        for(int y=b[0];y<=b[43];y++){
+        for(int y=b[0];y<=b[length-1];y++){
             int x=getX(a,b,y);
             //System.out.println(x+" "+y+" "+getGray(x,y));
             map.put(y,new Point(x,y,getGray(x,y)));
@@ -226,7 +229,7 @@ public class Matrix {
         //System.out.println(res);
         return Math.round(res);
     }
-    public byte[] getContent(int dimensionX, int dimensionY){
+    public BitSet getContent(int dimensionX, int dimensionY){
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }

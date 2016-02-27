@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -88,14 +89,22 @@ public class MediaToFile extends FileToImg {
         return index;
     }
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{
-        byte[] content=matrix.getContent(barCodeWidth, barCodeWidth);
+        BitSet content=matrix.getContent(barCodeWidth, barCodeWidth);
+        int[] con=new int[contentLength*contentLength/ecLength];
+        for(int i=0;i<con.length*ecLength;i++){
+            if(content.get(i)){
+                con[i/ecLength]|=1<<(i%ecLength);
+            }
+        }
+        /*
         int[] con=new int[content.length];
         for(int i=0;i<con.length;i++){
             con[i]=content[i]&0xff;
         }
-        int[] orig=new int[content.length];
-        System.arraycopy(con, 0, orig, 0, content.length);
-        decoder.decode(con, ecByteNum);
+        */
+        int[] orig=new int[contentLength*contentLength/ecLength];
+        System.arraycopy(con, 0, orig, 0, contentLength*contentLength/ecLength);
+        decoder.decode(con, ecNum);
 
         /*
         decoder.decode(con, ecByteNum);
@@ -111,31 +120,40 @@ public class MediaToFile extends FileToImg {
         }
         */
         System.out.println("check:" + check(con,orig));
-        int realByteNum=contentLength*contentLength/8-ecByteNum;
-        System.out.println("content length:"+con.length+"\tecByteNum:"+ecByteNum+"\treal byte num:"+realByteNum);
+        int realByteNum=contentLength*contentLength/8-ecNum*ecLength/8;
+        byte[] res=new byte[realByteNum];
+        for(int i=0;i<res.length*8;i++){
+            if((con[i/ecLength]&(1<<(i%ecLength)))>0){
+                res[i/8]|=1<<(i%8);
+            }
+        }
+        System.out.println("content length:"+con.length+"\tecByteNum:"+ecNum+"\treal byte num:"+realByteNum);
+        /*
         byte[] res = new byte[realByteNum];
         for (int i = 0; i < realByteNum; i++) {
             res[i] = (byte) con[i];
         }
+        */
         return res;
     }
 
     public boolean check(int[] con,int[] orig){
         //System.out.println("con length:"+con.length);
         int maxCount=-1;
+        int realLength=700;
         for (int[] current:out){
             //System.out.println("current length:"+current.length);
             int count=0;
-            for(int i=0;i<200;i++){
+            for(int i=0;i<realLength;i++){
                 if(con[i]==current[i]){
                     count++;
                 }
             }
-            if(count==200){
+            if(count==realLength){
                 return true;
             }
-            if(count>180){
-                for(int i=0;i<200;i++){
+            if(count>realLength-100){
+                for(int i=0;i<realLength;i++){
                     if(con[i]!=current[i]){
                         System.out.println("l:"+i+"\tw:"+con[i]+"\tr:"+current[i]+"\to:"+orig[i]);
                     }
