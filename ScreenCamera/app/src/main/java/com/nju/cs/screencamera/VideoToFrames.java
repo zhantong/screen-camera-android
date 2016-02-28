@@ -320,6 +320,7 @@ public class VideoToFrames extends AndroidTestCase {
                             decodeCount++;
                             outputSurface.saveFrame(outputFile.toString());
                             */
+                            Thread.sleep(5);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
