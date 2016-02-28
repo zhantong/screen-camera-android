@@ -150,7 +150,6 @@ public class Matrix {
     }
 
     public byte[] getHead(int dimensionX, int dimensionY){
-
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }
@@ -158,7 +157,6 @@ public class Matrix {
         return grayMatrix.getHead();
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
-        int length=80;
         grayMatrix=new GrayMatrix(dimensionX,dimensionY);
         float[] points = new float[2 * dimensionX];
         int max = points.length;
@@ -174,24 +172,22 @@ public class Matrix {
                 grayMatrix.set(x / 2, y, gray,Math.round(points[x]),Math.round(points[x + 1]));
             }
         }
-        HashMap<Integer,Point>[] bars=new HashMap[4];
-        bars[0]=getVary(1.5f);
-        bars[1]=getVary(2.5f);
-        bars[2]=getVary((float)length+3.5f);
-        bars[3]=getVary((float)length+4.5f);
-        /*
-        for(Point p:bars[3].values()){
-            p.print();
-        }
-        */
-        grayMatrix.bars=bars;
     }
-    public HashMap<Integer,Point> getVary(float offsetX){
-        int length=80;
+    public HashMap<Integer,Point>[] sampleVary(int[] posX,int topY,int bottomY){
+        System.out.println(posX.length);
+        HashMap<Integer,Point>[] bars=new HashMap[posX.length];
+        for(int i=0;i<posX.length;i++){
+            float realX=posX[i]+0.5f;
+            bars[i]=getVary(realX,topY,bottomY);
+        }
+        return bars;
+    }
+    public HashMap<Integer,Point> getVary(float posX,int topY,int bottomY){
+        int length=bottomY-topY;
         float[] points=new float[length*2];
         int index=0;
-        for(int y=1;y<1+length;y++){
-            points[index]=offsetX;
+        for(int y=topY;y<bottomY;y++){
+            points[index]=posX;
             index++;
             points[index]=(float)y+0.5f;
             index++;
@@ -199,9 +195,9 @@ public class Matrix {
         transform.transformPoints(points);
         int[] a=new int[length];
         int[] b=new int[length];
-        for(int x=0;x<length*2;x+=2){
-            a[x/2]=Math.round(points[x]);
-            b[x/2]=Math.round(points[x+1]);
+        for(int i=0;i<length*2;i+=2){
+            a[i/2]=Math.round(points[i]);
+            b[i/2]=Math.round(points[i+1]);
         }
         /*
         for(int i=0;i<length;i++){
@@ -230,9 +226,12 @@ public class Matrix {
         //System.out.println(res);
         return Math.round(res);
     }
-    public BitSet getContent(int dimensionX, int dimensionY){
-        if(grayMatrix==null){
+    public BitSet getContent(int dimensionX, int dimensionY,int[] posX,int topY,int bottomY){
+        if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
+        }
+        if(grayMatrix.bars==null){
+            grayMatrix.bars=sampleVary(posX,topY,bottomY);
         }
         grayMatrix.reverse=reverse;
         System.out.println("reverse:"+reverse);
