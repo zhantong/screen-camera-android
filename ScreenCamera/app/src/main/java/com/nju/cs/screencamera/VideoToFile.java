@@ -79,7 +79,7 @@ public class VideoToFile extends MediaToFile {
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
                 rgbMatrix = new RGBMatrix(img, imgWidth, imgHeight);
-                rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+                rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
                 //getFileByteNum(rgbMatrix);
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());

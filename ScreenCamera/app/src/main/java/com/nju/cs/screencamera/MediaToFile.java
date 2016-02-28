@@ -26,6 +26,7 @@ public class MediaToFile extends FileToImg {
     private TextView infoView;//输出全局信息的TextView
     private Handler handler;//与UI进程通信
     int barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;//二维码边长
+    int barCodeHeight=2*frameBlackLength + contentLength;
     FileToImg fileToImg=new FileToImg();
     //ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
     ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
@@ -74,7 +75,7 @@ public class MediaToFile extends FileToImg {
         });
     }
     public int getFileByteNum(Matrix matrix) throws CRCCheckException{
-        byte[] head=matrix.getHead(barCodeWidth, barCodeWidth);
+        byte[] head=matrix.getHead(barCodeWidth, barCodeHeight);
         int index=(head[0]&0xff)<<24|(head[1]&0xff)<<16|(head[2]&0xff)<<8|(head[3]&0xff);
         int crc=head[4]&0xff;
         int truth=CRC8.calcCrc8(index);
@@ -90,7 +91,7 @@ public class MediaToFile extends FileToImg {
         return index;
     }
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{
-        BitSet content=matrix.getContent(barCodeWidth, barCodeWidth);
+        BitSet content=matrix.getContent(barCodeWidth, barCodeHeight);
         int[] con=new int[contentLength*contentLength/ecLength];
         for(int i=0;i<con.length*ecLength;i++){
             if(content.get(i)){

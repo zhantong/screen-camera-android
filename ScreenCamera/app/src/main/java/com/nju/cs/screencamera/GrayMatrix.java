@@ -15,10 +15,10 @@ public class GrayMatrix extends FileToImg{
     public int blackValue;
     public int whiteValue;
     public HashMap<Integer,Point>[] bars;
-    public GrayMatrix(int dimension){
-        pixels=new Point[dimension*dimension];
-        width=dimension;
-        height=dimension;
+    public GrayMatrix(int dimensionX,int dimensionY){
+        pixels=new Point[dimensionX*dimensionY];
+        width=dimensionX;
+        height=dimensionY;
     }
     public int get(int x, int y) {
         int offset = y * width + x;
@@ -132,7 +132,7 @@ public class GrayMatrix extends FileToImg{
         }
         int index=0;
         BitSet bitSet=new BitSet();
-        for(int y=frameBlackLength+frameVaryLength+frameVaryTwoLength;y<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;y++){
+        for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
             if(get(0,y)<125){
                 blackValue=get(0,y);
                 whiteValue=get(0,y+1);

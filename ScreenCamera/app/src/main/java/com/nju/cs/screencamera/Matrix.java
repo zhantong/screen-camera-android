@@ -159,7 +159,7 @@ public class Matrix {
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         int length=80;
-        grayMatrix=new GrayMatrix(dimensionX);
+        grayMatrix=new GrayMatrix(dimensionX,dimensionY);
         float[] points = new float[2 * dimensionX];
         int max = points.length;
         for (int y = 0; y < dimensionY; y++) {
@@ -190,7 +190,7 @@ public class Matrix {
         int length=80;
         float[] points=new float[length*2];
         int index=0;
-        for(int y=3;y<3+length;y++){
+        for(int y=1;y<1+length;y++){
             points[index]=offsetX;
             index++;
             points[index]=(float)y+0.5f;
@@ -205,7 +205,7 @@ public class Matrix {
         }
         /*
         for(int i=0;i<length;i++){
-            //System.out.println(a[i]+" "+b[i]+" "+getGray(a[i],b[i]));
+            System.out.println(a[i]+" "+b[i]+" "+getGray(a[i],b[i]));
         }
         */
         HashMap<Integer,Point> map=new HashMap<>();
