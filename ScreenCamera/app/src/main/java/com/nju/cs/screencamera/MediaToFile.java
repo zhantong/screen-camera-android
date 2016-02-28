@@ -75,16 +75,30 @@ public class MediaToFile extends FileToImg {
         });
     }
     public int getFileByteNum(Matrix matrix) throws CRCCheckException{
-        byte[] head=matrix.getHead(barCodeWidth, barCodeHeight);
-        int index=(head[0]&0xff)<<24|(head[1]&0xff)<<16|(head[2]&0xff)<<8|(head[3]&0xff);
-        int crc=head[4]&0xff;
+        BitSet head=matrix.getHead(barCodeWidth, barCodeHeight);
+        int intLength=32;
+        int byteLength=8;
+        int index=0;
+        for(int i=0;i<intLength;i++){
+            if(head.get(i)){
+                index|=1<<(intLength-i-1);
+            }
+        }
+        int crc=0;
+        for(int i=0;i<byteLength;i++){
+            if(head.get(intLength+i)){
+                crc|=1<<i;
+            }
+        }
         int truth=CRC8.calcCrc8(index);
         Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
+        /*
         Log.d(TAG, "head:");
         System.out.println("getFileByteNum:");
         for(byte b:head){
             Log.d(TAG,Byte.toString(b));
         }
+        */
         if(crc!=truth){
             throw CRCCheckException.getNotFoundInstance();
         }

@@ -111,19 +111,18 @@ public class GrayMatrix extends FileToImg{
         return array;
     }
     */
-    public byte[] getHead(){
-        int index=0;
-        byte[] array=new byte[contentLength/8];
-        for(int x=0;x<array.length*8;x++){
-            //System.out.print(get(x, 0));
-            array[index/8]<<=1;
-            if(get(x,0)>130){
-                array[index / 8] |= 0x01;
+    public BitSet getHead(){
+        int black=get(0,0);
+        int white=get(0,1);
+        int threshold=(black+white)/2;
+        int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
+        BitSet bitSet=new BitSet();
+        for(int i=0;i<length;i++){
+            if(get(i,0)>threshold){
+                bitSet.set(i);
             }
-            index++;
         }
-        //System.out.println();
-        return array;
+        return bitSet;
     }
 
     public BitSet getContent(){
@@ -133,12 +132,12 @@ public class GrayMatrix extends FileToImg{
         int index=0;
         BitSet bitSet=new BitSet();
         for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
-            if(get(0,y)<125){
+            if(get(0,y)<get(0,y-1)){
                 blackValue=get(0,y);
-                whiteValue=get(0,y+1);
+                whiteValue=get(0,y-1);
             }
             else{
-                blackValue=get(0,y+1);
+                blackValue=get(0,y-1);
                 whiteValue=get(0,y);
             }
             //System.out.println("black value:"+blackValue+"\twhite value:"+whiteValue);

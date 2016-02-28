@@ -149,7 +149,7 @@ public class Matrix {
         return height;
     }
 
-    public byte[] getHead(int dimensionX, int dimensionY){
+    public BitSet getHead(int dimensionX, int dimensionY){
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }
@@ -208,7 +208,7 @@ public class Matrix {
         for(int y=b[0];y<=b[length-1];y++){
             int x=getX(a,b,y);
             //System.out.println(x+" "+y+" "+getGray(x,y));
-            map.put(y,new Point(x,y,getGray(x,y)));
+            map.put(y, new Point(x, y, getGray(x, y)));
         }
         return map;
     }
