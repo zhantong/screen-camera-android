@@ -25,12 +25,10 @@ public class MediaToFile extends FileToImg {
     private TextView debugView;//输出处理信息的TextView
     private TextView infoView;//输出全局信息的TextView
     private Handler handler;//与UI进程通信
-    int barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;//二维码边长
-    int barCodeHeight=2*frameBlackLength + contentLength;
-    FileToImg fileToImg=new FileToImg();
-    //ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
-    ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
-    public List<int[]> out=fileToImg.reading(Environment.getExternalStorageDirectory() + "/test.txt");
+    int barCodeWidth;
+    int barCodeHeight;
+    ReedSolomonDecoder decoder;
+    public List<int[]> out;
     /**
      * 构造函数,获取必须的参数
      *
@@ -42,6 +40,8 @@ public class MediaToFile extends FileToImg {
         this.debugView = debugView;
         this.infoView = infoView;
         this.handler = handler;
+        barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;
+        barCodeHeight=2*frameBlackLength + contentLength;
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI
@@ -104,7 +104,7 @@ public class MediaToFile extends FileToImg {
         }
         return index;
     }
-    public byte[] getContent(Matrix matrix) throws ReedSolomonException{
+    public int[] getRawContent(Matrix matrix){
         int[] posX={frameBlackLength,frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
         BitSet content=matrix.getContent(barCodeWidth, barCodeHeight,posX,frameBlackLength,frameBlackLength+contentLength);
         int[] con=new int[contentLength*contentLength/ecLength];
@@ -113,23 +113,44 @@ public class MediaToFile extends FileToImg {
                 con[i/ecLength]|=1<<(i%ecLength);
             }
         }
-        int[] orig=new int[contentLength*contentLength/ecLength];
-        System.arraycopy(con, 0, orig, 0, contentLength*contentLength/ecLength);
-        decoder.decode(con, ecNum);
-        System.out.println("check:" + check(con,orig));
+        return con;
+    }
+    public int[] decode(int[] raw,int ecNum) throws ReedSolomonException{
+        if(decoder==null){
+            decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
+            //decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
+        }
+        decoder.decode(raw, ecNum);
+        return raw;
+    }
+    public byte[] getContent(Matrix matrix) throws ReedSolomonException{
+        boolean checkDecode=true;
+        int[] rawContent=getRawContent(matrix);
+        int[] originContent=null;
+        if(checkDecode){
+            originContent=new int[rawContent.length];
+            System.arraycopy(rawContent, 0, originContent, 0, rawContent.length);
+        }
+        int[] decodedContent=decode(rawContent,ecNum);
+        if(checkDecode){
+            boolean checkResult=check(decodedContent,originContent);
+            System.out.println("check if decode is correct:"+checkResult);
+        }
         int realByteNum=contentLength*contentLength/8-ecNum*ecLength/8;
         byte[] res=new byte[realByteNum];
         for(int i=0;i<res.length*8;i++){
-            if((con[i/ecLength]&(1<<(i%ecLength)))>0){
+            if((decodedContent[i/ecLength]&(1<<(i%ecLength)))>0){
                 res[i/8]|=1<<(i%8);
             }
         }
-        System.out.println("content length:"+con.length+"\tecByteNum:"+ecNum+"\treal byte num:"+realByteNum);
         return res;
     }
-
     public boolean check(int[] con,int[] orig){
+        String filePath=Environment.getExternalStorageDirectory() + "/test.txt";
         //System.out.println("con length:"+con.length);
+        if(out==null){
+            out=reading(filePath);
+        }
         int maxCount=-1;
         int realLength=contentLength*contentLength/ecLength-ecNum;
         for (int[] current:out){
@@ -158,5 +179,18 @@ public class MediaToFile extends FileToImg {
         System.out.println("max count:"+maxCount);
         return false;
     }
-
+    public LinkedList<int[]> reading(String filePath){
+        ObjectInputStream inputStream;
+        LinkedList<int[]> d=new LinkedList<>();
+        try {
+            inputStream = new ObjectInputStream(new FileInputStream(filePath));
+            d=(LinkedList<int[]>)inputStream.readObject();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        catch (ClassNotFoundException e){
+            e.printStackTrace();
+        }
+        return d;
+    }
 }

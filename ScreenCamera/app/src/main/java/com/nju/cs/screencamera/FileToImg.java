@@ -82,18 +82,4 @@ public class FileToImg {
         }
         return out;
     }
-    public LinkedList<int[]> reading(String filePath){
-        ObjectInputStream inputStream;
-        LinkedList<int[]> d=new LinkedList<>();
-        try {
-            inputStream = new ObjectInputStream(new FileInputStream(filePath));
-            d=(LinkedList<int[]>)inputStream.readObject();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        catch (ClassNotFoundException e){
-            e.printStackTrace();
-        }
-        return d;
-    }
 }
