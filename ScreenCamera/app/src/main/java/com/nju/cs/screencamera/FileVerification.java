@@ -3,11 +3,13 @@ package com.nju.cs.screencamera;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by zhantong on 16/1/22.
  */
 public class FileVerification {
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
     /**
      * Get the md5 value of the filepath specified file
      * @param filePath The filepath of the file
@@ -79,5 +81,31 @@ public class FileVerification {
             returnVal += Integer.toString(( hashBytes[i] & 0xff) + 0x100, 16).substring(1);
         }
         return returnVal.toLowerCase();
+    }
+    private static String bytesToHex(byte[] bytes){
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+    private static String verificationFromBytes(byte[] data,String type){
+        MessageDigest digest;
+        try{
+            digest = MessageDigest.getInstance(type);
+        }catch (NoSuchAlgorithmException e){
+            System.out.println("No such algorithm "+type);
+            return null;
+        }
+        byte[] hash=digest.digest(data);
+        return bytesToHex(hash);
+    }
+    public static String bytesToSHA1(byte[] data){
+        return verificationFromBytes(data,"SHA-1");
+    }
+    public static String bytesToMD5(byte[] data){
+        return verificationFromBytes(data,"MD5");
     }
 }

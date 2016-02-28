@@ -133,7 +133,8 @@ public class VideoToFile extends MediaToFile {
         }
 
         byte[] out=dataDecoder.dataArray();
-
+        String sha1=FileVerification.bytesToSHA1(out);
+        System.out.println("SHA-1 verification:"+sha1);
         OutputStream os;
         try {
             os = new FileOutputStream(file);
@@ -142,9 +143,6 @@ public class VideoToFile extends MediaToFile {
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
         }
-        String sha1=FileVerification.fileToSHA1(file.getAbsolutePath());
-        System.out.println(sha1);
-
         /*
         updateInfo("识别完成!正在写入文件");
         Log.d("videoToFile", "total length:" + buffer.size());
