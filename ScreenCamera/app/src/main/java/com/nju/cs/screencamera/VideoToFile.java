@@ -103,9 +103,7 @@ public class VideoToFile extends MediaToFile {
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }
             if(fileByteNum!=-1) {
-                for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
-                    System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
-                }
+                checkSourceBlockStatus(dataDecoder);
                 System.out.println("is decoded:" + dataDecoder.isDataDecoded());
                 if(dataDecoder.isDataDecoded()){
                     break;
@@ -117,6 +115,11 @@ public class VideoToFile extends MediaToFile {
         String sha1=FileVerification.bytesToSHA1(out);
         System.out.println("SHA-1 verification:"+sha1);
         bytesToFile(out,fileName);
+    }
+    private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
+        for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
+            System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
+        }
     }
     private int[] frameWidthAndHeight(String videoFilePath){
         File inputFile = new File(videoFilePath);
