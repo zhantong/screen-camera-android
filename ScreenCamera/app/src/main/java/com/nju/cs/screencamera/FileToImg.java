@@ -1,6 +1,9 @@
 package com.nju.cs.screencamera;
 
 
+import com.nju.cs.screencamera.ReedSolomon.GenericGF;
+import com.nju.cs.screencamera.ReedSolomon.ReedSolomonEncoder;
+
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
 import net.fec.openrq.encoder.DataEncoder;
@@ -12,7 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.LinkedList;
 import java.util.List;
 

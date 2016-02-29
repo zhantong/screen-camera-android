@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package com.nju.cs.screencamera;
+package com.nju.cs.screencamera.ReedSolomon;
+
+
 
 /**
  * <p>Implements Reed-Solomon decoding, as the name implies.</p>

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package com.nju.cs.screencamera;
+package com.nju.cs.screencamera.ReedSolomon;
+
 
 /**
  * <p>This class contains utility methods for performing mathematical operations over

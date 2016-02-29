@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nju.cs.screencamera;
+package com.nju.cs.screencamera.ReedSolomon;
 
 /**
  * <p>Thrown when an exception occurs during Reed-Solomon decoding, such as when

@@ -6,6 +6,8 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
+
 import net.fec.openrq.ArrayDataDecoder;
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;

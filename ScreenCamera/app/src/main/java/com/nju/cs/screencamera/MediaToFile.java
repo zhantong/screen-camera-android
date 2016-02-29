@@ -5,6 +5,10 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.nju.cs.screencamera.ReedSolomon.GenericGF;
+import com.nju.cs.screencamera.ReedSolomon.ReedSolomonDecoder;
+import com.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -116,7 +120,7 @@ public class MediaToFile extends FileToImg {
         }
         return con;
     }
-    public int[] decode(int[] raw,int ecNum) throws ReedSolomonException{
+    public int[] decode(int[] raw,int ecNum) throws ReedSolomonException {
         if(decoder==null){
             decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
             //decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);

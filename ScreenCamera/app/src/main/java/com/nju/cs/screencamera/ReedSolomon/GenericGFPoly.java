@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nju.cs.screencamera;
+package com.nju.cs.screencamera.ReedSolomon;
 
 /**
  * <p>Represents a polynomial whose coefficients are elements of a GF.

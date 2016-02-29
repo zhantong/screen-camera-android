@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package com.nju.cs.screencamera;
+package com.nju.cs.screencamera.ReedSolomon;
+
 
 import java.util.ArrayList;
 import java.util.List;
