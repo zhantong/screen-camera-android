@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -149,7 +150,7 @@ public class MediaToFile extends FileToImg {
         String filePath=Environment.getExternalStorageDirectory() + "/test.txt";
         //System.out.println("con length:"+con.length);
         if(out==null){
-            out=reading(filePath);
+            out= readCheckFile(filePath);
         }
         int maxCount=-1;
         int realLength=contentLength*contentLength/ecLength-ecNum;
@@ -179,7 +180,7 @@ public class MediaToFile extends FileToImg {
         System.out.println("max count:"+maxCount);
         return false;
     }
-    public LinkedList<int[]> reading(String filePath){
+    public LinkedList<int[]> readCheckFile(String filePath){
         ObjectInputStream inputStream;
         LinkedList<int[]> d=new LinkedList<>();
         try {
@@ -192,5 +193,26 @@ public class MediaToFile extends FileToImg {
             e.printStackTrace();
         }
         return d;
+    }
+    public boolean bytesToFile(byte[] bytes,String fileName){
+        if(fileName.isEmpty()){
+            System.out.println("file name is empty");
+            return false;
+        }
+        File file = new File(Environment.getExternalStorageDirectory() + "/Download/" + fileName);
+        OutputStream os;
+        try {
+            os = new FileOutputStream(file);
+            os.write(bytes);
+            os.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("file path error, cannot create file:"+e.toString());
+            return false;
+        }catch (IOException e){
+            System.out.println("IOException:"+e.toString());
+            return false;
+        }
+        System.out.println("file created successfully: "+file.getAbsolutePath());
+        return true;
     }
 }

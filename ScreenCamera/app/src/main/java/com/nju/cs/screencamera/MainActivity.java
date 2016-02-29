@@ -130,9 +130,8 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                File out = new File(Environment.getExternalStorageDirectory() + "/Download/" + newFileName);
                 VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler);
-                videoToFile.videoToFile(videoFilePath,rev, out);
+                videoToFile.videoToFile(videoFilePath,rev, newFileName);
             }
         };
         worker.start();

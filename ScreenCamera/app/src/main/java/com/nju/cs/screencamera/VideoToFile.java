@@ -41,9 +41,9 @@ public class VideoToFile extends MediaToFile {
      * 所有帧都识别成功后写入到文件
      *
      * @param imgs 帧队列
-     * @param file 需要写入的文件
+     * @param fileName 需要写入的文件
      */
-    public void videoToFile(String videoFilePath, LinkedBlockingQueue<byte[]> imgs, File file) {
+    public void videoToFile(String videoFilePath, LinkedBlockingQueue<byte[]> imgs, String fileName) {
 
         ArrayDataDecoder dataDecoder=null;
         int fileByteNum=-1;
@@ -135,14 +135,7 @@ public class VideoToFile extends MediaToFile {
         byte[] out=dataDecoder.dataArray();
         String sha1=FileVerification.bytesToSHA1(out);
         System.out.println("SHA-1 verification:"+sha1);
-        OutputStream os;
-        try {
-            os = new FileOutputStream(file);
-            os.write(out);
-            os.close();
-        } catch (Exception e) {
-            Log.d(TAG, e.getMessage());
-        }
+        bytesToFile(out,fileName);
         /*
         updateInfo("识别完成!正在写入文件");
         Log.d("videoToFile", "total length:" + buffer.size());
