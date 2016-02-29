@@ -44,24 +44,11 @@ public class VideoToFile extends MediaToFile {
      * @param fileName 需要写入的文件
      */
     public void videoToFile(String videoFilePath, LinkedBlockingQueue<byte[]> imgs, String fileName) {
-
         ArrayDataDecoder dataDecoder=null;
         int fileByteNum=-1;
-
-
-        File inputFile = new File(videoFilePath);
-        MediaExtractor extractor = new MediaExtractor();
-        try {
-            extractor.setDataSource(inputFile.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        int trackIndex = selectTrack(extractor);
-        extractor.selectTrack(trackIndex);
-        MediaFormat format = extractor.getTrackFormat(trackIndex);
-        int imgWidth = format.getInteger(MediaFormat.KEY_WIDTH);
-        int imgHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
-
+        int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
+        int frameWidth=widthAndHeight[0];
+        int frameHeight=widthAndHeight[1];
         int count = 0;
         int lastSuccessIndex = 0;
         int frameAmount = 0;
@@ -72,15 +59,15 @@ public class VideoToFile extends MediaToFile {
             count++;
             updateInfo("正在识别...");
             try {
+                //System.out.println("queue empty:"+imgs.isEmpty());
                 img = imgs.take();
             } catch (InterruptedException e) {
                 Log.d(TAG, e.getMessage());
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
-                rgbMatrix = new RGBMatrix(img, imgWidth, imgHeight);
+                rgbMatrix = new RGBMatrix(img, frameWidth, frameHeight);
                 rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
-                //getFileByteNum(rgbMatrix);
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 continue;
@@ -91,18 +78,18 @@ public class VideoToFile extends MediaToFile {
                 if(fileByteNum==-1){
                     try {
                         fileByteNum = getFileByteNum(rgbMatrix);
-                        if(fileByteNum==0){
-                            fileByteNum=-1;
-                            continue;
-                        }
-                        int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
-                        //FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10)+1);
-                        FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
-                        System.out.println(parameters.toString());
-                        dataDecoder = OpenRQ.newDecoder(parameters, 0);
                     }catch (CRCCheckException e){
                         System.out.println("CRC check failed");
+                        continue;
                     }
+                    if(fileByteNum==0){
+                        fileByteNum=-1;
+                        continue;
+                    }
+                    int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
+                    FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
+                    System.out.println(parameters.toString());
+                    dataDecoder = OpenRQ.newDecoder(parameters, 0);
                 }
                 byte[] current;
                 try {
@@ -111,14 +98,9 @@ public class VideoToFile extends MediaToFile {
                     System.out.println("error correction failed");
                     continue;
                 }
-                try {
-                    EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-                    System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
-                    dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-                }catch (Exception e){
-                    e.printStackTrace();
-                    continue;
-                }
+                EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
+                System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
+                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }
             if(fileByteNum!=-1) {
                 for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
@@ -131,17 +113,25 @@ public class VideoToFile extends MediaToFile {
             }
             rgbMatrix = null;
         }
-
         byte[] out=dataDecoder.dataArray();
         String sha1=FileVerification.bytesToSHA1(out);
         System.out.println("SHA-1 verification:"+sha1);
         bytesToFile(out,fileName);
-        /*
-        updateInfo("识别完成!正在写入文件");
-        Log.d("videoToFile", "total length:" + buffer.size());
-        bufferToFile(buffer, file);
-        updateInfo("写入文件成功!");
-        */
+    }
+    private int[] frameWidthAndHeight(String videoFilePath){
+        File inputFile = new File(videoFilePath);
+        MediaExtractor extractor = new MediaExtractor();
+        try {
+            extractor.setDataSource(inputFile.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        int trackIndex = selectTrack(extractor);
+        extractor.selectTrack(trackIndex);
+        MediaFormat format = extractor.getTrackFormat(trackIndex);
+        int imgWidth = format.getInteger(MediaFormat.KEY_WIDTH);
+        int imgHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
+        return new int[] {imgWidth,imgHeight};
     }
     private int selectTrack(MediaExtractor extractor) {
         // Select the first video track we find, ignore the rest.
