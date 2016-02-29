@@ -47,32 +47,33 @@ public class SingleImgToFile extends MediaToFile {
         bitmap.recycle();
         updateInfo("正在识别...");
         RGBMatrix rgbMatrix=null;
-        byte[] stream=null;
         ArrayDataDecoder dataDecoder=null;
         int fileByteNum=-1;
 
         try {
             rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
-            rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeWidth, 0, barCodeWidth);
+            rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
+            return;
         }
         for(int i=0;i<2;i++) {
             rgbMatrix.reverse=!rgbMatrix.reverse;
             if(fileByteNum==-1){
                 try {
                     fileByteNum = getFileByteNum(rgbMatrix);
-                    if(fileByteNum==0){
-                        fileByteNum=-1;
-                        continue;
-                    }
-                    int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
-                    FECParameters parameters = FECParameters.newParameters(fileByteNum, length, fileByteNum/(length*10)+1);
-                    System.out.println(parameters.toString());
-                    dataDecoder = OpenRQ.newDecoder(parameters, 0);
                 }catch (CRCCheckException e){
                     System.out.println("CRC check failed");
+                    continue;
                 }
+                if(fileByteNum==0){
+                    fileByteNum=-1;
+                    continue;
+                }
+                int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
+                FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
+                System.out.println(parameters.toString());
+                dataDecoder = OpenRQ.newDecoder(parameters, 0);
             }
             byte[] current;
             try {
@@ -81,24 +82,19 @@ public class SingleImgToFile extends MediaToFile {
                 System.out.println("error correction failed");
                 continue;
             }
-            try {
-                EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-                System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
-                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-            }catch (Exception e){
-                e.printStackTrace();
-                continue;
-            }
-            if(fileByteNum!=-1) {
-                for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
-                    System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
-                }
-                System.out.println("is decoded:" + dataDecoder.isDataDecoded());
-                if(dataDecoder.isDataDecoded()){
-                    break;
-                }
-            }
-            rgbMatrix = null;
+            EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
+            System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
+            dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+        }
+        if(fileByteNum!=-1) {
+            checkSourceBlockStatus(dataDecoder);
+            System.out.println("is decoded:" + dataDecoder.isDataDecoded());
+        }
+        rgbMatrix = null;
+    }
+    private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
+        for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
+            System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
         }
     }
 }
