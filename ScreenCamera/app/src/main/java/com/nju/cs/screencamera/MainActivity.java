@@ -63,9 +63,8 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                File out = new File(Environment.getExternalStorageDirectory() + "/Download/" + newFileName);
                 CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler, CameraSettings.previewWidth, CameraSettings.previewHeight, mPreview);
-                cameraToFile.cameraToFile(rev, out);
+                cameraToFile.cameraToFile(rev, newFileName);
             }
         };
         worker.start();
