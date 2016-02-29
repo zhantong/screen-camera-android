@@ -135,12 +135,18 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         worker.start();
-        VideoToFrames videoToFrames = new VideoToFrames();
-        try {
-            videoToFrames.testExtractMpegFrames(rev, videoFilePath);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        Thread testWorker = new Thread() {
+            @Override
+            public void run() {
+                VideoToFrames videoToFrames = new VideoToFrames();
+                try {
+                    videoToFrames.testExtractMpegFrames(rev, videoFilePath);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        testWorker.run();
     }
 
     /**
