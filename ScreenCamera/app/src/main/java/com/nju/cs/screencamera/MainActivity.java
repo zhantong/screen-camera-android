@@ -63,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler, CameraSettings.previewWidth, CameraSettings.previewHeight, mPreview);
-                cameraToFile.cameraToFile(rev, newFileName);
+                StreamToFile cameraToFile=new StreamToFile(debugView, infoView, nHandler);
+                cameraToFile.toFile(rev,newFileName,CameraSettings.previewWidth, CameraSettings.previewHeight, mPreview);
             }
         };
         worker.start();
@@ -129,8 +129,8 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler);
-                videoToFile.videoToFile(videoFilePath,rev, newFileName);
+                StreamToFile videoToFile=new StreamToFile(debugView, infoView, nHandler);
+                videoToFile.toFile(rev, newFileName, videoFilePath);
             }
         };
         worker.start();
