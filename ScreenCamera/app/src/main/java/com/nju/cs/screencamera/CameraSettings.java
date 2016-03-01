@@ -14,10 +14,7 @@ public class CameraSettings {
     public static int previewHeight;//相机预览高度
     public static Camera.Parameters parameters;//相机参数
 
-    /**
-     * 构造函数,获取并设置相机参数
-     */
-    public CameraSettings() {
+    public static void init(){
         Camera mCamera;
         mCamera = Camera.open();
         parameters = mCamera.getParameters();
@@ -43,6 +40,14 @@ public class CameraSettings {
                 break;
             }
         }
+    }
+    public static int previewWidth(){
+        assert parameters!=null;
+        return previewWidth;
+    }
+    public static int previewHeight(){
+        assert parameters!=null;
+        return previewHeight;
     }
 
     /**

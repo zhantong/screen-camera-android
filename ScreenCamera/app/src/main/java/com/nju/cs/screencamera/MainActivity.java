@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view 默认参数
      */
     public void openCamera(View view) {
+        CameraSettings.init();
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         final CameraPreview mPreview = new CameraPreview(this, rev);
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 StreamToFile cameraToFile=new StreamToFile(debugView, infoView, nHandler);
-                cameraToFile.toFile(rev,newFileName,CameraSettings.previewWidth, CameraSettings.previewHeight, mPreview);
+                cameraToFile.toFile(rev,newFileName,CameraSettings.previewWidth(), CameraSettings.previewHeight(), mPreview);
             }
         };
         worker.start();
