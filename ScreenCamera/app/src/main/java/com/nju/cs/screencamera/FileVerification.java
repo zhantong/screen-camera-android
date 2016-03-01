@@ -1,5 +1,7 @@
 package com.nju.cs.screencamera;
 
+import android.util.Log;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -9,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
  * Created by zhantong on 16/1/22.
  */
 public class FileVerification {
+    private static final String TAG = "FileVerification";
     final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
     /**
      * Get the md5 value of the filepath specified file
@@ -96,7 +99,7 @@ public class FileVerification {
         try{
             digest = MessageDigest.getInstance(type);
         }catch (NoSuchAlgorithmException e){
-            System.out.println("No such algorithm "+type);
+            Log.w(TAG,"No such algorithm "+type);
             return null;
         }
         byte[] hash=digest.digest(data);

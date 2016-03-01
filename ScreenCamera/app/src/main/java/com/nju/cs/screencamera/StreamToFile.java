@@ -27,12 +27,14 @@ public class StreamToFile extends MediaToFile {
         super(debugView, infoView, handler);
     }
     public void toFile(LinkedBlockingQueue<byte[]> imgs, String fileName,String videoFilePath){
+        Log.i(TAG,"process video file");
         int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
         int frameWidth=widthAndHeight[0];
         int frameHeight=widthAndHeight[1];
         streamToFile(imgs, frameWidth, frameHeight, fileName, null);
     }
     public void toFile(LinkedBlockingQueue<byte[]> imgs, String fileName, int frameWidth, int frameHeight, CameraPreview mPreview) {
+        Log.i(TAG,"process camera");
         streamToFile(imgs, frameWidth, frameHeight, fileName, mPreview);
     }
     private void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName,CameraPreview mPreview) {
@@ -48,7 +50,7 @@ public class StreamToFile extends MediaToFile {
             count++;
             updateInfo("正在识别...");
             try {
-                //System.out.println("queue empty:"+imgs.isEmpty());
+                if(VERBOSE){Log.d(TAG,"is queue empty:"+imgs.isEmpty());}
                 img = imgs.take();
             } catch (InterruptedException e) {
                 Log.d(TAG, e.getMessage());
@@ -65,46 +67,51 @@ public class StreamToFile extends MediaToFile {
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 if(fileByteNum==-1&&mPreview!=null){
+                    Log.d(TAG,"camera focusing");
                     mPreview.focus();
                 }
                 continue;
             }
-            System.out.println("current:"+count);
-            for(int i=0;i<2;i++) {
+            Log.i(TAG, "current frame:" + count);
+            for(int i=1;i<3;i++) {
+                Log.i(TAG,"try "+i+" :");
                 matrix.reverse=!matrix.reverse;
                 if(fileByteNum==-1){
                     try {
                         fileByteNum = getFileByteNum(matrix);
                     }catch (CRCCheckException e){
-                        System.out.println("CRC check failed");
+                        Log.d(TAG, "head CRC check failed");
                         continue;
                     }
                     if(fileByteNum==0){
+                        Log.d(TAG,"wrong file byte number");
                         fileByteNum=-1;
                         continue;
                     }
+                    Log.i(TAG,"file is "+fileByteNum+" bytes");
                     int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
                     FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
-                    System.out.println(parameters.toString());
+                    Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);
                 }
                 byte[] current;
                 try {
                     current = getContent(matrix);
                 }catch (ReedSolomonException e){
-                    System.out.println("error correction failed");
+                    Log.d(TAG, "content error correction failed");
                     continue;
                 }
                 EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-                System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
+                Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }
             if(fileByteNum!=-1) {
-                checkSourceBlockStatus(dataDecoder);
-                System.out.println("is decoded:" + dataDecoder.isDataDecoded());
+                //checkSourceBlockStatus(dataDecoder);
+                Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
                 if(dataDecoder.isDataDecoded()){
                     if(mPreview!=null) {
                         mPreview.stop();
+                        Log.d(TAG,"stopped camera preview");
                     }
                     break;
                 }
@@ -113,12 +120,13 @@ public class StreamToFile extends MediaToFile {
         }
         byte[] out=dataDecoder.dataArray();
         String sha1=FileVerification.bytesToSHA1(out);
-        System.out.println("SHA-1 verification:"+sha1);
+        Log.d(TAG, "file SHA-1 verification: " + sha1);
         bytesToFile(out,fileName);
     }
     private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
+        Log.i(TAG,"check source block status:");
         for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
-            System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
+            Log.i(TAG, "source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
         }
     }
     private int[] frameWidthAndHeight(String videoFilePath){

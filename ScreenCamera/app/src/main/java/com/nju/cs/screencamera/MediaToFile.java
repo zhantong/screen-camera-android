@@ -97,13 +97,6 @@ public class MediaToFile extends FileToImg {
         }
         int truth=CRC8.calcCrc8(index);
         Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
-        /*
-        Log.d(TAG, "head:");
-        System.out.println("getFileByteNum:");
-        for(byte b:head){
-            Log.d(TAG,Byte.toString(b));
-        }
-        */
         if(crc!=truth){
             throw CRCCheckException.getNotFoundInstance();
         }
@@ -129,7 +122,7 @@ public class MediaToFile extends FileToImg {
         return raw;
     }
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{
-        boolean checkDecode=true;
+        boolean checkDecode=false;
         int[] rawContent=getRawContent(matrix);
         int[] originContent=null;
         if(checkDecode){
@@ -139,7 +132,7 @@ public class MediaToFile extends FileToImg {
         int[] decodedContent=decode(rawContent,ecNum);
         if(checkDecode){
             boolean checkResult=check(decodedContent,originContent);
-            System.out.println("check if decode is correct:"+checkResult);
+            if(VERBOSE){Log.d(TAG,"check if decode correct:"+checkResult);}
         }
         int realByteNum=contentLength*contentLength/8-ecNum*ecLength/8;
         byte[] res=new byte[realByteNum];
@@ -151,15 +144,15 @@ public class MediaToFile extends FileToImg {
         return res;
     }
     public boolean check(int[] con,int[] orig){
+        if(VERBOSE){Log.d(TAG, "checking decoded data: data length:" + con.length);}
         String filePath=Environment.getExternalStorageDirectory() + "/test.txt";
-        //System.out.println("con length:"+con.length);
         if(out==null){
             out= readCheckFile(filePath);
+            if(VERBOSE){Log.d(TAG,"load check file success:"+filePath);}
         }
         int maxCount=-1;
         int realLength=contentLength*contentLength/ecLength-ecNum;
         for (int[] current:out){
-            //System.out.println("current length:"+current.length);
             int count=0;
             for(int i=0;i<realLength;i++){
                 if(con[i]==current[i]){
@@ -170,18 +163,18 @@ public class MediaToFile extends FileToImg {
                 return true;
             }
             if(count>realLength-100){
+                if(VERBOSE){Log.d(TAG,"wrong data:");}
                 for(int i=0;i<realLength;i++){
                     if(con[i]!=current[i]){
-                        System.out.println("l:"+i+"\tw:"+con[i]+"\tr:"+current[i]+"\to:"+orig[i]);
+                        if(VERBOSE){Log.d(TAG,"position: "+i+"\torigin: "+orig[i]+"\tdecoded: "+con[i]+"\ttruth: "+current[i]);}
                     }
                 }
             }
             if(count>maxCount){
                 maxCount=count;
             }
-            //System.out.println("length:"+con.length+"same:"+count);
         }
-        System.out.println("max count:"+maxCount);
+        if(VERBOSE){Log.d(TAG,"max check correct count: "+maxCount);}
         return false;
     }
     public LinkedList<int[]> readCheckFile(String filePath){
@@ -200,7 +193,7 @@ public class MediaToFile extends FileToImg {
     }
     public boolean bytesToFile(byte[] bytes,String fileName){
         if(fileName.isEmpty()){
-            System.out.println("file name is empty");
+            Log.i(TAG, "file name is empty");
             return false;
         }
         File file = new File(Environment.getExternalStorageDirectory() + "/Download/" + fileName);
@@ -210,13 +203,13 @@ public class MediaToFile extends FileToImg {
             os.write(bytes);
             os.close();
         } catch (FileNotFoundException e) {
-            System.out.println("file path error, cannot create file:"+e.toString());
+            Log.i(TAG, "file path error, cannot create file:" + e.toString());
             return false;
         }catch (IOException e){
-            System.out.println("IOException:"+e.toString());
+            Log.i(TAG, "IOException:" + e.toString());
             return false;
         }
-        System.out.println("file created successfully: "+file.getAbsolutePath());
+        Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
         return true;
     }
 }

@@ -65,7 +65,7 @@ public class SingleImgToFile extends MediaToFile {
                 try {
                     fileByteNum = getFileByteNum(rgbMatrix);
                 }catch (CRCCheckException e){
-                    System.out.println("CRC check failed");
+                    Log.d(TAG,"head CRC check failed");
                     continue;
                 }
                 if(fileByteNum==0){
@@ -74,29 +74,30 @@ public class SingleImgToFile extends MediaToFile {
                 }
                 int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
-                System.out.println(parameters.toString());
+                Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                 dataDecoder = OpenRQ.newDecoder(parameters, 0);
             }
             byte[] current;
             try {
                 current = getContent(rgbMatrix);
             }catch (ReedSolomonException e){
-                System.out.println("error correction failed");
+                Log.d(TAG, "content error correction failed");
                 continue;
             }
             EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-            System.out.println("source block number:"+encodingPacket.sourceBlockNumber()+"\tencoding symbol ID:"+encodingPacket.encodingSymbolID()+"\t"+encodingPacket.symbolType());
+            Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
         }
         if(fileByteNum!=-1) {
             checkSourceBlockStatus(dataDecoder);
-            System.out.println("is decoded:" + dataDecoder.isDataDecoded());
+            Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
         }
         rgbMatrix = null;
     }
     private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
+        Log.i(TAG,"check source block status:");
         for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
-            System.out.println("source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
+            Log.i(TAG,"source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
         }
     }
 }

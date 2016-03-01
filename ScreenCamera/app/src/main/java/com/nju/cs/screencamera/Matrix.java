@@ -174,7 +174,7 @@ public class Matrix {
         }
     }
     public HashMap<Integer,Point>[] sampleVary(int[] posX,int topY,int bottomY){
-        System.out.println(posX.length);
+        if(VERBOSE){Log.d(TAG,"bar number: "+posX.length);}
         HashMap<Integer,Point>[] bars=new HashMap[posX.length];
         for(int i=0;i<posX.length;i++){
             float realX=posX[i]+0.5f;
@@ -199,15 +199,9 @@ public class Matrix {
             a[i/2]=Math.round(points[i]);
             b[i/2]=Math.round(points[i+1]);
         }
-        /*
-        for(int i=0;i<length;i++){
-            System.out.println(a[i]+" "+b[i]+" "+getGray(a[i],b[i]));
-        }
-        */
         HashMap<Integer,Point> map=new HashMap<>();
         for(int y=b[0];y<=b[length-1];y++){
             int x=getX(a,b,y);
-            //System.out.println(x+" "+y+" "+getGray(x,y));
             map.put(y, new Point(x, y, getGray(x, y)));
         }
         return map;
@@ -223,7 +217,6 @@ public class Matrix {
             return a[i];
         }
         float res=(float)(y-b[i-1])/(b[i]-b[i-1])*(a[i]-a[i-1])+a[i-1];
-        //System.out.println(res);
         return Math.round(res);
     }
     public BitSet getContent(int dimensionX, int dimensionY,int[] posX,int topY,int bottomY){
@@ -234,8 +227,7 @@ public class Matrix {
             grayMatrix.bars=sampleVary(posX,topY,bottomY);
         }
         grayMatrix.reverse=reverse;
-        System.out.println("reverse:"+reverse);
-        //grayMatrix.print();
+        if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
         return grayMatrix.getContent();
     }
     /**
@@ -516,7 +508,6 @@ public class Matrix {
      */
     public boolean isSinglePoint(int x, int y) {
         int sum = get(x - 1, y - 1) + get(x, y - 1) + get(x + 1, y - 1) + get(x - 1, y) + get(x + 1, y) + get(x - 1, y + 1) + get(x, y + 1) + get(x + 1, y + 1);
-        //System.out.println("isSinglePoint:"+sum);
         return sum >= 6;
     }
 }

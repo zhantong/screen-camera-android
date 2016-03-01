@@ -1,5 +1,7 @@
 package com.nju.cs.screencamera;
 
+import android.util.Log;
+
 import java.util.BitSet;
 import java.util.HashMap;
 
@@ -7,6 +9,8 @@ import java.util.HashMap;
  * Created by zhantong on 15/12/27.
  */
 public class GrayMatrix extends FileToImg{
+    private static final String TAG = "GrayMatrix";//log tag
+    private static final boolean VERBOSE = false;//是否记录详细log
     public Point[] pixels;
     public int width;
     public int height;
@@ -85,32 +89,6 @@ public class GrayMatrix extends FileToImg{
         return index;
     }
 
-    /*
-    public byte[] getHead(){
-        whiteValue=get(frameBlackLength+frameVaryLength,frameBlackLength);
-        //System.out.println("white value:"+whiteValue);
-        blackValue=get(frameBlackLength+frameVaryLength+1,frameBlackLength);
-        //System.out.println("black value:"+blackValue);
-        int index=0;
-        int y=frameBlackLength;
-        int left=get(1,y);
-        int right=get(width-2,y);
-        if(left>right){
-            ordered =false;
-        }else {
-            ordered=true;
-        }
-        byte[] array=new byte[contentLength/8];
-        for(int x=frameBlackLength+frameVaryLength+1;x<frameBlackLength+frameVaryLength+1+array.length*8;x++){
-            array[index/8]<<=1;
-            if(toBinary(get(x,y),left,right)==1){
-                array[index / 8] |= 0x01;
-            }
-            index++;
-        }
-        return array;
-    }
-    */
     public BitSet getHead(){
         int black=get(0,0);
         int white=get(0,1);
@@ -140,24 +118,13 @@ public class GrayMatrix extends FileToImg{
                 blackValue=get(0,y-1);
                 whiteValue=get(0,y);
             }
-            //System.out.println("black value:"+blackValue+"\twhite value:"+whiteValue);
+            if(VERBOSE){Log.d(TAG,"line black value: "+blackValue+"\twhite value: "+whiteValue);}
             for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
-                //System.out.println(x+" "+y+" "+get(x,y)+" "+pixels[y * width + x].x+" "+pixels[y * width + x].y+" "+pixels[y * width + x].value);
+                if(VERBOSE){Log.d(TAG,"point ("+x+" "+y+") value:"+get(x,y)+"\torigin ("+pixels[y * width + x].x+" "+pixels[y * width + x].y+") value:"+pixels[y * width + x].value);}
                 if(toBinary(x,y)==1){
                     bitSet.set(index);
-                    if(false&&y==frameBlackLength+frameVaryLength+frameVaryTwoLength) {
-                        System.out.print("1 ");
-                    }
-                }
-                else{
-                    if(false&&y==frameBlackLength+frameVaryLength+frameVaryTwoLength) {
-                        System.out.print("0 ");
-                    }
                 }
                 index++;
-            }
-            if(false&&y==frameBlackLength+frameVaryLength+frameVaryTwoLength) {
-                System.out.println();
             }
         }
         return bitSet;
