@@ -81,6 +81,8 @@ public class StreamToFile extends MediaToFile {
                         fileByteNum = getFileByteNum(matrix);
                     }catch (CRCCheckException e){
                         Log.d(TAG, "head CRC check failed");
+                        Log.d(TAG,"camera focusing");
+                        mPreview.focus();
                         continue;
                     }
                     if(fileByteNum==0){
