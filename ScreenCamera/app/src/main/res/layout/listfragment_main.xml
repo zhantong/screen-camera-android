@@ -17,6 +17,7 @@
             android:gravity="center"
             android:layout_weight="1"
             android:button="@android:color/transparent"
+            android:background="@drawable/sort_option_background"
             android:text="按文件名" />
         <RadioButton
             android:id="@+id/by_date"
@@ -25,6 +26,7 @@
             android:gravity="center"
             android:layout_weight="1"
             android:button="@android:color/transparent"
+            android:background="@drawable/sort_option_background"
             android:text="按时间顺序" />
         <RadioButton
             android:id="@+id/by_date_reverse"
@@ -33,6 +35,7 @@
             android:gravity="center"
             android:layout_weight="1"
             android:button="@android:color/transparent"
+            android:background="@drawable/sort_option_background"
             android:text="按时间逆序" />
     </RadioGroup>
 
