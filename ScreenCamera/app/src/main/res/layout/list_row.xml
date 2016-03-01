@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="wrap_content" android:orientation="vertical" android:layout_width="fill_parent">
+    <ImageView
+        android:id="@+id/folderIcon"
+        android:layout_width="50dip"
+        android:layout_height="50dip" >
+    </ImageView>
+
+    <TextView android:text="@+id/fileName"
+        android:id="@+id/fileName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:textStyle="bold"
+        android:layout_toEndOf="@+id/folderIcon"
+        android:layout_marginTop="5dip"
+        android:layout_marginStart="5dip">
+
+
+    </TextView>
+    <TextView android:text="@+id/info"
+        android:id="@+id/info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/folderIcon"
+        android:layout_below="@+id/fileName"
+        android:layout_marginStart="10dip">
+
+    </TextView>
+    <TextView android:text="@+id/date"
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/fileName"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="5dip">
+
+    </TextView>
+</RelativeLayout>

@@ -129,7 +129,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="选择视频/图片文件"
-            android:onClick="selectFile"/>
+            android:onClick="getfile"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"

@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.nju.cs.screencamera.FileExplorer.FileChooser;
+
 import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -35,8 +37,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        CameraSettings cameraSettings = new CameraSettings();
-        cameraSettings = null;
         TextView debugView = (TextView) findViewById(R.id.debug_view);
         TextView infoView = (TextView) findViewById(R.id.info_view);
         debugView.setGravity(Gravity.BOTTOM);
@@ -79,24 +79,21 @@ public class MainActivity extends AppCompatActivity {
         mPreview.stop();
     }
 
-    /**
-     * 选取文件,操作会打开文件目录浏览器,选取文件
-     *
-     * @param view 默认参数
-     */
-    public void selectFile(View view) {
-        File mPath = new File(Environment.getExternalStorageDirectory() + "//DIR//");
-        FileDialog fileDialog = new FileDialog(this, mPath);
-        //fileDialog.setFileEndsWith(".txt");
-        fileDialog.addFileListener(new FileDialog.FileSelectedListener() {
-            public void fileSelected(File file) {
-                EditText editText = (EditText) findViewById(R.id.videoFilePath);
-                editText.setText(file.toString());
-            }
-        });
-        fileDialog.showDialog();
+    private static final int REQUEST_PATH = 1;
+    public void getfile(View view){
+        Intent intent1 = new Intent(this, FileChooser.class);
+        startActivityForResult(intent1,REQUEST_PATH);
     }
-
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        // See which child activity is calling us back.
+        if (requestCode == REQUEST_PATH){
+            if (resultCode == RESULT_OK) {
+                EditText editText = (EditText) findViewById(R.id.videoFilePath);
+                String curFileName = data.getStringExtra("GetFilePath");
+                editText.setText(curFileName);
+            }
+        }
+    }
     /**
      * 打开文件时的方法,寻找指定后缀文件的打开方法
      *

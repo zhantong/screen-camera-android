@@ -23,6 +23,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".FileExplorer.FileChooser"
+            android:label="Choose File"
+            android:theme="@android:style/Theme.Holo">
+        </activity>
     </application>
 
 </manifest>
