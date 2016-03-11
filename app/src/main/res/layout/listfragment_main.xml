@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        android:id="@+id/options"
+        android:layout_centerHorizontal="true">
+        <RadioButton
+            android:id="@+id/by_name"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:button="@android:color/transparent"
+            android:background="@drawable/sort_option_background"
+            android:text="按文件名" />
+        <RadioButton
+            android:id="@+id/by_date"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:button="@android:color/transparent"
+            android:background="@drawable/sort_option_background"
+            android:text="按时间顺序" />
+        <RadioButton
+            android:id="@+id/by_date_reverse"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:button="@android:color/transparent"
+            android:background="@drawable/sort_option_background"
+            android:text="按时间逆序" />
+    </RadioGroup>
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/options">
+    </ListView>
+    <!-- If there list is empty, display a text view that tells us that -->
+    <TextView
+        android:id="@android:id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="32sp"
+        android:text="No files here."/>
+</RelativeLayout>
