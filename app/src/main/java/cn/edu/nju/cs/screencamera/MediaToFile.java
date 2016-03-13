@@ -103,8 +103,9 @@ public class MediaToFile extends FileToImg {
         return index;
     }
     public int[] getRawContent(Matrix matrix){
-        int[] posX={frameBlackLength,frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
-        BitSet content=matrix.getContent(barCodeWidth, barCodeHeight,posX,frameBlackLength,frameBlackLength+contentLength);
+        int[] firstColorX={frameBlackLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength};
+        int[] secondColorX={frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
+        BitSet content=matrix.getContent(barCodeWidth, barCodeHeight,firstColorX,secondColorX,frameBlackLength,frameBlackLength+contentLength);
         int[] con=new int[contentLength*contentLength/ecLength];
         for(int i=0;i<con.length*ecLength;i++){
             if(content.get(i)){

@@ -9,7 +9,7 @@ import java.util.HashMap;
  * 保存YUV格式图像的相关信息,如原始像素信息
  * 以及一些对原始图像操作的方法
  */
-public class Matrix {
+public class Matrix extends FileToImg{
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final String TAG = "Matrix";//log tag
     protected final int width;//图像宽度
@@ -20,7 +20,12 @@ public class Matrix {
     private PerspectiveTransform transform;//透视变换参数
     public int frameIndex;//此图像中二维码的帧编号
     public GrayMatrix grayMatrix;
-    public boolean reverse;
+    public boolean reverse=false;
+    private boolean ordered=true;
+    public int blackValue;
+    public int whiteValue;
+    public HashMap<Integer,Point>[] bars;
+    int dimensionX;
 
     /**
      * 基本构造函数,作为正方形,且无原始像素数据,生成默认值
@@ -143,13 +148,25 @@ public class Matrix {
     public int height() {
         return height;
     }
-
+    public BitSet getRawHead(){
+        int black=grayMatrix.get(0,0);
+        int white=grayMatrix.get(0, 1);
+        int threshold=(black+white)/2;
+        int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
+        BitSet bitSet=new BitSet();
+        for(int i=0;i<length;i++){
+            if(grayMatrix.get(i,0)>threshold){
+                bitSet.set(i);
+            }
+        }
+        return bitSet;
+    }
     public BitSet getHead(int dimensionX, int dimensionY){
+        this.dimensionX=dimensionX;
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }
-        grayMatrix.reverse=reverse;
-        return grayMatrix.getHead();
+        return getRawHead();
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         grayMatrix=new GrayMatrix(dimensionX,dimensionY);
@@ -168,38 +185,37 @@ public class Matrix {
             }
         }
     }
-    public HashMap<Integer,Point>[] sampleVary(int[] posX,int topY,int bottomY){
-        if(VERBOSE){Log.d(TAG,"bar number: "+posX.length);}
-        HashMap<Integer,Point>[] bars=new HashMap[posX.length];
-        for(int i=0;i<posX.length;i++){
-            float realX=posX[i]+0.5f;
-            bars[i]=getVary(realX,topY,bottomY);
+    public HashMap<Integer,Point>[] sampleVary(int[] firstColorX,int[] secondColorX,int topY,int bottomY){
+        HashMap<Integer,Point> firstColorMap=new HashMap<>();
+        for(int x:firstColorX){
+            getVary(firstColorMap,x,topY,bottomY);
         }
-        return bars;
+        HashMap<Integer,Point> secondColorMap=new HashMap<>();
+        for(int x:secondColorX){
+            getVary(secondColorMap,x,topY,bottomY);
+        }
+        HashMap<Integer,Point>[] colorBars=new HashMap[2];
+        colorBars[0]=firstColorMap;
+        colorBars[1]=secondColorMap;
+        return colorBars;
     }
-    public HashMap<Integer,Point> getVary(float posX,int topY,int bottomY){
+    public void getVary(HashMap<Integer,Point> map,int posX,int topY,int bottomY){
         int length=bottomY-topY;
-        float[] points=new float[length*2];
-        int index=0;
-        for(int y=topY;y<bottomY;y++){
-            points[index]=posX;
-            index++;
-            points[index]=(float)y+0.5f;
-            index++;
-        }
-        transform.transformPoints(points);
         int[] a=new int[length];
         int[] b=new int[length];
-        for(int i=0;i<length*2;i+=2){
-            a[i/2]=Math.round(points[i]);
-            b[i/2]=Math.round(points[i+1]);
+        int index=0;
+        for(int y=topY;y<bottomY;y++){
+            Point cur=grayMatrix.getPoint(posX,y);
+            a[index]=cur.x;
+            b[index]=cur.y;
+            index++;
         }
-        HashMap<Integer,Point> map=new HashMap<>();
         for(int y=b[0];y<=b[length-1];y++){
-            int x=getX(a,b,y);
-            map.put(y, new Point(x, y, getGray(x, y)));
+            if(!map.containsKey(y)) {
+                int x = getX(a, b, y);
+                map.put(y, new Point(x, y, getGray(x, y)));
+            }
         }
-        return map;
     }
     public int getX(int[] a,int[] b,int y){
         int i;
@@ -214,16 +230,81 @@ public class Matrix {
         float res=(float)(y-b[i-1])/(b[i]-b[i-1])*(a[i]-a[i-1])+a[i-1];
         return Math.round(res);
     }
-    public BitSet getContent(int dimensionX, int dimensionY,int[] posX,int topY,int bottomY){
+    public int toBinary(int x,int y){
+        int value=grayMatrix.get(x,y);
+        int origY=grayMatrix.pixels[y * dimensionX + x].y;
+        int left;
+        int right;
+        left=bars[0].get(origY).value;
+        right=bars[1].get(origY).value;
+        int minDistance=10000;
+        int index=-1;
+        int distance=Math.abs(value-blackValue);
+        if(distance<minDistance){
+            minDistance=distance;
+            index=0;
+        }
+        distance=Math.abs(value-whiteValue);
+        if(distance<minDistance){
+            minDistance=distance;
+            index=1;
+        }
+        distance=Math.abs(value-left);
+        if(distance<minDistance){
+            minDistance=distance;
+            if((ordered&&!reverse)||(!ordered&&reverse)){
+                index=0;
+            }else {
+                index=1;
+            }
+        }
+        distance=Math.abs(value-right);
+        if(distance<minDistance){
+            minDistance=distance;
+            if((ordered&&!reverse)||(!ordered&&reverse)){
+                index=1;
+            }else {
+                index=0;
+            }
+        }
+        return index;
+    }
+    public BitSet getRawContent(){
+        if(grayMatrix.get(1,2)>grayMatrix.get(dimensionX - 2, 2)){
+            ordered =false;
+        }
+        int index=0;
+        BitSet bitSet=new BitSet();
+        for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
+            if(grayMatrix.get(0, y)<grayMatrix.get(0, y - 1)){
+                blackValue=grayMatrix.get(0, y);
+                whiteValue=grayMatrix.get(0, y - 1);
+            }
+            else{
+                blackValue=grayMatrix.get(0, y - 1);
+                whiteValue=grayMatrix.get(0, y);
+            }
+            if(VERBOSE){Log.d(TAG,"line black value: "+blackValue+"\twhite value: "+whiteValue);}
+            for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
+                if(VERBOSE){Log.d(TAG,"point ("+x+" "+y+") value:"+grayMatrix.get(x, y)+"\torigin ("+grayMatrix.pixels[y * dimensionX + x].x+" "+grayMatrix.pixels[y * dimensionX + x].y+") value:"+grayMatrix.pixels[y * dimensionX + x].value);}
+                if(toBinary(x,y)==1){
+                    bitSet.set(index);
+                }
+                index++;
+            }
+        }
+        return bitSet;
+    }
+    public BitSet getContent(int dimensionX, int dimensionY,int[] firstColorX,int[] secondColorX,int topY,int bottomY){
+        this.dimensionX=dimensionX;
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
         }
-        if(grayMatrix.bars==null){
-            grayMatrix.bars=sampleVary(posX,topY,bottomY);
+        if(bars==null){
+            bars=sampleVary(firstColorX,secondColorX,topY,bottomY);
         }
-        grayMatrix.reverse=reverse;
         if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
-        return grayMatrix.getContent();
+        return getRawContent();
     }
     /**
      * 获取图像的阈值
