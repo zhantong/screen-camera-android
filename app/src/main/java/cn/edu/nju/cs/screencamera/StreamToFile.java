@@ -76,8 +76,13 @@ public class StreamToFile extends MediaToFile {
             }
             Log.i(TAG, "current frame:" + count);
             for(int i=1;i<3;i++) {
+                if(i==2){
+                    if(!matrix.isMixed){
+                        break;
+                    }
+                    matrix.reverse=true;
+                }
                 Log.i(TAG,"try "+i+" :");
-                matrix.reverse=!matrix.reverse;
                 if(fileByteNum==-1){
                     try {
                         fileByteNum = getFileByteNum(matrix);
