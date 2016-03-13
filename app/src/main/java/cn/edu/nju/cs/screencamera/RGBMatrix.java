@@ -9,12 +9,12 @@ public class RGBMatrix extends Matrix {
         super(dimension, dimension);
     }
 
-    public RGBMatrix(int width, int height) {
-        super(width, height);
+    public RGBMatrix(int imgWidth, int imgHeight) {
+        super(imgWidth, imgHeight);
     }
 
-    public RGBMatrix(byte[] pixels, int width, int height) throws NotFoundException {
-        super(pixels, width, height);
+    public RGBMatrix(byte[] pixels, int imgWidth, int imgHeight) throws NotFoundException {
+        super(pixels, imgWidth, imgHeight);
     }
 
     /**
@@ -27,7 +27,7 @@ public class RGBMatrix extends Matrix {
      */
     @Override
     public int getGray(int x, int y) {
-        int offset = (y * width + x) * 4;
+        int offset = (y * imgWidth + x) * 4;
         int r = pixels[offset] & 0xFF;
         int g = pixels[offset + 1] & 0xFF;
         int b = pixels[offset + 2] & 0xFF;

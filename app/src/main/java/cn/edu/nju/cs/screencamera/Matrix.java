@@ -12,8 +12,8 @@ import java.util.HashMap;
 public class Matrix extends FileToImg{
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final String TAG = "Matrix";//log tag
-    protected final int width;//图像宽度
-    protected final int height;//图像高度
+    protected final int imgWidth;//图像宽度
+    protected final int imgHeight;//图像高度
     protected final byte[] pixels;//图像每个像素点原始值
     private int threshold = 0;//二值化阈值
     private int[] borders;//图像中二维码的四个顶点坐标值
@@ -22,10 +22,8 @@ public class Matrix extends FileToImg{
     public GrayMatrix grayMatrix;
     public boolean reverse=false;
     private boolean ordered=true;
-    public int blackValue;
-    public int whiteValue;
-    public HashMap<Integer,Point>[] bars;
-    int dimensionX;
+    public HashMap<Integer,Integer>[] bars;
+    int barCodeWidth;
 
     /**
      * 基本构造函数,作为正方形,且无原始像素数据,生成默认值
@@ -39,27 +37,27 @@ public class Matrix extends FileToImg{
     /**
      * 构造函数,无原始像素数据,生成默认值
      *
-     * @param width  图像宽度
-     * @param height 图像高度
+     * @param imgWidth  图像宽度
+     * @param imgHeight 图像高度
      */
-    public Matrix(int width, int height) {
-        this.width = width;
-        this.height = height;
-        this.pixels = new byte[width * height];
+    public Matrix(int imgWidth, int imgHeight) {
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
+        this.pixels = new byte[imgWidth * imgHeight];
     }
 
     /**
      * 构造函数,有原始数据
      *
      * @param pixels 原始像素数据
-     * @param width  图像宽度
-     * @param height 图像高度
+     * @param imgWidth  图像宽度
+     * @param imgHeight 图像高度
      * @throws NotFoundException 未找到二维码异常
      */
-    public Matrix(byte[] pixels, int width, int height) throws NotFoundException {
+    public Matrix(byte[] pixels, int imgWidth, int imgHeight) throws NotFoundException {
         this.pixels = pixels;
-        this.width = width;
-        this.height = height;
+        this.imgWidth = imgWidth;
+        this.imgHeight = imgHeight;
         this.threshold = getThreshold();
         this.borders = findBoarder();
     }
@@ -100,7 +98,7 @@ public class Matrix extends FileToImg{
      * @return 返回灰度值
      */
     public int getGray(int x, int y) {
-        return pixels[y * width + x] & 0xff;
+        return pixels[y * imgWidth + x] & 0xff;
     }
 
     /**
@@ -111,7 +109,7 @@ public class Matrix extends FileToImg{
      * @param y y轴,即行
      * @return 返回二值化值, 即0或1
      */
-    public int get(int x, int y) {
+    public int getBinary(int x, int y) {
         if (getGray(x, y) <= threshold) {
             return 0;
         } else {
@@ -128,7 +126,7 @@ public class Matrix extends FileToImg{
      * @return 与指定值相同返回true, 否则返回false
      */
     public boolean pixelEquals(int x, int y, int pixel) {
-        return get(x, y) == pixel;
+        return getBinary(x, y) == pixel;
     }
 
     /**
@@ -137,7 +135,7 @@ public class Matrix extends FileToImg{
      * @return 图像宽度
      */
     public int width() {
-        return width;
+        return imgWidth;
     }
 
     /**
@@ -146,7 +144,7 @@ public class Matrix extends FileToImg{
      * @return 图像高度
      */
     public int height() {
-        return height;
+        return imgHeight;
     }
     public BitSet getRawHead(){
         int black=grayMatrix.get(0,0);
@@ -162,7 +160,7 @@ public class Matrix extends FileToImg{
         return bitSet;
     }
     public BitSet getHead(int dimensionX, int dimensionY){
-        this.dimensionX=dimensionX;
+        barCodeWidth=dimensionX;
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }
@@ -185,58 +183,57 @@ public class Matrix extends FileToImg{
             }
         }
     }
-    public HashMap<Integer,Point>[] sampleVary(int[] firstColorX,int[] secondColorX,int topY,int bottomY){
-        HashMap<Integer,Point> firstColorMap=new HashMap<>();
+    public HashMap<Integer,Integer>[] sampleVary(int[] firstColorX,int[] secondColorX,int topY,int bottomY){
+        HashMap<Integer,Integer> firstColorMap=new HashMap<>();
         for(int x:firstColorX){
             getVary(firstColorMap,x,topY,bottomY);
         }
-        HashMap<Integer,Point> secondColorMap=new HashMap<>();
+        HashMap<Integer,Integer> secondColorMap=new HashMap<>();
         for(int x:secondColorX){
             getVary(secondColorMap,x,topY,bottomY);
         }
-        HashMap<Integer,Point>[] colorBars=new HashMap[2];
+        HashMap<Integer,Integer>[] colorBars=new HashMap[2];
         colorBars[0]=firstColorMap;
         colorBars[1]=secondColorMap;
         return colorBars;
     }
-    public void getVary(HashMap<Integer,Point> map,int posX,int topY,int bottomY){
+    public void getVary(HashMap<Integer,Integer> map,int posX,int topY,int bottomY){
         int length=bottomY-topY;
-        int[] a=new int[length];
-        int[] b=new int[length];
+        Point[] points=new Point[length];
+
         int index=0;
         for(int y=topY;y<bottomY;y++){
-            Point cur=grayMatrix.getPoint(posX,y);
-            a[index]=cur.x;
-            b[index]=cur.y;
+            points[index]=grayMatrix.getPoint(posX,y);
             index++;
         }
-        for(int y=b[0];y<=b[length-1];y++){
+        for(int y=points[0].y;y<=points[length-1].y;y++){
             if(!map.containsKey(y)) {
-                int x = getX(a, b, y);
-                map.put(y, new Point(x, y, getGray(x, y)));
+                int x = getX(points, y);
+                map.put(y, getGray(x, y));
             }
         }
     }
-    public int getX(int[] a,int[] b,int y){
+    public int getX(Point[] points,int y){
         int i;
-        for(i=0;i<b.length-1;i++){
-            if(y<b[i]){
+        for(i=0;i<points.length-1;i++){
+            if(y<points[i].y){
                 break;
             }
         }
-        if(a[i-1]==a[i]){
-            return a[i];
+        Point before=points[i-1];
+        Point after=points[i];
+        if(before.x==after.x){
+            return before.x;
         }
-        float res=(float)(y-b[i-1])/(b[i]-b[i-1])*(a[i]-a[i-1])+a[i-1];
+        float res=(float)(y-before.y)/(after.y-before.y)*(after.x-before.x)+before.x;
         return Math.round(res);
     }
-    public int toBinary(int x,int y){
-        int value=grayMatrix.get(x,y);
-        int origY=grayMatrix.pixels[y * dimensionX + x].y;
-        int left;
-        int right;
-        left=bars[0].get(origY).value;
-        right=bars[1].get(origY).value;
+    public int toBinary(int x,int y,int blackValue,int whiteValue){
+        Point orig=grayMatrix.getPoint(x,y);
+        int value=orig.value;
+        int origY=orig.y;
+        int left=bars[0].get(origY);
+        int right=bars[1].get(origY);
         int minDistance=10000;
         int index=-1;
         int distance=Math.abs(value-blackValue);
@@ -270,24 +267,23 @@ public class Matrix extends FileToImg{
         return index;
     }
     public BitSet getRawContent(){
-        if(grayMatrix.get(1,2)>grayMatrix.get(dimensionX - 2, 2)){
+        if(grayMatrix.get(1,2)>grayMatrix.get(barCodeWidth - 2, 2)){
             ordered =false;
         }
         int index=0;
         BitSet bitSet=new BitSet();
         for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
-            if(grayMatrix.get(0, y)<grayMatrix.get(0, y - 1)){
-                blackValue=grayMatrix.get(0, y);
-                whiteValue=grayMatrix.get(0, y - 1);
-            }
-            else{
-                blackValue=grayMatrix.get(0, y - 1);
-                whiteValue=grayMatrix.get(0, y);
+            int blackValue=grayMatrix.get(0, y);
+            int whiteValue=grayMatrix.get(0, y - 1);
+            if(blackValue>=whiteValue){
+                int temp=blackValue;
+                blackValue=whiteValue;
+                whiteValue=temp;
             }
             if(VERBOSE){Log.d(TAG,"line black value: "+blackValue+"\twhite value: "+whiteValue);}
             for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
-                if(VERBOSE){Log.d(TAG,"point ("+x+" "+y+") value:"+grayMatrix.get(x, y)+"\torigin ("+grayMatrix.pixels[y * dimensionX + x].x+" "+grayMatrix.pixels[y * dimensionX + x].y+") value:"+grayMatrix.pixels[y * dimensionX + x].value);}
-                if(toBinary(x,y)==1){
+                if(VERBOSE){Log.d(TAG,"point ("+x+" "+y+") value:"+grayMatrix.get(x, y)+"\torigin ("+grayMatrix.pixels[y * barCodeWidth + x].x+" "+grayMatrix.pixels[y * barCodeWidth + x].y+") value:"+grayMatrix.pixels[y * barCodeWidth + x].value);}
+                if(toBinary(x,y,blackValue,whiteValue)==1){
                     bitSet.set(index);
                 }
                 index++;
@@ -296,7 +292,7 @@ public class Matrix extends FileToImg{
         return bitSet;
     }
     public BitSet getContent(int dimensionX, int dimensionY,int[] firstColorX,int[] secondColorX,int topY,int bottomY){
-        this.dimensionX=dimensionX;
+        barCodeWidth=dimensionX;
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
         }
@@ -319,9 +315,9 @@ public class Matrix extends FileToImg{
         int[] buckets = new int[256];
 
         for (int y = 1; y < 5; y++) {
-            int row = height * y / 5;
-            int right = (width * 4) / 5;
-            for (int column = width / 5; column < right; column++) {
+            int row = imgHeight * y / 5;
+            int right = (imgWidth * 4) / 5;
+            for (int column = imgWidth / 5; column < right; column++) {
                 int gray = getGray(column, row);
                 buckets[gray]++;
             }
@@ -412,10 +408,10 @@ public class Matrix extends FileToImg{
      */
     public int[] findBoarder() throws NotFoundException {
         int init = 20;
-        int left = width / 2 - init;
-        int right = width / 2 + init;
-        int up = height / 2 - init;
-        int down = height / 2 + init;
+        int left = imgWidth / 2 - init;
+        int right = imgWidth / 2 + init;
+        int up = imgHeight / 2 - init;
+        int down = imgHeight / 2 + init;
         int leftOrig = left;
         int rightOrig = right;
         int upOrig = up;
@@ -423,18 +419,18 @@ public class Matrix extends FileToImg{
         if (VERBOSE) {
             Log.d(TAG, "boarder init: up:" + up + "\t" + "right:" + right + "\t" + "down:" + down + "\t" + "left:" + left);
         }
-        if (left < 0 || right >= width || up < 0 || down >= height) {
+        if (left < 0 || right >= imgWidth || up < 0 || down >= imgHeight) {
             throw new NotFoundException("frame size too small");
         }
         boolean flag;
         while (true) {
             flag = false;
-            while (containsBlack(up, down, right, false) && right < width) {
+            while (containsBlack(up, down, right, false) && right < imgWidth) {
                 right++;
                 flag = true;
 
             }
-            while (containsBlack(left, right, down, true) && down < height) {
+            while (containsBlack(left, right, down, true) && down < imgHeight) {
                 down++;
                 flag = true;
             }
@@ -453,7 +449,7 @@ public class Matrix extends FileToImg{
         if (VERBOSE) {
             Log.d(TAG, "find boarder: up:" + up + "\t" + "right:" + right + "\t" + "down:" + down + "\t" + "left:" + left);
         }
-        if ((left == 0 || up == 0 || right == width || down == height) || (left == leftOrig && right == rightOrig && up == upOrig && down == downOrig)) {
+        if ((left == 0 || up == 0 || right == imgWidth || down == imgHeight) || (left == leftOrig && right == rightOrig && up == upOrig && down == downOrig)) {
             throw new NotFoundException("didn't find any possible bar code");
         }
         int[] vertexs = new int[8];
@@ -533,7 +529,7 @@ public class Matrix extends FileToImg{
                     }
                 } else {
                     fixed++;
-                    if (fixed >= height) {
+                    if (fixed >= imgHeight) {
                         throw new NotFoundException("didn't find any possible bar code");
                     }
                 }
@@ -565,7 +561,7 @@ public class Matrix extends FileToImg{
                     }
                 } else {
                     fixed++;
-                    if (fixed >= width) {
+                    if (fixed >= imgWidth) {
                         throw new NotFoundException("didn't find any possible bar code");
                     }
                 }
@@ -583,7 +579,7 @@ public class Matrix extends FileToImg{
      * @return 为噪点则返回true, 否则返回false
      */
     public boolean isSinglePoint(int x, int y) {
-        int sum = get(x - 1, y - 1) + get(x, y - 1) + get(x + 1, y - 1) + get(x - 1, y) + get(x + 1, y) + get(x - 1, y + 1) + get(x, y + 1) + get(x + 1, y + 1);
+        int sum = getBinary(x - 1, y - 1) + getBinary(x, y - 1) + getBinary(x + 1, y - 1) + getBinary(x - 1, y) + getBinary(x + 1, y) + getBinary(x - 1, y + 1) + getBinary(x, y + 1) + getBinary(x + 1, y + 1);
         return sum >= 6;
     }
 }
