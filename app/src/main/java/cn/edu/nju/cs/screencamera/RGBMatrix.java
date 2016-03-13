@@ -13,8 +13,8 @@ public class RGBMatrix extends Matrix {
         super(imgWidth, imgHeight);
     }
 
-    public RGBMatrix(byte[] pixels, int imgWidth, int imgHeight) throws NotFoundException {
-        super(pixels, imgWidth, imgHeight);
+    public RGBMatrix(byte[] pixels, int imgWidth, int imgHeight,int[] border) throws NotFoundException {
+        super(pixels, imgWidth, imgHeight,border);
     }
 
     /**

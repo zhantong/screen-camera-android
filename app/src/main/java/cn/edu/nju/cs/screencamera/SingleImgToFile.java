@@ -51,9 +51,9 @@ public class SingleImgToFile extends MediaToFile {
         RGBMatrix rgbMatrix=null;
         ArrayDataDecoder dataDecoder=null;
         int fileByteNum=-1;
-
+        int[] border=null;
         try {
-            rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight());
+            rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight(),border);
             rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());

@@ -24,6 +24,7 @@ public class Matrix extends FileToImg{
     private boolean ordered=true;
     public HashMap<Integer,Integer>[] bars;
     int barCodeWidth;
+    int[] border;
 
     /**
      * 基本构造函数,作为正方形,且无原始像素数据,生成默认值
@@ -54,14 +55,30 @@ public class Matrix extends FileToImg{
      * @param imgHeight 图像高度
      * @throws NotFoundException 未找到二维码异常
      */
-    public Matrix(byte[] pixels, int imgWidth, int imgHeight) throws NotFoundException {
+    public Matrix(byte[] pixels, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         this.pixels = pixels;
         this.imgWidth = imgWidth;
         this.imgHeight = imgHeight;
         this.threshold = getThreshold();
-        this.borders = findBoarder();
+        if(initBorder==null){
+            this.borders = findBorder(genInitBorder());
+        }
+        else {
+            try {
+                this.borders = findBorder(initBorder);
+            } catch (NotFoundException e) {
+                this.borders = findBorder(genInitBorder());
+            }
+        }
     }
-
+    public int[] genInitBorder(){
+        int init = 20;
+        int left = imgWidth / 2 - init;
+        int right = imgWidth / 2 + init;
+        int up = imgHeight / 2 - init;
+        int down = imgHeight / 2 + init;
+        return new int[] {left,up,right,down};
+    }
     /**
      * 透视变换
      * 指定透视变换后二维码的四个顶点坐标,结合找到的图像中的二维码顶点坐标进行透视变换
@@ -394,7 +411,6 @@ public class Matrix extends FileToImg{
         }
         return false;
     }
-
     /**
      * 寻找图像中二维码的四个顶点坐标值
      * 首先采用矩形放大,找到第一个4条边都是全是白色的矩形,这样认为二维码在矩形内
@@ -406,18 +422,17 @@ public class Matrix extends FileToImg{
      * @return 长度为8的数组, 分别存储每个顶点的x和y坐标
      * @throws NotFoundException 能够确定不可能发现二维码时,则抛出未找到二维码异常
      */
-    public int[] findBoarder() throws NotFoundException {
-        int init = 20;
-        int left = imgWidth / 2 - init;
-        int right = imgWidth / 2 + init;
-        int up = imgHeight / 2 - init;
-        int down = imgHeight / 2 + init;
+    public int[] findBorder(int[] initBorder) throws NotFoundException {
+        int left=initBorder[0];
+        int up=initBorder[1];
+        int right=initBorder[2];
+        int down=initBorder[3];
         int leftOrig = left;
         int rightOrig = right;
         int upOrig = up;
         int downOrig = down;
         if (VERBOSE) {
-            Log.d(TAG, "boarder init: up:" + up + "\t" + "right:" + right + "\t" + "down:" + down + "\t" + "left:" + left);
+            Log.d(TAG, "border init: up:" + up + "\t" + "right:" + right + "\t" + "down:" + down + "\t" + "left:" + left);
         }
         if (left < 0 || right >= imgWidth || up < 0 || down >= imgHeight) {
             throw new NotFoundException("frame size too small");
@@ -447,7 +462,7 @@ public class Matrix extends FileToImg{
             }
         }
         if (VERBOSE) {
-            Log.d(TAG, "find boarder: up:" + up + "\t" + "right:" + right + "\t" + "down:" + down + "\t" + "left:" + left);
+            Log.d(TAG, "find border: up:" + up + "\t" + "right:" + right + "\t" + "down:" + down + "\t" + "left:" + left);
         }
         if ((left == 0 || up == 0 || right == imgWidth || down == imgHeight) || (left == leftOrig && right == rightOrig && up == upOrig && down == downOrig)) {
             throw new NotFoundException("didn't find any possible bar code");
@@ -479,12 +494,13 @@ public class Matrix extends FileToImg{
         if (vertexs[0] == 0 || vertexs[2] == 0 || vertexs[4] == 0 || vertexs[6] == 0) {
             throw new NotFoundException("vertexs error");
         }
+        border=new int[]{left,up,right,down};
         return vertexs;
     }
 
     /**
      * 寻找矩形内二维码顶点坐标
-     * 方法在findBoarder()中已经描述
+     * 方法在findBorder()中已经描述
      *
      * @param b1         较小边界坐标值
      * @param b2         较大边界坐标值

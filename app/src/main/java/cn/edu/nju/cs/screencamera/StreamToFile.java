@@ -45,6 +45,7 @@ public class StreamToFile extends MediaToFile {
         int frameAmount = 0;
         byte[] img = {};
         Matrix matrix;
+        int[] border=null;
         int index = 0;
         while (true) {
             count++;
@@ -58,10 +59,10 @@ public class StreamToFile extends MediaToFile {
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
                 if(mPreview!=null){
-                    matrix = new Matrix(img, frameWidth, frameHeight);
+                    matrix = new Matrix(img, frameWidth, frameHeight,border);
                 }
                 else {
-                    matrix = new RGBMatrix(img, frameWidth, frameHeight);
+                    matrix = new RGBMatrix(img, frameWidth, frameHeight,border);
                 }
                 matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
             } catch (NotFoundException e) {
@@ -118,6 +119,8 @@ public class StreamToFile extends MediaToFile {
                     break;
                 }
             }
+            border=smallBorder(matrix.border);
+            if(VERBOSE){Log.d(TAG,"reduced borders (to 4/5): left:"+border[0]+"\tup:"+border[1]+"\tright:"+border[2]+"\tdown:"+border[3]);}
             matrix = null;
         }
         byte[] out=dataDecoder.dataArray();

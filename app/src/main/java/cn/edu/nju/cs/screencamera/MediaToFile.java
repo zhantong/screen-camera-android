@@ -213,4 +213,14 @@ public class MediaToFile extends FileToImg {
         Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
         return true;
     }
+    public int[] smallBorder(int[] origBorder){
+        int[] border=new int[origBorder.length];
+        int horizonSub=origBorder[2]-origBorder[0];
+        int verticalSub=origBorder[3]-origBorder[1];
+        border[0]=origBorder[0]+horizonSub/10;
+        border[1]=origBorder[1]+verticalSub/10;
+        border[2]=origBorder[2]-horizonSub/10;
+        border[3]=origBorder[3]-verticalSub/10;
+        return border;
+    }
 }
