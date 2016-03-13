@@ -3,7 +3,7 @@ package cn.edu.nju.cs.screencamera;
 /**
  * Created by zhantong on 15/12/27.
  */
-public class GrayMatrix extends FileToImg{
+public class GrayMatrix{
     public Point[] pixels;
     public int width;
     public int height;
