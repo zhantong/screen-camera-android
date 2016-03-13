@@ -71,6 +71,7 @@ public class StreamToFile extends MediaToFile {
                     Log.d(TAG,"camera focusing");
                     mPreview.focus();
                 }
+                border=null;
                 continue;
             }
             Log.i(TAG, "current frame:" + count);
