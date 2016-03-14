@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import cn.edu.nju.cs.screencamera.FileExplorer.FileChooser;
@@ -56,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         final CameraPreview mPreview = new CameraPreview(this, rev);
         this.mPreview = mPreview;
+        LinearLayout previewParent=(LinearLayout)findViewById(R.id.camera_preview_parent);
+        adjustPreviewSize(previewParent);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         EditText editTextFileName = (EditText) findViewById(R.id.fileName);
@@ -69,6 +72,19 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         worker.start();
+    }
+
+    public void adjustPreviewSize(LinearLayout parent){
+        float cameraAspectRatio=(float)CameraSettings.previewWidth()/CameraSettings.previewHeight();
+        int previewWidth=parent.getWidth();
+        int previewHeight=parent.getHeight();
+        if((float)previewWidth/previewHeight<cameraAspectRatio){
+            previewHeight=Math.round(previewWidth/cameraAspectRatio);
+        }
+        else{
+            previewWidth=Math.round(previewHeight/cameraAspectRatio);
+        }
+        parent.setLayoutParams(new LinearLayout.LayoutParams(previewWidth,previewHeight));
     }
 
     /**
