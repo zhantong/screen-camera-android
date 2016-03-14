@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
             previewHeight=Math.round(previewWidth/cameraAspectRatio);
         }
         else{
-            previewWidth=Math.round(previewHeight/cameraAspectRatio);
+            previewWidth=Math.round(previewHeight*cameraAspectRatio);
         }
         parent.setLayoutParams(new LinearLayout.LayoutParams(previewWidth,previewHeight));
     }
