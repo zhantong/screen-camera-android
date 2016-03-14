@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         TextView debugView = (TextView) findViewById(R.id.debug_view);
         TextView infoView = (TextView) findViewById(R.id.info_view);
         debugView.setGravity(Gravity.BOTTOM);
