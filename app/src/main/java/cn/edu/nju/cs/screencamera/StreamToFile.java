@@ -129,6 +129,7 @@ public class StreamToFile extends MediaToFile {
             if(VERBOSE){Log.d(TAG,"reduced borders (to 4/5): left:"+border[0]+"\tup:"+border[1]+"\tright:"+border[2]+"\tdown:"+border[3]);}
             matrix = null;
         }
+        updateInfo("识别完成！正在写入文件...");
         byte[] out=dataDecoder.dataArray();
         String sha1=FileVerification.bytesToSHA1(out);
         Log.d(TAG, "file SHA-1 verification: " + sha1);

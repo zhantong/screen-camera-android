@@ -57,7 +57,8 @@ public class MediaToFile extends FileToImg {
      * @param count            已处理的帧个数
      */
     protected void updateDebug(int index, int lastSuccessIndex, int frameAmount, int count) {
-        final String text = "当前:" + index + "已识别:" + lastSuccessIndex + "帧总数:" + frameAmount + "已处理:" + count;
+        //final String text = "当前:" + index + "已识别:" + lastSuccessIndex + "帧总数:" + frameAmount + "已处理:" + count;
+        final String text = "已处理:" + count;
         handler.post(new Runnable() {
             @Override
             public void run() {
@@ -89,10 +90,11 @@ public class MediaToFile extends FileToImg {
                 index|=1<<(intLength-i-1);
             }
         }
+        int crcLength=8;
         int crc=0;
         for(int i=0;i<byteLength;i++){
             if(head.get(intLength+i)){
-                crc|=1<<i;
+                crc|=1<<(crcLength-i-1);
             }
         }
         int truth=CRC8.calcCrc8(index);
@@ -195,6 +197,7 @@ public class MediaToFile extends FileToImg {
     public boolean bytesToFile(byte[] bytes,String fileName){
         if(fileName.isEmpty()){
             Log.i(TAG, "file name is empty");
+            updateInfo("文件名为空！ ");
             return false;
         }
         File file = new File(Environment.getExternalStorageDirectory() + "/Download/" + fileName);
@@ -211,6 +214,7 @@ public class MediaToFile extends FileToImg {
             return false;
         }
         Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
+        updateInfo("文件写入成功！");
         return true;
     }
     public int[] smallBorder(int[] origBorder){
