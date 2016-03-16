@@ -29,7 +29,7 @@ public class MediaToFile extends FileToImg {
     private static final boolean VERBOSE = false;//是否记录详细log
     private TextView debugView;//输出处理信息的TextView
     private TextView infoView;//输出全局信息的TextView
-    private Handler handler;//与UI进程通信
+    protected Handler handler;//与UI进程通信
     int barCodeWidth;
     int barCodeHeight;
     ReedSolomonDecoder decoder;

@@ -26,7 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;//相机
-    final static LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();//图像信息队列
+    private Thread cameraFrameProcessThread;
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
@@ -51,14 +51,15 @@ public class MainActivity extends AppCompatActivity {
      * @param view 默认参数
      */
     public void openCamera(View view) {
+        final LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
         CameraSettings.init();
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
-        final CameraPreview mPreview = new CameraPreview(this, rev);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        final CameraPreview mPreview = new CameraPreview(this, rev, preview);
         this.mPreview = mPreview;
         LinearLayout previewParent=(LinearLayout)findViewById(R.id.camera_preview_parent);
         adjustPreviewSize(previewParent);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
         EditText editTextFileName = (EditText) findViewById(R.id.fileName);
         final String newFileName = editTextFileName.getText().toString();
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         worker.start();
+        this.cameraFrameProcessThread=worker;
     }
 
     public void adjustPreviewSize(LinearLayout parent){
@@ -92,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view 默认参数
      */
     public void stop(View view) {
+        cameraFrameProcessThread.interrupt();
         mPreview.stop();
     }
 
@@ -132,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
      * @param view 默认参数
      */
     public void processVideo(View view) {
+        final LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.videoFilePath);

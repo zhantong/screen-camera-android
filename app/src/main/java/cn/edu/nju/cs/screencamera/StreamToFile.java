@@ -37,7 +37,7 @@ public class StreamToFile extends MediaToFile {
         Log.i(TAG,"process camera");
         streamToFile(imgs, frameWidth, frameHeight, fileName, mPreview);
     }
-    private void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName,CameraPreview mPreview) {
+    private void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName,final CameraPreview mPreview) {
         ArrayDataDecoder dataDecoder=null;
         int fileByteNum=-1;
         int count = 0;
@@ -119,7 +119,12 @@ public class StreamToFile extends MediaToFile {
                 Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
                 if(dataDecoder.isDataDecoded()){
                     if(mPreview!=null) {
-                        mPreview.stop();
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mPreview.stop();
+                            }
+                        });
                         Log.d(TAG,"stopped camera preview");
                     }
                     break;

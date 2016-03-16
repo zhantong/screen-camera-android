@@ -5,6 +5,7 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -20,6 +21,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera mCamera;
     private LinkedBlockingQueue<byte[]> frames;
     private boolean pause = false;//对焦需要一定时间,防止队列溢出
+    private ViewGroup cameraParentView;
 
     /**
      * 构造函数,必要的环境设置
@@ -27,11 +29,12 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * @param context 上下文
      * @param frames  队列,捕捉到的帧加入此队列
      */
-    public CameraPreview(Context context, LinkedBlockingQueue<byte[]> frames) {
+    public CameraPreview(Context context, LinkedBlockingQueue<byte[]> frames,ViewGroup cameraParentView) {
         super(context);
         mHolder = getHolder();
         mHolder.addCallback(this);
         this.frames = frames;
+        this.cameraParentView = cameraParentView;
     }
 
     /**
@@ -59,6 +62,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        mHolder.removeCallback(this);
+        mCamera.setPreviewCallback(null);
         mCamera.stopPreview();
         mCamera.release();
         mCamera = null;
@@ -121,10 +126,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * 主动控制释放相机资源
      */
     public void stop() {
-        mHolder.removeCallback(this);
-        mCamera.setPreviewCallback(null);
-        mCamera.stopPreview();
-        mCamera.release();
-        mCamera = null;
+        cameraParentView.removeView(this);
     }
 }
