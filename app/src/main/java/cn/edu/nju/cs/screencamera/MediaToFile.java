@@ -34,6 +34,7 @@ public class MediaToFile extends FileToImg {
     int barCodeHeight;
     ReedSolomonDecoder decoder;
     public List<int[]> out;
+    private CRC8 crcCheck;
     /**
      * 构造函数,获取必须的参数
      *
@@ -47,6 +48,7 @@ public class MediaToFile extends FileToImg {
         this.handler = handler;
         barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;
         barCodeHeight=2*frameBlackLength + contentLength;
+        crcCheck=new CRC8();
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI
@@ -97,7 +99,9 @@ public class MediaToFile extends FileToImg {
                 crc|=1<<(crcLength-i-1);
             }
         }
-        int truth=CRC8.calcCrc8(index);
+        crcCheck.reset();
+        crcCheck.update(index);
+        int truth=(int)crcCheck.getValue();
         Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
         if(crc!=truth||index<0){
             throw CRCCheckException.getNotFoundInstance();
