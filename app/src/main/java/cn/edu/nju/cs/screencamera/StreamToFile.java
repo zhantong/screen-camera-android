@@ -16,6 +16,7 @@ import net.fec.openrq.parameters.FECParameters;
 
 import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by zhantong on 16/2/29.
@@ -23,6 +24,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class StreamToFile extends MediaToFile {
     private static final String TAG = "StreamToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+    private static final long queueWaitSeconds=2;
     public StreamToFile(TextView debugView, TextView infoView, Handler handler) {
         super(debugView, infoView, handler);
     }
@@ -52,9 +54,13 @@ public class StreamToFile extends MediaToFile {
             updateInfo("正在识别...");
             try {
                 if(VERBOSE){Log.d(TAG,"is queue empty:"+imgs.isEmpty());}
-                img = imgs.take();
+                img = imgs.poll(queueWaitSeconds, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 Log.d(TAG, e.getMessage());
+            }
+            if(img==null){
+                updateInfo("识别失败！");
+                break;
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
@@ -88,8 +94,10 @@ public class StreamToFile extends MediaToFile {
                         fileByteNum = getFileByteNum(matrix);
                     }catch (CRCCheckException e){
                         Log.d(TAG, "head CRC check failed");
-                        Log.d(TAG,"camera focusing");
-                        mPreview.focus();
+                        if(mPreview!=null) {
+                            Log.d(TAG, "camera focusing");
+                            mPreview.focus();
+                        }
                         continue;
                     }
                     if(fileByteNum==0){
@@ -131,14 +139,16 @@ public class StreamToFile extends MediaToFile {
                 }
             }
             border=smallBorder(matrix.border);
-            if(VERBOSE){Log.d(TAG,"reduced borders (to 4/5): left:"+border[0]+"\tup:"+border[1]+"\tright:"+border[2]+"\tdown:"+border[3]);}
+            if(VERBOSE){Log.d(TAG, "reduced borders (to 4/5): left:" + border[0] + "\tup:" + border[1] + "\tright:" + border[2] + "\tdown:" + border[3]);}
             matrix = null;
         }
-        updateInfo("识别完成！正在写入文件...");
-        byte[] out=dataDecoder.dataArray();
-        String sha1=FileVerification.bytesToSHA1(out);
-        Log.d(TAG, "file SHA-1 verification: " + sha1);
-        bytesToFile(out,fileName);
+        if(dataDecoder!=null&&dataDecoder.isDataDecoded()) {
+            updateInfo("识别完成！正在写入文件...");
+            byte[] out = dataDecoder.dataArray();
+            String sha1 = FileVerification.bytesToSHA1(out);
+            Log.d(TAG, "file SHA-1 verification: " + sha1);
+            bytesToFile(out, fileName);
+        }
     }
     private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
         Log.i(TAG,"check source block status:");

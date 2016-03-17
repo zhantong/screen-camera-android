@@ -26,7 +26,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;//相机
-    private Thread cameraFrameProcessThread;
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
@@ -72,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         worker.start();
-        this.cameraFrameProcessThread=worker;
     }
 
     public void adjustPreviewSize(LinearLayout parent){
@@ -94,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
      * @param view 默认参数
      */
     public void stop(View view) {
-        cameraFrameProcessThread.interrupt();
         mPreview.stop();
     }
 

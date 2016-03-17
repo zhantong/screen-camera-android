@@ -99,7 +99,7 @@ public class MediaToFile extends FileToImg {
         }
         int truth=CRC8.calcCrc8(index);
         Log.d(TAG, "CRC check: index:" + index + " CRC:" + crc + " truth:" + truth);
-        if(crc!=truth){
+        if(crc!=truth||index<0){
             throw CRCCheckException.getNotFoundInstance();
         }
         return index;
