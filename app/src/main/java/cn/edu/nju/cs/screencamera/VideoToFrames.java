@@ -313,13 +313,15 @@ public class VideoToFrames extends AndroidTestCase {
                         long startWhen = System.nanoTime();
                         try {
                             //frames.put(outputSurface.getFrame());
-                            frames.put(outputSurface.getPixels());
+                            byte[] clone=outputSurface.getPixels().clone();
+                            frames.put(clone);
+                            //frames.put(outputSurface.getPixels());
                             /*
                             File outputFile = new File(FILES_DIR,String.format("getFileByteNum/frame-%02d.png", decodeCount));
                             decodeCount++;
                             outputSurface.saveFrame(outputFile.toString());
                             */
-                            Thread.sleep(5);
+                            //Thread.sleep(5);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
