@@ -317,7 +317,7 @@ public class VideoToFrames extends AndroidTestCase {
                             frames.put(clone);
                             //frames.put(outputSurface.getPixels());
                             /*
-                            File outputFile = new File(FILES_DIR,String.format("getFileByteNum/frame-%02d.png", decodeCount));
+                            File outputFile = new File(FILES_DIR,String.format("getFileByteNum/frame-%03d.png", decodeCount));
                             decodeCount++;
                             outputSurface.saveFrame(outputFile.toString());
                             */
