@@ -41,6 +41,7 @@ public class StreamToFile extends MediaToFile {
     }
     private void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName,final CameraPreview mPreview) {
         ArrayDataDecoder dataDecoder=null;
+        SourceBlockDecoder lastSourceBlock=null;
         int fileByteNum=-1;
         int count = 0;
         int lastSuccessIndex = 0;
@@ -110,6 +111,7 @@ public class StreamToFile extends MediaToFile {
                     FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                     Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);
+                    lastSourceBlock=dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks()-1);
                 }
                 byte[] current;
                 try {
@@ -120,12 +122,7 @@ public class StreamToFile extends MediaToFile {
                 }
                 EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
                 Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-            }
-            if(fileByteNum!=-1) {
-                //checkSourceBlockStatus(dataDecoder);
-                Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
-                if(dataDecoder.isDataDecoded()){
+                if(lastSourceBlock.missingSourceSymbols().size()-lastSourceBlock.availableRepairSymbols().size()==1){
                     if(mPreview!=null) {
                         handler.post(new Runnable() {
                             @Override
@@ -135,6 +132,15 @@ public class StreamToFile extends MediaToFile {
                         });
                         Log.d(TAG,"stopped camera preview");
                     }
+                    imgs.clear();
+                }
+                Log.d(TAG,"received repair symbols:"+lastSourceBlock.availableRepairSymbols().size()+"\tmissing source symbols:"+lastSourceBlock.missingSourceSymbols().size());
+                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+            }
+            if(fileByteNum!=-1) {
+                //checkSourceBlockStatus(dataDecoder);
+                Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
+                if(dataDecoder.isDataDecoded()){
                     break;
                 }
             }
