@@ -146,6 +146,9 @@ public class Matrix extends FileToImg{
     public boolean pixelEquals(int x, int y, int pixel) {
         return getBinary(x, y) == pixel;
     }
+    public boolean pixelIsBlack(int x, int y){
+        return pixelEquals(x,y,0);
+    }
 
     /**
      * 获取图像宽度
@@ -450,14 +453,14 @@ public class Matrix extends FileToImg{
     public boolean containsBlack(int start, int end, int fixed, boolean horizontal) {
         if (horizontal) {
             for (int x = start; x <= end; x++) {
-                if (pixelEquals(x, fixed, 0)) {
+                if (pixelIsBlack(x, fixed)) {
                     return true;
                 }
 
             }
         } else {
             for (int y = start; y <= end; y++) {
-                if (pixelEquals(fixed, y, 0)) {
+                if (pixelIsBlack(fixed, y)) {
                     return true;
                 }
             }
@@ -493,20 +496,20 @@ public class Matrix extends FileToImg{
         boolean flag;
         while (true) {
             flag = false;
-            while (containsBlack(up, down, right, false) && right < imgWidth) {
+            while (right < imgWidth && containsBlack(up, down, right, false)) {
                 right++;
                 flag = true;
 
             }
-            while (containsBlack(left, right, down, true) && down < imgHeight) {
+            while (down < imgHeight && containsBlack(left, right, down, true)) {
                 down++;
                 flag = true;
             }
-            while (containsBlack(up, down, left, false) && left > 0) {
+            while (left > 0 && containsBlack(up, down, left, false)) {
                 left--;
                 flag = true;
             }
-            while (containsBlack(left, right, up, true) && up > 0) {
+            while (up > 0 && containsBlack(left, right, up, true)) {
                 up--;
                 flag = true;
             }
@@ -575,7 +578,7 @@ public class Matrix extends FileToImg{
             while (true) {
                 if (checkP1) {
                     for (int i = 1; i <= mid; i++) {
-                        if (pixelEquals(b1 + i, fixed, 0) && !isSinglePoint(b1 + i, fixed)) {
+                        if (pixelIsBlack(b1 + i, fixed) && !isSinglePoint(b1 + i, fixed)) {
                             vertexs[p1 * 2] = b1 + i;
                             vertexs[p1 * 2 + 1] = fixed;
                             return fixed;
@@ -584,7 +587,7 @@ public class Matrix extends FileToImg{
                 }
                 if (checkP2) {
                     for (int i = 1; i <= mid; i++) {
-                        if (pixelEquals(b2 - i, fixed, 0) && !isSinglePoint(b2 - i, fixed)) {
+                        if (pixelIsBlack(b2 - i, fixed) && !isSinglePoint(b2 - i, fixed)) {
                             vertexs[p2 * 2] = b2 - i;
                             vertexs[p2 * 2 + 1] = fixed;
                             return fixed;
@@ -607,7 +610,7 @@ public class Matrix extends FileToImg{
             while (true) {
                 if (checkP1) {
                     for (int i = 1; i <= mid; i++) {
-                        if (pixelEquals(fixed, b1 + i, 0) && !isSinglePoint(fixed, b1 + i)) {
+                        if (pixelIsBlack(fixed, b1 + i) && !isSinglePoint(fixed, b1 + i)) {
                             vertexs[p1 * 2] = fixed;
                             vertexs[p1 * 2 + 1] = b1 + i;
                             return fixed;
@@ -616,7 +619,7 @@ public class Matrix extends FileToImg{
                 }
                 if (checkP2) {
                     for (int i = 1; i <= mid; i++) {
-                        if (pixelEquals(fixed, b2 - i, 0) && !isSinglePoint(fixed, b2 - i)) {
+                        if (pixelIsBlack(fixed, b2 - i) && !isSinglePoint(fixed, b2 - i)) {
                             vertexs[p2 * 2] = fixed;
                             vertexs[p2 * 2 + 1] = b2 - i;
                             return fixed;
