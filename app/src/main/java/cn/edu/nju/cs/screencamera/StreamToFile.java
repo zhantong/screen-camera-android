@@ -65,11 +65,21 @@ public class StreamToFile extends MediaToFile {
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
+                int imgColorType;
                 if(mPreview!=null){
-                    matrix = new Matrix(img, frameWidth, frameHeight,border);
+                    imgColorType=1;
                 }
                 else {
-                    matrix = new RGBMatrix(img, frameWidth, frameHeight,border);
+                    imgColorType=0;
+                }
+                if(barcodeType==0){
+                    matrix=new MatrixNormal(img,imgColorType, frameWidth, frameHeight,border);
+                }
+                else if(barcodeType==1){
+                    matrix=new MatrixZoom(img,imgColorType, frameWidth, frameHeight,border);
+                }
+                else{
+                    return;
                 }
                 matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
             } catch (NotFoundException e) {
@@ -107,7 +117,7 @@ public class StreamToFile extends MediaToFile {
                         continue;
                     }
                     Log.i(TAG,"file is "+fileByteNum+" bytes");
-                    int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
+                    int length=bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8-8;
                     FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                     Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);
@@ -155,6 +165,7 @@ public class StreamToFile extends MediaToFile {
             Log.d(TAG, "file SHA-1 verification: " + sha1);
             bytesToFile(out, fileName);
         }
+
     }
     private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
         Log.i(TAG,"check source block status:");

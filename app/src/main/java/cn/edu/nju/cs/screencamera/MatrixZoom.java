@@ -17,11 +17,10 @@ public class MatrixZoom extends Matrix{
         super(imgWidth,imgHeight);
     }
 
-    public MatrixZoom(byte[] pixels, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
-        super(pixels,imgWidth,imgHeight,initBorder);
+    public MatrixZoom(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
+        super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
-        System.out.println("used");
         int samplePerBlock=5;//不能在这里设置
         grayMatrix=new GrayMatrixZoom(dimensionX,dimensionY);
         float[] points = new float[2 * dimensionX*samplePerBlock];
@@ -63,6 +62,7 @@ public class MatrixZoom extends Matrix{
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }
+        /*
         int left=frameBlackLength+frameVaryLength;
         int top=frameBlackLength;
         for(int i=0;i<contentLength;i++){
@@ -79,6 +79,8 @@ public class MatrixZoom extends Matrix{
             }
 
         }
+        */
+
         return false;
     }
     private int maxIndex(int[] array,int start){

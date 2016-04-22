@@ -26,6 +26,7 @@ public class Matrix extends FileToImg{
     int barCodeWidth;
     int[] border;
     boolean isMixed=true;
+    int imgColorType;
 
     /**
      * 基本构造函数,作为正方形,且无原始像素数据,生成默认值
@@ -56,11 +57,12 @@ public class Matrix extends FileToImg{
      * @param imgHeight 图像高度
      * @throws NotFoundException 未找到二维码异常
      */
-    public Matrix(byte[] pixels, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
+    public Matrix(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         this.pixels = pixels;
         this.imgWidth = imgWidth;
         this.imgHeight = imgHeight;
         this.threshold = getThreshold();
+        this.imgColorType=imgColorType;
         if(initBorder==null){
             this.borders = findBorder(genInitBorder());
         }
@@ -116,9 +118,23 @@ public class Matrix extends FileToImg{
      * @return 返回灰度值
      */
     public int getGray(int x, int y) {
-        return -1;
+        if(imgColorType==0){
+            return getRGBGray(x,y);
+        }
+        else{
+            return getYUVGray(x,y);
+        }
     }
-
+    public int getYUVGray(int x, int y) {
+        return pixels[y * imgWidth + x] & 0xff;
+    }
+    public int getRGBGray(int x, int y) {
+        int offset = (y * imgWidth + x) * 4;
+        int r = pixels[offset] & 0xFF;
+        int g = pixels[offset + 1] & 0xFF;
+        int b = pixels[offset + 2] & 0xFF;
+        return ((b * 29 + g * 150 + r * 77 + 128) >> 8);
+    }
     /**
      * 获取指定坐标点二值化值,即0或1
      * 根据阈值和灰度值判断二值化结果

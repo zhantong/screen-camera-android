@@ -17,8 +17,8 @@ public class MatrixNormal extends Matrix {
         super(imgWidth,imgHeight);
     }
 
-    public MatrixNormal(byte[] pixels, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
-        super(pixels,imgWidth,imgHeight,initBorder);
+    public MatrixNormal(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
+        super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         grayMatrix=new GrayMatrixNormal(dimensionX,dimensionY);

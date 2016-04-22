@@ -48,22 +48,30 @@ public class SingleImgToFile extends MediaToFile {
         bitmap.copyPixelsToBuffer(byteBuffer);
         bitmap.recycle();
         updateInfo("正在识别...");
-        RGBMatrix rgbMatrix=null;
+        Matrix matrix=null;
         ArrayDataDecoder dataDecoder=null;
         int fileByteNum=-1;
         int[] border=null;
         try {
-            rgbMatrix = new RGBMatrix(byteBuffer.array(), bitmap.getWidth(), bitmap.getHeight(),border);
-            rgbMatrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
+            if(barcodeType==0){
+                matrix=new MatrixNormal(byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
+            }
+            else if(barcodeType==1){
+                matrix=new MatrixZoom(byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
+            }
+            else{
+                return;
+            }
+            matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
             return;
         }
         for(int i=0;i<2;i++) {
-            rgbMatrix.reverse=!rgbMatrix.reverse;
+            matrix.reverse=!matrix.reverse;
             if(fileByteNum==-1){
                 try {
-                    fileByteNum = getFileByteNum(rgbMatrix);
+                    fileByteNum = getFileByteNum(matrix);
                 }catch (CRCCheckException e){
                     Log.d(TAG,"head CRC check failed");
                     continue;
@@ -72,14 +80,14 @@ public class SingleImgToFile extends MediaToFile {
                     fileByteNum=-1;
                     continue;
                 }
-                int length=contentLength*contentLength/8-ecNum*ecLength/8-8;
+                int length=bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8-8;
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                 Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                 dataDecoder = OpenRQ.newDecoder(parameters, 0);
             }
             byte[] current;
             try {
-                current = getContent(rgbMatrix);
+                current = getContent(matrix);
             }catch (ReedSolomonException e){
                 Log.d(TAG, "content error correction failed");
                 continue;
@@ -92,7 +100,7 @@ public class SingleImgToFile extends MediaToFile {
             checkSourceBlockStatus(dataDecoder);
             Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
         }
-        rgbMatrix = null;
+        matrix = null;
     }
     private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
         Log.i(TAG,"check source block status:");

@@ -16,4 +16,5 @@ public class FileToImg {
     int ecLength=10;
     int bitsPerBlock=2;
     int fileByteNum;
+    int barcodeType=1;
 }
