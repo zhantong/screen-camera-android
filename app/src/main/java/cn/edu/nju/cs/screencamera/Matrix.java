@@ -19,7 +19,7 @@ public class Matrix extends FileToImg{
     private int[] borders;//图像中二维码的四个顶点坐标值
     protected PerspectiveTransform transform;//透视变换参数
     public int frameIndex;//此图像中二维码的帧编号
-    public GrayMatrixNormal grayMatrix;
+    public GrayMatrix grayMatrix;
     public boolean reverse=false;
     protected boolean ordered=true;
     public HashMap<Integer,Integer>[] bars;
@@ -196,88 +196,11 @@ public class Matrix extends FileToImg{
         return false;
     }
 
-    public HashMap<Integer,Integer>[] sampleVary(int[] firstColorX,int[] secondColorX,int topY,int bottomY){
-        HashMap<Integer,Integer> firstColorMap=new HashMap<>();
-        for(int x:firstColorX){
-            getVary(firstColorMap,x,topY,bottomY);
-        }
-        HashMap<Integer,Integer> secondColorMap=new HashMap<>();
-        for(int x:secondColorX){
-            getVary(secondColorMap,x,topY,bottomY);
-        }
-        HashMap<Integer,Integer>[] colorBars=new HashMap[2];
-        colorBars[0]=firstColorMap;
-        colorBars[1]=secondColorMap;
-        return colorBars;
+    public BitSet getRawContent(){
+        return null;
     }
-    public void getVary(HashMap<Integer,Integer> map,int posX,int topY,int bottomY){
-        int length=bottomY-topY;
-        Point[] points=new Point[length];
-
-        int index=0;
-        for(int y=topY;y<bottomY;y++){
-            points[index]=grayMatrix.getPoint(posX,y);
-            index++;
-        }
-        for(int y=points[0].y;y<=points[length-1].y;y++){
-            if(!map.containsKey(y)) {
-                int x = getX(points, y);
-                map.put(y, getGray(x, y));
-            }
-        }
-    }
-    public int getX(Point[] points,int y){
-        int i;
-        for(i=0;i<points.length-1;i++){
-            if(y<points[i].y){
-                break;
-            }
-        }
-        Point before=points[i-1];
-        Point after=points[i];
-        if(before.x==after.x){
-            return before.x;
-        }
-        float res=(float)(y-before.y)/(after.y-before.y)*(after.x-before.x)+before.x;
-        return Math.round(res);
-    }
-    public int toBinary(int x,int y,int blackValue,int whiteValue){
-        Point orig=grayMatrix.getPoint(x,y);
-        int value=orig.value;
-        int origY=orig.y;
-        int left=bars[0].get(origY);
-        int right=bars[1].get(origY);
-        int minDistance=10000;
-        int index=-1;
-        int distance=Math.abs(value-blackValue);
-        if(distance<minDistance){
-            minDistance=distance;
-            index=0;
-        }
-        distance=Math.abs(value-whiteValue);
-        if(distance<minDistance){
-            minDistance=distance;
-            index=1;
-        }
-        distance=Math.abs(value-left);
-        if(distance<minDistance){
-            minDistance=distance;
-            if((ordered&&!reverse)||(!ordered&&reverse)){
-                index=0;
-            }else {
-                index=1;
-            }
-        }
-        distance=Math.abs(value-right);
-        if(distance<minDistance){
-            minDistance=distance;
-            if((ordered&&!reverse)||(!ordered&&reverse)){
-                index=1;
-            }else {
-                index=0;
-            }
-        }
-        return index;
+    public HashMap<Integer,Integer>[] sampleVary(int[] firstColorX, int[] secondColorX, int topY, int bottomY){
+        return null;
     }
 
     public BitSet getContent(int dimensionX, int dimensionY,int[] firstColorX,int[] secondColorX,int topY,int bottomY){

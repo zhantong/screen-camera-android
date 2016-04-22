@@ -3,12 +3,11 @@ package cn.edu.nju.cs.screencamera;
 /**
  * Created by zhantong on 16/4/22.
  */
-public class GrayMatrixZoom extends GrayMatrix{
+public class GrayMatrixZoom extends GrayMatrix {
     public Point[][] pixels;
     public int width;
     public int height;
-    public GrayMatrixZoom(int dimensionX,int dimensionY){
-        super(dimensionX,dimensionY);
+    public GrayMatrixZoom(int dimensionX, int dimensionY){
         pixels=new Point[dimensionX*dimensionY][];
         width=dimensionX;
         height=dimensionY;
@@ -45,5 +44,10 @@ public class GrayMatrixZoom extends GrayMatrix{
             }
             System.out.println();
         }
+    }
+    public void set(int x,int y,int pixel,int origX,int origY){
+    }
+    public Point getPoint(int x, int y){
+        return null;
     }
 }
