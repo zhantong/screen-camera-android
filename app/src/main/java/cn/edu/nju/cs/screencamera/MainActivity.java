@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler);
+                SingleImgToFileZoom singleImgToFile=new SingleImgToFileZoom(debugView, infoView, nHandler);
                 singleImgToFile.singleImg(videoFilePath);
                 //singleImgToFile.driver();
             }

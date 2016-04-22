@@ -10,9 +10,10 @@ public class FileToImg {
     int frameBlackLength=1;
     int frameVaryLength=1;
     int frameVaryTwoLength=1;
-    int contentLength=80;
+    int contentLength=40;
     int blockLength=4;
-    int ecNum=80;
+    int ecNum=40;
     int ecLength=10;
+    int bitsPerBlock=2;
     int fileByteNum;
 }

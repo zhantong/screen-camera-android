@@ -2,6 +2,7 @@ package cn.edu.nju.cs.screencamera;
 
 import android.os.Environment;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -16,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,8 +35,8 @@ public class MediaToFile extends FileToImg {
     int barCodeWidth;
     int barCodeHeight;
     ReedSolomonDecoder decoder;
-    public List<int[]> out;
-    private CRC8 crcCheck;
+    public List<BitSet> realBitSetList;
+    protected CRC8 crcCheck;
     /**
      * 构造函数,获取必须的参数
      *
@@ -49,6 +51,7 @@ public class MediaToFile extends FileToImg {
         barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;
         barCodeHeight=2*frameBlackLength + contentLength;
         crcCheck=new CRC8();
+        checkBitSet(null, null);
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI
@@ -84,6 +87,7 @@ public class MediaToFile extends FileToImg {
     }
     public int getFileByteNum(Matrix matrix) throws CRCCheckException{
         BitSet head=matrix.getHead(barCodeWidth, barCodeHeight);
+        System.out.println(head.toString());
         int intLength=32;
         int byteLength=8;
         int index=0;
@@ -109,10 +113,15 @@ public class MediaToFile extends FileToImg {
         return index;
     }
     public int[] getRawContent(Matrix matrix){
+        final boolean check=false;
         int[] firstColorX={frameBlackLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength};
         int[] secondColorX={frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
         BitSet content=matrix.getContent(barCodeWidth, barCodeHeight,firstColorX,secondColorX,frameBlackLength,frameBlackLength+contentLength);
-        int[] con=new int[contentLength*contentLength/ecLength];
+        if(check){
+            boolean status=checkBitSet(content,matrix);
+            Log.d(TAG,"check:"+status);
+        }
+        int[] con=new int[bitsPerBlock*contentLength*contentLength/ecLength];
         for(int i=0;i<con.length*ecLength;i++){
             if(content.get(i)){
                 con[i/ecLength]|=1<<(i%ecLength);
@@ -129,19 +138,9 @@ public class MediaToFile extends FileToImg {
         return raw;
     }
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{
-        boolean checkDecode=false;
         int[] rawContent=getRawContent(matrix);
-        int[] originContent=null;
-        if(checkDecode){
-            originContent=new int[rawContent.length];
-            System.arraycopy(rawContent, 0, originContent, 0, rawContent.length);
-        }
         int[] decodedContent=decode(rawContent,ecNum);
-        if(checkDecode){
-            boolean checkResult=check(decodedContent,originContent);
-            if(VERBOSE){Log.d(TAG,"check if decode correct:"+checkResult);}
-        }
-        int realByteNum=contentLength*contentLength/8-ecNum*ecLength/8;
+        int realByteNum=bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8;
         byte[] res=new byte[realByteNum];
         for(int i=0;i<res.length*8;i++){
             if((decodedContent[i/ecLength]&(1<<(i%ecLength)))>0){
@@ -150,52 +149,83 @@ public class MediaToFile extends FileToImg {
         }
         return res;
     }
-    public boolean check(int[] con,int[] orig){
-        if(VERBOSE){Log.d(TAG, "checking decoded data: data length:" + con.length);}
-        String filePath=Environment.getExternalStorageDirectory() + "/test.txt";
-        if(out==null){
-            out= readCheckFile(filePath);
+    public boolean checkBitSet(BitSet con,Matrix matrix){
+        if(realBitSetList==null){
+            String filePath=Environment.getExternalStorageDirectory() + "/bitsets.txt";
+            realBitSetList= (LinkedList<BitSet>)readCheckFile(filePath);
             if(VERBOSE){Log.d(TAG,"load check file success:"+filePath);}
+            return false;
         }
-        int maxCount=-1;
-        int realLength=contentLength*contentLength/ecLength-ecNum;
-        for (int[] current:out){
-            int count=0;
-            for(int i=0;i<realLength;i++){
-                if(con[i]==current[i]){
-                    count++;
+        //Log.d(TAG,"check content bit size:"+con.length());
+        BitSet least=null;
+        int leastCount=10000;
+        for(BitSet current:realBitSetList){
+            BitSet clone=(BitSet)con.clone();
+            //Log.d(TAG,"current check bit size:"+clone.length());
+            clone.xor(current);
+            if(clone.cardinality()<leastCount){
+                least=clone;
+                leastCount=clone.cardinality();
+            }
+            if(clone.cardinality()==0){
+                break;
+            }
+        }
+        if(leastCount!=0){
+            Log.d(TAG, "check least count:" + leastCount);
+            printContentBitSet(least);
+            List<Integer> test=new ArrayList<>();
+            for(int i=least.nextSetBit(0);i>=0;i=least.nextSetBit(i+1)){
+                int real=i/2;
+                if(!test.contains(real)) {
+                    test.add(real);
                 }
             }
-            if(count==realLength){
-                return true;
-            }
-            if(count>realLength-100){
-                if(VERBOSE){Log.d(TAG,"wrong data:");}
-                for(int i=0;i<realLength;i++){
-                    if(con[i]!=current[i]){
-                        if(VERBOSE){Log.d(TAG,"position: "+i+"\torigin: "+orig[i]+"\tdecoded: "+con[i]+"\ttruth: "+current[i]);}
+            //matrix.check(test);
+            return false;
+        }
+        return true;
+    }
+    public void printContentBitSet(BitSet content){
+        int index=0;
+        System.out.println("the wrong bits graph:");
+        for(int y=0;y<contentLength;y++){
+            for(int x=0;x<contentLength;x++){
+                boolean flag=false;
+                for(int i=0;i<bitsPerBlock;i++){
+                    if(content.get(index+i)){
+                        flag=true;
+                        break;
                     }
                 }
+                if(flag){
+                    System.out.print("x");
+                }
+                else{
+                    System.out.print(" ");
+                }
+                index+=bitsPerBlock;
             }
-            if(count>maxCount){
-                maxCount=count;
-            }
+            System.out.println();
         }
-        if(VERBOSE){Log.d(TAG,"max check correct count: "+maxCount);}
-        return false;
+
+
     }
-    public LinkedList<int[]> readCheckFile(String filePath){
+
+    public Object readCheckFile(String filePath){
         ObjectInputStream inputStream;
-        LinkedList<int[]> d=new LinkedList<>();
+        Object d=null;
         try {
             inputStream = new ObjectInputStream(new FileInputStream(filePath));
-            d=(LinkedList<int[]>)inputStream.readObject();
+            d = inputStream.readObject();
+        }catch (ClassNotFoundException ec){
+            ec.printStackTrace();
         }catch (IOException e){
             e.printStackTrace();
         }
-        catch (ClassNotFoundException e){
-            e.printStackTrace();
-        }
+
+
+
         return d;
     }
     public boolean bytesToFile(byte[] bytes,String fileName){

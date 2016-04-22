@@ -20,9 +20,17 @@ public class GrayMatrix{
         int offset = y * width + x;
         return pixels[offset];
     }
+    public Point[] getPoints(int x, int y) {
+        return null;
+    }
+    public int[] getSamples(int x,int y){
+        return null;
+    }
     public void set(int x,int y,int pixel,int origX,int origY){
         int offset = y * width + x;
         pixels[offset] = new Point(origX,origY,pixel);
+    }
+    public void set(int x,int y,Point[] samples){
     }
     public void print(){
         System.out.println("width:"+width+"\theight:"+height);

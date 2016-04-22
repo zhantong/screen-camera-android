@@ -10,14 +10,14 @@ import java.util.HashMap;
  * 以及一些对原始图像操作的方法
  */
 public class Matrix extends FileToImg{
-    private static final boolean VERBOSE = false;//是否记录详细log
-    private static final String TAG = "Matrix";//log tag
+    protected static final boolean VERBOSE = true;//是否记录详细log
+    protected static final String TAG = "Matrix";//log tag
     protected final int imgWidth;//图像宽度
     protected final int imgHeight;//图像高度
     protected final byte[] pixels;//图像每个像素点原始值
     private int threshold = 0;//二值化阈值
     private int[] borders;//图像中二维码的四个顶点坐标值
-    private PerspectiveTransform transform;//透视变换参数
+    protected PerspectiveTransform transform;//透视变换参数
     public int frameIndex;//此图像中二维码的帧编号
     public GrayMatrix grayMatrix;
     public boolean reverse=false;
@@ -169,11 +169,15 @@ public class Matrix extends FileToImg{
     }
     public BitSet getRawHead(){
         int black=grayMatrix.get(0,0);
-        int white=grayMatrix.get(0, 1);
+        grayMatrix.getPoints(0,0)[0].print();
+        int white=grayMatrix.get(0,1);
+        grayMatrix.getPoints(0,1)[0].print();
         int threshold=(black+white)/2;
+        System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
         int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
         BitSet bitSet=new BitSet();
         for(int i=0;i<length;i++){
+            grayMatrix.getPoints(i,0)[0].print();
             if(grayMatrix.get(i,0)>threshold){
                 bitSet.set(i);
             }
