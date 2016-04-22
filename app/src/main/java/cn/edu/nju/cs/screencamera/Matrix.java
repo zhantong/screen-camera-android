@@ -10,7 +10,7 @@ import java.util.HashMap;
  * 以及一些对原始图像操作的方法
  */
 public class Matrix extends FileToImg{
-    protected static final boolean VERBOSE = true;//是否记录详细log
+    protected static final boolean VERBOSE = false;//是否记录详细log
     protected static final String TAG = "Matrix";//log tag
     protected final int imgWidth;//图像宽度
     protected final int imgHeight;//图像高度
@@ -116,7 +116,7 @@ public class Matrix extends FileToImg{
      * @return 返回灰度值
      */
     public int getGray(int x, int y) {
-        return pixels[y * imgWidth + x] & 0xff;
+        return -1;
     }
 
     /**
@@ -169,15 +169,14 @@ public class Matrix extends FileToImg{
     }
     public BitSet getRawHead(){
         int black=grayMatrix.get(0,0);
-        grayMatrix.getPoints(0,0)[0].print();
+        grayMatrix.get(0,0);
         int white=grayMatrix.get(0,1);
-        grayMatrix.getPoints(0,1)[0].print();
+        grayMatrix.get(0,1);
         int threshold=(black+white)/2;
         System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
         int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
         BitSet bitSet=new BitSet();
         for(int i=0;i<length;i++){
-            grayMatrix.getPoints(i,0)[0].print();
             if(grayMatrix.get(i,0)>threshold){
                 bitSet.set(i);
             }

@@ -18,7 +18,7 @@ public class RGBMatrix extends Matrix {
     }
 
     /**
-     * Matrix存储的是YUV格式信息,对于RGBA格式需要新的灰度计算方法
+     * RGBA格式的灰度计算方法
      * 获取(x,y)点灰度值
      *
      * @param x x轴,即列
