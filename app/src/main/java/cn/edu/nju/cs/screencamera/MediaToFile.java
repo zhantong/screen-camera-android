@@ -26,14 +26,12 @@ import java.util.List;
  * 从相机,视频,图片识别二维码的基础类
  * 包含通用的UI通信显示方法,和图像处理方法等
  */
-public class MediaToFile extends FileToImg {
+public class MediaToFile{
     private static final String TAG = "MediaToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     private TextView debugView;//输出处理信息的TextView
     private TextView infoView;//输出全局信息的TextView
     protected Handler handler;//与UI进程通信
-    int barCodeWidth;
-    int barCodeHeight;
     ReedSolomonDecoder decoder;
     public List<BitSet> realBitSetList;
     protected CRC8 crcCheck;
@@ -48,8 +46,6 @@ public class MediaToFile extends FileToImg {
         this.debugView = debugView;
         this.infoView = infoView;
         this.handler = handler;
-        barCodeWidth = (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;
-        barCodeHeight=2*frameBlackLength + contentLength;
         crcCheck=new CRC8();
         checkBitSet(null, null);
     }
@@ -86,7 +82,7 @@ public class MediaToFile extends FileToImg {
         });
     }
     public int getFileByteNum(Matrix matrix) throws CRCCheckException{
-        BitSet head=matrix.getHead(barCodeWidth, barCodeHeight);
+        BitSet head=matrix.getHead(matrix.getBarCodeWidth(), matrix.getBarCodeHeight());
         System.out.println(head.toString());
         int intLength=32;
         int byteLength=8;
@@ -114,15 +110,15 @@ public class MediaToFile extends FileToImg {
     }
     public int[] getRawContent(Matrix matrix){
         final boolean check=false;
-        BitSet content=matrix.getContent(barCodeWidth, barCodeHeight);
+        BitSet content=matrix.getContent(matrix.getBarCodeWidth(), matrix.getBarCodeHeight());
         if(check){
             boolean status=checkBitSet(content,matrix);
             Log.d(TAG,"check:"+status);
         }
-        int[] con=new int[matrix.getBitsPerBlock()*contentLength*contentLength/ecLength];
-        for(int i=0;i<con.length*ecLength;i++){
+        int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
+        for(int i=0;i<con.length*matrix.ecLength;i++){
             if(content.get(i)){
-                con[i/ecLength]|=1<<(i%ecLength);
+                con[i/matrix.ecLength]|=1<<(i%matrix.ecLength);
             }
         }
         return con;
@@ -137,11 +133,11 @@ public class MediaToFile extends FileToImg {
     }
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{
         int[] rawContent=getRawContent(matrix);
-        int[] decodedContent=decode(rawContent,ecNum);
-        int realByteNum=matrix.getBitsPerBlock()*contentLength*contentLength/8-ecNum*ecLength/8;
+        int[] decodedContent=decode(rawContent,matrix.ecNum);
+        int realByteNum=matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/8-matrix.ecNum*matrix.ecLength/8;
         byte[] res=new byte[realByteNum];
         for(int i=0;i<res.length*8;i++){
-            if((decodedContent[i/ecLength]&(1<<(i%ecLength)))>0){
+            if((decodedContent[i/matrix.ecLength]&(1<<(i%matrix.ecLength)))>0){
                 res[i/8]|=1<<(i%8);
             }
         }
@@ -171,7 +167,7 @@ public class MediaToFile extends FileToImg {
         }
         if(leastCount!=0){
             Log.d(TAG, "check least count:" + leastCount);
-            printContentBitSet(least,matrix.getBitsPerBlock());
+            printContentBitSet(least,matrix.bitsPerBlock,matrix.contentLength);
             List<Integer> test=new ArrayList<>();
             for(int i=least.nextSetBit(0);i>=0;i=least.nextSetBit(i+1)){
                 int real=i/2;
@@ -184,7 +180,7 @@ public class MediaToFile extends FileToImg {
         }
         return true;
     }
-    public void printContentBitSet(BitSet content,int bitsPerBlock){
+    public void printContentBitSet(BitSet content,int bitsPerBlock,int contentLength){
         int index=0;
         System.out.println("the wrong bits graph:");
         for(int y=0;y<contentLength;y++){

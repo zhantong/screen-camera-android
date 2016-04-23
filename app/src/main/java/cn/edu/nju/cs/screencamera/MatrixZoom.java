@@ -9,7 +9,6 @@ import java.util.List;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixZoom extends Matrix{
-    public static final int bitsPerBlock=2;
     public MatrixZoom(int dimension) {
         super(dimension);
     }
@@ -20,9 +19,13 @@ public class MatrixZoom extends Matrix{
 
     public MatrixZoom(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
-    }
-    public int getBitsPerBlock(){
-        return bitsPerBlock;
+        super.bitsPerBlock=2;
+        super.frameBlackLength=1;
+        super.frameVaryLength=1;
+        super.frameVaryTwoLength=1;
+        super.contentLength=40;
+        super.ecNum=40;
+        super.ecLength=10;
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         int samplePerBlock=5;//不能在这里设置
@@ -62,8 +65,29 @@ public class MatrixZoom extends Matrix{
         }
         //grayMatrix.print();
     }
-
-
+    public BitSet getRawHead(){
+        int black=grayMatrix.get(0,0);
+        grayMatrix.get(0,0);
+        int white=grayMatrix.get(0,1);
+        grayMatrix.get(0,1);
+        int threshold=(black+white)/2;
+        System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
+        int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
+        BitSet bitSet=new BitSet();
+        for(int i=0;i<length;i++){
+            if(grayMatrix.get(i,0)>threshold){
+                bitSet.set(i);
+            }
+        }
+        return bitSet;
+    }
+    public BitSet getHead(int dimensionX, int dimensionY){
+        barCodeWidth=dimensionX;
+        if(grayMatrix==null){
+            initGrayMatrix(dimensionX,dimensionY);
+        }
+        return getRawHead();
+    }
     public int mean(int[] array,int low,int high){
         int sum=0;
         for(int i=low;i<=high;i++){

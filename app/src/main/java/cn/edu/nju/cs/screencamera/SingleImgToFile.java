@@ -65,7 +65,7 @@ public class SingleImgToFile extends MediaToFile {
             else{
                 return;
             }
-            matrix.perspectiveTransform(0, 0, barCodeWidth, 0, barCodeWidth, barCodeHeight, 0, barCodeHeight);
+            matrix.perspectiveTransform(0, 0, matrix.getBarCodeWidth(), 0, matrix.getBarCodeWidth(), matrix.getBarCodeHeight(), 0, matrix.getBarCodeHeight());
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
             return;
@@ -83,7 +83,7 @@ public class SingleImgToFile extends MediaToFile {
                     fileByteNum=-1;
                     continue;
                 }
-                int length=matrix.getBitsPerBlock()*contentLength*contentLength/8-ecNum*ecLength/8-8;
+                int length=matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/8-matrix.ecNum*matrix.ecLength/8-8;
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                 Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                 dataDecoder = OpenRQ.newDecoder(parameters, 0);

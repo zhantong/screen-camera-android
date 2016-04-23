@@ -9,7 +9,7 @@ import java.util.HashMap;
  * 保存YUV格式图像的相关信息,如原始像素信息
  * 以及一些对原始图像操作的方法
  */
-public class Matrix extends FileToImg{
+public class Matrix{
     protected static final boolean VERBOSE = false;//是否记录详细log
     protected static final String TAG = "Matrix";//log tag
     protected final int imgWidth;//图像宽度
@@ -27,6 +27,14 @@ public class Matrix extends FileToImg{
     int[] border;
     boolean isMixed=true;
     int imgColorType;
+
+    int bitsPerBlock;
+    int frameBlackLength;
+    int frameVaryLength;
+    int frameVaryTwoLength;
+    int contentLength;
+    int ecNum;
+    int ecLength;
 
     /**
      * 基本构造函数,作为正方形,且无原始像素数据,生成默认值
@@ -73,9 +81,6 @@ public class Matrix extends FileToImg{
                 this.borders = findBorder(genInitBorder());
             }
         }
-    }
-    public int getBitsPerBlock(){
-        return -1;
     }
     public int[] genInitBorder(){
         int init = 20;
@@ -186,29 +191,13 @@ public class Matrix extends FileToImg{
     public int height() {
         return imgHeight;
     }
-    public BitSet getRawHead(){
-        int black=grayMatrix.get(0,0);
-        grayMatrix.get(0,0);
-        int white=grayMatrix.get(0,1);
-        grayMatrix.get(0,1);
-        int threshold=(black+white)/2;
-        System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
-        int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
-        BitSet bitSet=new BitSet();
-        for(int i=0;i<length;i++){
-            if(grayMatrix.get(i,0)>threshold){
-                bitSet.set(i);
-            }
-        }
-        return bitSet;
+    public int getBarCodeWidth(){
+        return (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;
     }
-    public BitSet getHead(int dimensionX, int dimensionY){
-        barCodeWidth=dimensionX;
-        if(grayMatrix==null){
-            initGrayMatrix(dimensionX,dimensionY);
-        }
-        return getRawHead();
+    public int getBarCodeHeight(){
+        return 2*frameBlackLength + contentLength;
     }
+    public BitSet getHead(int dimensionX, int dimensionY){return null;}
     public void initGrayMatrix(int dimensionX, int dimensionY){
     }
     public boolean isMixed(int dimensionX,int dimensionY,int[] posX,int topY,int bottomY){

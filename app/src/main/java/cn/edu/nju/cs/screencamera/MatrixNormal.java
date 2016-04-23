@@ -9,7 +9,6 @@ import java.util.HashMap;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixNormal extends Matrix {
-    public static final int bitsPerBlock=1;
     public MatrixNormal(int dimension) {
         super(dimension);
     }
@@ -20,9 +19,13 @@ public class MatrixNormal extends Matrix {
 
     public MatrixNormal(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
-    }
-    public int getBitsPerBlock(){
-        return bitsPerBlock;
+        super.bitsPerBlock=1;
+        super.frameBlackLength=1;
+        super.frameVaryLength=1;
+        super.frameVaryTwoLength=1;
+        super.contentLength=80;
+        super.ecNum=80;
+        super.ecLength=10;
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         grayMatrix=new GrayMatrixNormal(dimensionX,dimensionY);
@@ -40,6 +43,29 @@ public class MatrixNormal extends Matrix {
                 grayMatrix.set(x / 2, y, gray,Math.round(points[x]),Math.round(points[x + 1]));
             }
         }
+    }
+    public BitSet getRawHead(){
+        int black=grayMatrix.get(0,0);
+        grayMatrix.get(0,0);
+        int white=grayMatrix.get(0,1);
+        grayMatrix.get(0,1);
+        int threshold=(black+white)/2;
+        System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
+        int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
+        BitSet bitSet=new BitSet();
+        for(int i=0;i<length;i++){
+            if(grayMatrix.get(i,0)>threshold){
+                bitSet.set(i);
+            }
+        }
+        return bitSet;
+    }
+    public BitSet getHead(int dimensionX, int dimensionY){
+        barCodeWidth=dimensionX;
+        if(grayMatrix==null){
+            initGrayMatrix(dimensionX,dimensionY);
+        }
+        return getRawHead();
     }
     public boolean isMixed(int dimensionX,int dimensionY,int[] posX,int topY,int bottomY){
         if(grayMatrix==null){
