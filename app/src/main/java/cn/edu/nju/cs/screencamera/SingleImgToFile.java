@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
@@ -22,6 +23,7 @@ import java.nio.ByteBuffer;
 public class SingleImgToFile extends MediaToFile {
     private static final String TAG = "SingleImgToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+    private static BarcodeFormat barcodeFormat;
 
     /**
      * 构造函数,获取必须的参数
@@ -30,8 +32,9 @@ public class SingleImgToFile extends MediaToFile {
      * @param infoView  实例
      * @param handler   实例
      */
-    public SingleImgToFile(TextView debugView, TextView infoView, Handler handler) {
+    public SingleImgToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format) {
         super(debugView, infoView, handler);
+        barcodeFormat=format;
     }
 
     /**
@@ -53,10 +56,10 @@ public class SingleImgToFile extends MediaToFile {
         int fileByteNum=-1;
         int[] border=null;
         try {
-            if(barcodeType==0){
+            if(barcodeFormat.equals(BarcodeFormat.NORMAL)){
                 matrix=new MatrixNormal(byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
             }
-            else if(barcodeType==1){
+            else if(barcodeFormat.equals(BarcodeFormat.ZOOM)){
                 matrix=new MatrixZoom(byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
             }
             else{
@@ -80,7 +83,7 @@ public class SingleImgToFile extends MediaToFile {
                     fileByteNum=-1;
                     continue;
                 }
-                int length=bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8-8;
+                int length=matrix.getBitsPerBlock()*contentLength*contentLength/8-ecNum*ecLength/8-8;
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                 Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                 dataDecoder = OpenRQ.newDecoder(parameters, 0);

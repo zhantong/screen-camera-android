@@ -25,8 +25,10 @@ public class StreamToFile extends MediaToFile {
     private static final String TAG = "StreamToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final long queueWaitSeconds=2;
-    public StreamToFile(TextView debugView, TextView infoView, Handler handler) {
+    private static BarcodeFormat barcodeFormat;
+    public StreamToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format) {
         super(debugView, infoView, handler);
+        barcodeFormat=format;
     }
     public void toFile(LinkedBlockingQueue<byte[]> imgs, String fileName,String videoFilePath){
         Log.i(TAG,"process video file");
@@ -72,10 +74,10 @@ public class StreamToFile extends MediaToFile {
                 else {
                     imgColorType=0;
                 }
-                if(barcodeType==0){
+                if(barcodeFormat.equals(BarcodeFormat.NORMAL)){
                     matrix=new MatrixNormal(img,imgColorType, frameWidth, frameHeight,border);
                 }
-                else if(barcodeType==1){
+                else if(barcodeFormat.equals(BarcodeFormat.ZOOM)){
                     matrix=new MatrixZoom(img,imgColorType, frameWidth, frameHeight,border);
                 }
                 else{
@@ -117,7 +119,7 @@ public class StreamToFile extends MediaToFile {
                         continue;
                     }
                     Log.i(TAG,"file is "+fileByteNum+" bytes");
-                    int length=bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8-8;
+                    int length=matrix.getBitsPerBlock()*contentLength*contentLength/8-ecNum*ecLength/8-8;
                     FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                     Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);

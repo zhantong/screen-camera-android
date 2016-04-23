@@ -119,7 +119,7 @@ public class MediaToFile extends FileToImg {
             boolean status=checkBitSet(content,matrix);
             Log.d(TAG,"check:"+status);
         }
-        int[] con=new int[bitsPerBlock*contentLength*contentLength/ecLength];
+        int[] con=new int[matrix.getBitsPerBlock()*contentLength*contentLength/ecLength];
         for(int i=0;i<con.length*ecLength;i++){
             if(content.get(i)){
                 con[i/ecLength]|=1<<(i%ecLength);
@@ -138,7 +138,7 @@ public class MediaToFile extends FileToImg {
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{
         int[] rawContent=getRawContent(matrix);
         int[] decodedContent=decode(rawContent,ecNum);
-        int realByteNum=bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8;
+        int realByteNum=matrix.getBitsPerBlock()*contentLength*contentLength/8-ecNum*ecLength/8;
         byte[] res=new byte[realByteNum];
         for(int i=0;i<res.length*8;i++){
             if((decodedContent[i/ecLength]&(1<<(i%ecLength)))>0){
@@ -171,7 +171,7 @@ public class MediaToFile extends FileToImg {
         }
         if(leastCount!=0){
             Log.d(TAG, "check least count:" + leastCount);
-            printContentBitSet(least);
+            printContentBitSet(least,matrix.getBitsPerBlock());
             List<Integer> test=new ArrayList<>();
             for(int i=least.nextSetBit(0);i>=0;i=least.nextSetBit(i+1)){
                 int real=i/2;
@@ -184,7 +184,7 @@ public class MediaToFile extends FileToImg {
         }
         return true;
     }
-    public void printContentBitSet(BitSet content){
+    public void printContentBitSet(BitSet content,int bitsPerBlock){
         int index=0;
         System.out.println("the wrong bits graph:");
         for(int y=0;y<contentLength;y++){

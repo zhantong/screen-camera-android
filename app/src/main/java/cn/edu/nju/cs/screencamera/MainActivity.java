@@ -10,9 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import cn.edu.nju.cs.screencamera.FileExplorer.FileChooser;
@@ -26,6 +29,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MainActivity extends AppCompatActivity {
     private CameraPreview mPreview;//相机
+    private BarcodeFormat barcodeFormat;
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
@@ -40,8 +44,25 @@ public class MainActivity extends AppCompatActivity {
         TextView infoView = (TextView) findViewById(R.id.info_view);
         debugView.setGravity(Gravity.BOTTOM);
         infoView.setGravity(Gravity.BOTTOM);
+        initBarcodeFormatSpinner();
     }
+    private void initBarcodeFormatSpinner(){
+        Spinner barcodeFormatSpinner=(Spinner)findViewById(R.id.barcode_format);
+        ArrayAdapter<BarcodeFormat> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,BarcodeFormat.values());
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        barcodeFormatSpinner.setAdapter(adapter);
+        barcodeFormatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                barcodeFormat=BarcodeFormat.values()[position];
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+    }
     /**
      * 打开相机实时识别二维码
      * 一个线程将相机预览帧加入队列
@@ -66,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamToFile cameraToFile=new StreamToFile(debugView, infoView, nHandler);
+                StreamToFile cameraToFile=new StreamToFile(debugView, infoView, nHandler,barcodeFormat);
                 cameraToFile.toFile(rev,newFileName,CameraSettings.previewWidth(), CameraSettings.previewHeight(), mPreview);
             }
         };
@@ -143,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamToFile videoToFile=new StreamToFile(debugView, infoView, nHandler);
+                StreamToFile videoToFile=new StreamToFile(debugView, infoView, nHandler,barcodeFormat);
                 videoToFile.toFile(rev, newFileName, videoFilePath);
             }
         };
@@ -176,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler);
+                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler,barcodeFormat);
                 singleImgToFile.singleImg(videoFilePath);
                 //singleImgToFile.driver();
             }

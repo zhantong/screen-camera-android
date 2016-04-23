@@ -9,6 +9,7 @@ import java.util.HashMap;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixNormal extends Matrix {
+    public static final int bitsPerBlock=1;
     public MatrixNormal(int dimension) {
         super(dimension);
     }
@@ -19,6 +20,9 @@ public class MatrixNormal extends Matrix {
 
     public MatrixNormal(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
+    }
+    public int getBitsPerBlock(){
+        return bitsPerBlock;
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         grayMatrix=new GrayMatrixNormal(dimensionX,dimensionY);

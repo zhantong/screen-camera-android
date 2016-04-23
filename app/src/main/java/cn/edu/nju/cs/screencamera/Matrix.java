@@ -74,6 +74,9 @@ public class Matrix extends FileToImg{
             }
         }
     }
+    public int getBitsPerBlock(){
+        return -1;
+    }
     public int[] genInitBorder(){
         int init = 20;
         int left = imgWidth / 2 - init;

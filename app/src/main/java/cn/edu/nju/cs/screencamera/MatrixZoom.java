@@ -9,6 +9,7 @@ import java.util.List;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixZoom extends Matrix{
+    public static final int bitsPerBlock=2;
     public MatrixZoom(int dimension) {
         super(dimension);
     }
@@ -19,6 +20,9 @@ public class MatrixZoom extends Matrix{
 
     public MatrixZoom(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
+    }
+    public int getBitsPerBlock(){
+        return bitsPerBlock;
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         int samplePerBlock=5;//不能在这里设置
