@@ -212,14 +212,7 @@ public class Matrix extends FileToImg{
         return false;
     }
 
-    public BitSet getRawContent(){
-        return null;
-    }
-    public HashMap<Integer,Integer>[] sampleVary(int[] firstColorX, int[] secondColorX, int topY, int bottomY){
-        return null;
-    }
-
-    public BitSet getContent(int dimensionX, int dimensionY,int[] firstColorX,int[] secondColorX,int topY,int bottomY){
+    public BitSet getContent(int dimensionX, int dimensionY){
         return null;
     }
     /**

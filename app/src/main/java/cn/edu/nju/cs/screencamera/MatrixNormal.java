@@ -108,7 +108,11 @@ public class MatrixNormal extends Matrix {
         }
         return bitSet;
     }
-    public BitSet getContent(int dimensionX, int dimensionY,int[] firstColorX,int[] secondColorX,int topY,int bottomY){
+    public BitSet getContent(int dimensionX, int dimensionY){
+        int[] firstColorX={frameBlackLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength};
+        int[] secondColorX={frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
+        int topY=frameBlackLength;
+        int bottomY=frameBlackLength+contentLength;
         barCodeWidth=dimensionX;
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);

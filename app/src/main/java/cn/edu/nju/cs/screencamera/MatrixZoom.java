@@ -58,42 +58,8 @@ public class MatrixZoom extends Matrix{
         }
         //grayMatrix.print();
     }
-    public boolean isMixed(int dimensionX,int dimensionY,int[] posX,int topY,int bottomY){
-        if(grayMatrix==null){
-            initGrayMatrix(dimensionX,dimensionY);
-        }
-        /*
-        int left=frameBlackLength+frameVaryLength;
-        int top=frameBlackLength;
-        for(int i=0;i<contentLength;i++){
-            int[] samples=grayMatrix.getSamples(left,top+i);
-            int avg=(samples[1]+samples[2]+samples[3]+samples[4])/4;
-            int gtAvgCount=0;
-            for(int j=1;j<samples.length;j++){
-                if(samples[j]>avg){
-                    gtAvgCount++;
-                }
-            }
-            if(gtAvgCount>1){
-                System.out.println("great than avg:"+i+"\t"+samples[1]+"\t"+samples[2]+"\t"+samples[3]+"\t"+samples[4]);
-            }
 
-        }
-        */
 
-        return false;
-    }
-    private int maxIndex(int[] array,int start){
-        int max=-1;
-        int index=-1;
-        for(int i=start;i<array.length;i++){
-            if(max<array[i]){
-                max=array[i];
-                index=i;
-            }
-        }
-        return index;
-    }
     public int mean(int[] array,int low,int high){
         int sum=0;
         for(int i=low;i<=high;i++){
@@ -233,19 +199,16 @@ public class MatrixZoom extends Matrix{
         }
         return bitSet;
     }
-    public BitSet getContent(int dimensionX, int dimensionY,int[] firstColorX,int[] secondColorX,int topY,int bottomY) {
+    public BitSet getContent(int dimensionX, int dimensionY) {
         barCodeWidth=dimensionX;
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
         }
         if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
-        isMixed=isMixed(dimensionX,dimensionY,new int[]{firstColorX[0],secondColorX[0]},topY,bottomY);
+        isMixed=false;
         Log.i(TAG,"frame mixed:"+isMixed);
         if(isMixed){
-            if(bars==null){
-                bars=sampleVary(firstColorX,secondColorX,topY,bottomY);
-            }
-            return getRawContent();
+            return null;
         }
         else {
             return getRawContentSimple();
@@ -261,11 +224,4 @@ public class MatrixZoom extends Matrix{
             System.out.println("("+x+","+y+") ("+samples[1].x+","+samples[1].y+" "+samples[1].value+") ("+samples[2].x+","+samples[2].y+" "+samples[2].value+") ("+samples[3].x+","+samples[3].y+" "+samples[3].value+") ("+samples[4].x+","+samples[4].y+" "+samples[4].value+")");
         }
     }
-    public BitSet getTestContent(int dimensionX, int dimensionY){
-        initGrayMatrix(dimensionX,dimensionY);
-        return new BitSet();
-    }
-
-
-
 }

@@ -114,9 +114,7 @@ public class MediaToFile extends FileToImg {
     }
     public int[] getRawContent(Matrix matrix){
         final boolean check=false;
-        int[] firstColorX={frameBlackLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength};
-        int[] secondColorX={frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
-        BitSet content=matrix.getContent(barCodeWidth, barCodeHeight,firstColorX,secondColorX,frameBlackLength,frameBlackLength+contentLength);
+        BitSet content=matrix.getContent(barCodeWidth, barCodeHeight);
         if(check){
             boolean status=checkBitSet(content,matrix);
             Log.d(TAG,"check:"+status);
