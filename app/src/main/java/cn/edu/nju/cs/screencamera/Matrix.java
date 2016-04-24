@@ -69,8 +69,8 @@ public class Matrix{
         this.pixels = pixels;
         this.imgWidth = imgWidth;
         this.imgHeight = imgHeight;
-        this.threshold = getThreshold();
         this.imgColorType=imgColorType;
+        this.threshold = getThreshold();
         if(initBorder==null){
             this.borders = findBorder(genInitBorder());
         }

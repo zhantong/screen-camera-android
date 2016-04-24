@@ -11,6 +11,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 import net.fec.openrq.ArrayDataDecoder;
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
+import net.fec.openrq.SymbolType;
 import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
@@ -30,16 +31,33 @@ public class StreamToFile extends MediaToFile {
         super(debugView, infoView, handler);
         barcodeFormat=format;
     }
-    public void toFile(LinkedBlockingQueue<byte[]> imgs, String fileName,String videoFilePath){
+    public void toFile(String fileName,final String videoFilePath){
         Log.i(TAG,"process video file");
+        final LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
         int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
         int frameWidth=widthAndHeight[0];
         int frameHeight=widthAndHeight[1];
-        streamToFile(imgs, frameWidth, frameHeight, fileName, null);
+        Thread testWorker = new Thread() {
+            @Override
+            public void run() {
+                VideoToFrames videoToFrames = new VideoToFrames();
+                try {
+                    videoToFrames.testExtractMpegFrames(rev, videoFilePath);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        testWorker.run();
+        streamToFile(rev, frameWidth, frameHeight, fileName, null);
     }
-    public void toFile(LinkedBlockingQueue<byte[]> imgs, String fileName, int frameWidth, int frameHeight, CameraPreview mPreview) {
+    public void toFile(String fileName,CameraPreview mPreview){
         Log.i(TAG,"process camera");
-        streamToFile(imgs, frameWidth, frameHeight, fileName, mPreview);
+        LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
+        int frameWidth=CameraSettings.previewWidth();
+        int frameHeight=CameraSettings.previewHeight();
+        mPreview.start(rev);
+        streamToFile(rev,frameWidth,frameHeight,fileName,mPreview);
     }
     private void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName,final CameraPreview mPreview) {
         ArrayDataDecoder dataDecoder=null;
@@ -52,6 +70,13 @@ public class StreamToFile extends MediaToFile {
         Matrix matrix;
         int[] border=null;
         int index = 0;
+        int imgColorType;
+        if(mPreview!=null){
+            imgColorType=1;
+        }
+        else {
+            imgColorType = 0;
+        }
         while (true) {
             count++;
             updateInfo("正在识别...");
@@ -67,13 +92,6 @@ public class StreamToFile extends MediaToFile {
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
-                int imgColorType;
-                if(mPreview!=null){
-                    imgColorType=1;
-                }
-                else {
-                    imgColorType=0;
-                }
                 matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
                 matrix.perspectiveTransform(0, 0, matrix.getBarCodeWidth(), 0, matrix.getBarCodeWidth(), matrix.getBarCodeHeight(), 0, matrix.getBarCodeHeight());
             } catch (NotFoundException e) {
@@ -126,7 +144,7 @@ public class StreamToFile extends MediaToFile {
                 }
                 EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
                 Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-                if(lastSourceBlock.missingSourceSymbols().size()-lastSourceBlock.availableRepairSymbols().size()==1){
+                if((lastSourceBlock.missingSourceSymbols().size()-lastSourceBlock.availableRepairSymbols().size()==1)&&((encodingPacket.symbolType()== SymbolType.SOURCE&&!lastSourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))||(encodingPacket.symbolType()== SymbolType.REPAIR&&!lastSourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())))){
                     if(mPreview!=null) {
                         handler.post(new Runnable() {
                             @Override

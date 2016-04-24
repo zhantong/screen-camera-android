@@ -20,21 +20,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private LinkedBlockingQueue<byte[]> frames;
-    private boolean pause = false;//对焦需要一定时间,防止队列溢出
+    private boolean pause;
     private ViewGroup cameraParentView;
 
-    /**
-     * 构造函数,必要的环境设置
-     *
-     * @param context 上下文
-     * @param frames  队列,捕捉到的帧加入此队列
-     */
-    public CameraPreview(Context context, LinkedBlockingQueue<byte[]> frames,ViewGroup cameraParentView) {
+    public CameraPreview(Context context,ViewGroup cameraParentView) {
         super(context);
+        pause=true;
         mHolder = getHolder();
         mHolder.addCallback(this);
-        this.frames = frames;
         this.cameraParentView = cameraParentView;
+    }
+    public void start(LinkedBlockingQueue<byte[]> frames){
+        this.frames=frames;
+        pause=false;
     }
 
     /**

@@ -70,14 +70,12 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param view 默认参数
      */
-    public void openCamera(View view) {
-        final LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
+    public void processCamera(View view) {
         CameraSettings.init();
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        final CameraPreview mPreview = new CameraPreview(this, rev, preview);
-        this.mPreview = mPreview;
+        mPreview = new CameraPreview(this, preview);
         LinearLayout previewParent=(LinearLayout)findViewById(R.id.camera_preview_parent);
         adjustPreviewSize(previewParent);
         preview.addView(mPreview);
@@ -88,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 StreamToFile cameraToFile=new StreamToFile(debugView, infoView, nHandler,barcodeFormat);
-                cameraToFile.toFile(rev,newFileName,CameraSettings.previewWidth(), CameraSettings.previewHeight(), mPreview);
+                cameraToFile.toFile(newFileName, mPreview);
             }
         };
         worker.start();
@@ -153,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
      * @param view 默认参数
      */
     public void processVideo(View view) {
-        final LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.videoFilePath);
@@ -165,22 +162,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 StreamToFile videoToFile=new StreamToFile(debugView, infoView, nHandler,barcodeFormat);
-                videoToFile.toFile(rev, newFileName, videoFilePath);
+                videoToFile.toFile(newFileName, videoFilePath);
             }
         };
         worker.start();
-        Thread testWorker = new Thread() {
-            @Override
-            public void run() {
-                VideoToFrames videoToFrames = new VideoToFrames();
-                try {
-                    videoToFrames.testExtractMpegFrames(rev, videoFilePath);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        testWorker.run();
     }
 
     /**
@@ -192,14 +177,13 @@ public class MainActivity extends AppCompatActivity {
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.videoFilePath);
-        final String videoFilePath = editTextVideoFilePath.getText().toString();
+        final String imageFilePath = editTextVideoFilePath.getText().toString();
         final Handler nHandler = new Handler();
         Thread worker = new Thread() {
             @Override
             public void run() {
                 SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler,barcodeFormat);
-                singleImgToFile.singleImg(videoFilePath);
-                //singleImgToFile.driver();
+                singleImgToFile.singleImg(imageFilePath);
             }
         };
         worker.start();

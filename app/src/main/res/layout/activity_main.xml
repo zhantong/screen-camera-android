@@ -85,7 +85,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="识别实时图像"
-            android:onClick="openCamera"/>
+            android:onClick="processCamera"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
