@@ -56,18 +56,7 @@ public class SingleImgToFile extends MediaToFile {
         int fileByteNum=-1;
         int[] border=null;
         try {
-            if(barcodeFormat.equals(BarcodeFormat.NORMAL)){
-                matrix=new MatrixNormal(byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
-            }
-            else if(barcodeFormat.equals(BarcodeFormat.ZOOM)){
-                matrix=new MatrixZoom(byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
-            }
-            else if(barcodeFormat.equals(BarcodeFormat.ZOOMVARY)){
-                matrix=new MatrixZoomVary(byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
-            }
-            else{
-                return;
-            }
+            matrix=MatrixFactory.createMatrix(barcodeFormat,byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
             matrix.perspectiveTransform(0, 0, matrix.getBarCodeWidth(), 0, matrix.getBarCodeWidth(), matrix.getBarCodeHeight(), 0, matrix.getBarCodeHeight());
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());

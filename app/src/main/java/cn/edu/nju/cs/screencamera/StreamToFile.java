@@ -74,18 +74,7 @@ public class StreamToFile extends MediaToFile {
                 else {
                     imgColorType=0;
                 }
-                if(barcodeFormat.equals(BarcodeFormat.NORMAL)){
-                    matrix=new MatrixNormal(img,imgColorType, frameWidth, frameHeight,border);
-                }
-                else if(barcodeFormat.equals(BarcodeFormat.ZOOM)){
-                    matrix=new MatrixZoom(img,imgColorType, frameWidth, frameHeight,border);
-                }
-                else if(barcodeFormat.equals(BarcodeFormat.ZOOMVARY)){
-                    matrix=new MatrixZoomVary(img,imgColorType, frameWidth, frameHeight,border);
-                }
-                else{
-                    return;
-                }
+                matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
                 matrix.perspectiveTransform(0, 0, matrix.getBarCodeWidth(), 0, matrix.getBarCodeWidth(), matrix.getBarCodeHeight(), 0, matrix.getBarCodeHeight());
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
