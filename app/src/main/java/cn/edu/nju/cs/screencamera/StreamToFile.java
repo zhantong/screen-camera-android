@@ -80,6 +80,9 @@ public class StreamToFile extends MediaToFile {
                 else if(barcodeFormat.equals(BarcodeFormat.ZOOM)){
                     matrix=new MatrixZoom(img,imgColorType, frameWidth, frameHeight,border);
                 }
+                else if(barcodeFormat.equals(BarcodeFormat.ZOOMVARY)){
+                    matrix=new MatrixZoomVary(img,imgColorType, frameWidth, frameHeight,border);
+                }
                 else{
                     return;
                 }

@@ -13,4 +13,5 @@ abstract class GrayMatrix {
     abstract void set(int x,int y,int pixel,int origX,int origY);
     abstract void set(int x,int y,Point[] samples);
     abstract void print();
+    abstract void print(int x,int y);
 }

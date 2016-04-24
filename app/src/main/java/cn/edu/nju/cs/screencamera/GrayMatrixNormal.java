@@ -41,4 +41,5 @@ public class GrayMatrixNormal extends GrayMatrix {
             System.out.println();
         }
     }
+    public void print(int x,int y){};
 }

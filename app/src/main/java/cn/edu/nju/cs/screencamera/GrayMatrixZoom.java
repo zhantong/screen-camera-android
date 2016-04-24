@@ -50,4 +50,12 @@ public class GrayMatrixZoom extends GrayMatrix {
     public Point getPoint(int x, int y){
         return null;
     }
+    public void print(int x,int y){
+        Point[] points=getPoints(x,y);
+        System.out.println("("+x+","+y+"): ("+points[0].x+","+points[0].y+","+points[0].value+")\t("+
+                points[1].x+","+points[1].y+","+points[1].value+")\t("+
+                points[2].x+","+points[2].y+","+points[2].value+")\t("+
+                points[3].x+","+points[3].y+","+points[3].value+")\t("+
+                points[4].x+","+points[4].y+","+points[4].value+")");
+    }
 }

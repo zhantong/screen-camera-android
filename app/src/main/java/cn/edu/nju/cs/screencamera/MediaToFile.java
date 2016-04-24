@@ -145,7 +145,7 @@ public class MediaToFile{
     }
     public boolean checkBitSet(BitSet con,Matrix matrix){
         if(realBitSetList==null){
-            String filePath=Environment.getExternalStorageDirectory() + "/bitsets.txt";
+            String filePath=Environment.getExternalStorageDirectory() + "/bitset.txt";
             realBitSetList= (LinkedList<BitSet>)readCheckFile(filePath);
             if(VERBOSE){Log.d(TAG,"load check file success:"+filePath);}
             return false;
@@ -153,6 +153,8 @@ public class MediaToFile{
         //Log.d(TAG,"check content bit size:"+con.length());
         BitSet least=null;
         int leastCount=10000;
+        int leastIndex=-1;
+        int index=0;
         for(BitSet current:realBitSetList){
             BitSet clone=(BitSet)con.clone();
             //Log.d(TAG,"current check bit size:"+clone.length());
@@ -160,14 +162,16 @@ public class MediaToFile{
             if(clone.cardinality()<leastCount){
                 least=clone;
                 leastCount=clone.cardinality();
+                leastIndex=index;
             }
             if(clone.cardinality()==0){
                 break;
             }
+            index++;
         }
         if(leastCount!=0){
-            Log.d(TAG, "check least count:" + leastCount);
-            printContentBitSet(least,matrix.bitsPerBlock,matrix.contentLength);
+            Log.d(TAG, "check least count:" + leastCount+"\tindex:"+leastIndex);
+            printContentBitSet(least,matrix.bitsPerBlock,matrix.contentLength,matrix,realBitSetList.get(leastIndex),con);
             List<Integer> test=new ArrayList<>();
             for(int i=least.nextSetBit(0);i>=0;i=least.nextSetBit(i+1)){
                 int real=i/2;
@@ -180,9 +184,18 @@ public class MediaToFile{
         }
         return true;
     }
-    public void printContentBitSet(BitSet content,int bitsPerBlock,int contentLength){
+    public void printContentBitSet(BitSet content,int bitsPerBlock,int contentLength,Matrix matrix,BitSet right,BitSet wrong){
+        class Pair{
+            int x;
+            int y;
+            public Pair(int x, int y){
+                this.x=x;
+                this.y=y;
+            }
+        }
         int index=0;
         System.out.println("the wrong bits graph:");
+        LinkedList<Pair> pairs=new LinkedList<>();
         for(int y=0;y<contentLength;y++){
             for(int x=0;x<contentLength;x++){
                 boolean flag=false;
@@ -193,6 +206,7 @@ public class MediaToFile{
                     }
                 }
                 if(flag){
+                    pairs.add(new Pair(x,y));
                     System.out.print("x");
                 }
                 else{
@@ -202,8 +216,15 @@ public class MediaToFile{
             }
             System.out.println();
         }
-
-
+        int offsetX=3;
+        int offsetY=1;
+        for(Pair pair:pairs){
+            int bitsetPos=(pair.y*contentLength+pair.x)*bitsPerBlock;
+            for(int i=0;i<bitsPerBlock;i++){
+                System.out.print(right.get(bitsetPos+i)+" "+wrong.get(bitsetPos+i)+"\t");
+            }
+            matrix.grayMatrix.print(offsetX+pair.x,offsetY+pair.y);
+        }
     }
 
     public Object readCheckFile(String filePath){
