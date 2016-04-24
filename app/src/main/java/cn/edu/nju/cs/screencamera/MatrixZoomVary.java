@@ -9,14 +9,6 @@ import java.util.List;
  * Created by zhantong on 16/4/24.
  */
 public class MatrixZoomVary extends Matrix{
-    public MatrixZoomVary(int dimension) {
-        super(dimension);
-    }
-
-    public MatrixZoomVary(int imgWidth, int imgHeight) {
-        super(imgWidth,imgHeight);
-    }
-
     public MatrixZoomVary(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
         super.bitsPerBlock=2;
@@ -82,7 +74,6 @@ public class MatrixZoomVary extends Matrix{
         return bitSet;
     }
     public BitSet getHead(int dimensionX, int dimensionY){
-        barCodeWidth=dimensionX;
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }
@@ -154,8 +145,10 @@ public class MatrixZoomVary extends Matrix{
         }
         return bitSet;
     }
+    public BitSet getContent(){
+        return getContent(getBarCodeWidth(),getBarCodeHeight());
+    }
     public BitSet getContent(int dimensionX, int dimensionY) {
-        barCodeWidth=dimensionX;
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
         }

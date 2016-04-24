@@ -82,8 +82,7 @@ public class MediaToFile{
         });
     }
     public int getFileByteNum(Matrix matrix) throws CRCCheckException{
-        BitSet head=matrix.getHead(matrix.getBarCodeWidth(), matrix.getBarCodeHeight());
-        System.out.println(head.toString());
+        BitSet head=matrix.getHead();
         int intLength=32;
         int byteLength=8;
         int index=0;
@@ -110,7 +109,7 @@ public class MediaToFile{
     }
     public int[] getRawContent(Matrix matrix){
         final boolean check=false;
-        BitSet content=matrix.getContent(matrix.getBarCodeWidth(), matrix.getBarCodeHeight());
+        BitSet content=matrix.getContent();
         if(check){
             boolean status=checkBitSet(content,matrix);
             Log.d(TAG,"check:"+status);
@@ -134,7 +133,7 @@ public class MediaToFile{
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{
         int[] rawContent=getRawContent(matrix);
         int[] decodedContent=decode(rawContent,matrix.ecNum);
-        int realByteNum=matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/8-matrix.ecNum*matrix.ecLength/8;
+        int realByteNum=matrix.RSContentByteLength();
         byte[] res=new byte[realByteNum];
         for(int i=0;i<res.length*8;i++){
             if((decodedContent[i/matrix.ecLength]&(1<<(i%matrix.ecLength)))>0){

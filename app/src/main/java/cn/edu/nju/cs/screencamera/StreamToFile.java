@@ -33,7 +33,7 @@ public class StreamToFile extends MediaToFile {
     }
     public void toFile(String fileName,final String videoFilePath){
         Log.i(TAG,"process video file");
-        final LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
+        final LinkedBlockingQueue<byte[]> frameQueue = new LinkedBlockingQueue<>();
         int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
         int frameWidth=widthAndHeight[0];
         int frameHeight=widthAndHeight[1];
@@ -42,14 +42,14 @@ public class StreamToFile extends MediaToFile {
             public void run() {
                 VideoToFrames videoToFrames = new VideoToFrames();
                 try {
-                    videoToFrames.testExtractMpegFrames(rev, videoFilePath);
+                    videoToFrames.testExtractMpegFrames(frameQueue, videoFilePath);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
             }
         };
         testWorker.run();
-        streamToFile(rev, frameWidth, frameHeight, fileName, null);
+        streamToFile(frameQueue, frameWidth, frameHeight, fileName, null);
     }
     public void toFile(String fileName,CameraPreview mPreview){
         Log.i(TAG,"process camera");
@@ -93,7 +93,7 @@ public class StreamToFile extends MediaToFile {
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             try {
                 matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
-                matrix.perspectiveTransform(0, 0, matrix.getBarCodeWidth(), 0, matrix.getBarCodeWidth(), matrix.getBarCodeHeight(), 0, matrix.getBarCodeHeight());
+                matrix.perspectiveTransform();
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 if(fileByteNum==-1&&mPreview!=null){
@@ -129,7 +129,7 @@ public class StreamToFile extends MediaToFile {
                         continue;
                     }
                     Log.i(TAG,"file is "+fileByteNum+" bytes");
-                    int length=matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/8-matrix.ecNum*matrix.ecLength/8-8;
+                    int length=matrix.realContentByteLength();
                     FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                     Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);

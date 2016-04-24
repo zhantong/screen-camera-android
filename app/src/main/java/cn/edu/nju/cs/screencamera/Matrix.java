@@ -18,16 +18,11 @@ public class Matrix{
     private int threshold = 0;//二值化阈值
     private int[] borders;//图像中二维码的四个顶点坐标值
     protected PerspectiveTransform transform;//透视变换参数
-    public int frameIndex;//此图像中二维码的帧编号
     public GrayMatrix grayMatrix;
-    public boolean reverse=false;
-    protected boolean ordered=true;
-    public HashMap<Integer,Integer>[] bars;
-    int barCodeWidth;
     int[] border;
     boolean isMixed=true;
-    int imgColorType;
-
+    public boolean reverse=false;
+    public final int imgColorType;
     int bitsPerBlock;
     int frameBlackLength;
     int frameVaryLength;
@@ -36,26 +31,6 @@ public class Matrix{
     int ecNum;
     int ecLength;
 
-    /**
-     * 基本构造函数,作为正方形,且无原始像素数据,生成默认值
-     *
-     * @param dimension 图像边长
-     */
-    public Matrix(int dimension) {
-        this(dimension, dimension);
-    }
-
-    /**
-     * 构造函数,无原始像素数据,生成默认值
-     *
-     * @param imgWidth  图像宽度
-     * @param imgHeight 图像高度
-     */
-    public Matrix(int imgWidth, int imgHeight) {
-        this.imgWidth = imgWidth;
-        this.imgHeight = imgHeight;
-        this.pixels = new byte[imgWidth * imgHeight];
-    }
 
     /**
      * 构造函数,有原始数据
@@ -89,6 +64,9 @@ public class Matrix{
         int up = imgHeight / 2 - init;
         int down = imgHeight / 2 + init;
         return new int[] {left,up,right,down};
+    }
+    public void perspectiveTransform(){
+        perspectiveTransform(0, 0,getBarCodeWidth(), 0, getBarCodeWidth(), getBarCodeHeight(), 0, getBarCodeHeight());
     }
     /**
      * 透视变换
@@ -158,7 +136,12 @@ public class Matrix{
             return 1;
         }
     }
-
+    public int realContentByteLength(){
+        return bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8-8;
+    }
+    public int RSContentByteLength(){
+        return bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8;
+    }
     /**
      * 判断指定坐标点二值化值是否与指定值相同
      *
@@ -197,14 +180,14 @@ public class Matrix{
     public int getBarCodeHeight(){
         return 2*frameBlackLength + contentLength;
     }
-    public BitSet getHead(int dimensionX, int dimensionY){return null;}
+    public BitSet getHead(){return null;}
     public void initGrayMatrix(int dimensionX, int dimensionY){
     }
     public boolean isMixed(int dimensionX,int dimensionY,int[] posX,int topY,int bottomY){
         return false;
     }
 
-    public BitSet getContent(int dimensionX, int dimensionY){
+    public BitSet getContent(){
         return null;
     }
     /**

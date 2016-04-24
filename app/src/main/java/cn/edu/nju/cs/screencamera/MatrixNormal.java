@@ -9,14 +9,8 @@ import java.util.HashMap;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixNormal extends Matrix {
-    public MatrixNormal(int dimension) {
-        super(dimension);
-    }
-
-    public MatrixNormal(int imgWidth, int imgHeight) {
-        super(imgWidth,imgHeight);
-    }
-
+    public HashMap<Integer,Integer>[] bars;
+    protected boolean ordered=true;
     public MatrixNormal(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
         super.bitsPerBlock=1;
@@ -26,6 +20,9 @@ public class MatrixNormal extends Matrix {
         super.contentLength=80;
         super.ecNum=80;
         super.ecLength=10;
+    }
+    public void initGrayMatrix(){
+        initGrayMatrix(getBarCodeWidth(),getBarCodeHeight());
     }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         grayMatrix=new GrayMatrixNormal(dimensionX,dimensionY);
@@ -60,10 +57,9 @@ public class MatrixNormal extends Matrix {
         }
         return bitSet;
     }
-    public BitSet getHead(int dimensionX, int dimensionY){
-        barCodeWidth=dimensionX;
+    public BitSet getHead(){
         if(grayMatrix==null){
-            initGrayMatrix(dimensionX,dimensionY);
+            initGrayMatrix();
         }
         return getRawHead();
     }
@@ -96,7 +92,7 @@ public class MatrixNormal extends Matrix {
         return max-min;
     }
     public BitSet getRawContent(){
-        if(grayMatrix.get(1,2)>grayMatrix.get(barCodeWidth - 2, 2)){
+        if(grayMatrix.get(1,2)>grayMatrix.get(getBarCodeWidth() - 2, 2)){
             ordered =false;
         }
         int index=0;
@@ -112,7 +108,7 @@ public class MatrixNormal extends Matrix {
             if(VERBOSE){
                 Log.d(TAG,"line black value: "+blackValue+"\twhite value: "+whiteValue);}
             for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
-                if(VERBOSE){Log.d(TAG,"point ("+x+" "+y+") value:"+grayMatrix.get(x, y)+"\torigin ("+grayMatrix.pixels[y * barCodeWidth + x].x+" "+grayMatrix.pixels[y * barCodeWidth + x].y+") value:"+grayMatrix.pixels[y * barCodeWidth + x].value);}
+                if(VERBOSE){Log.d(TAG,"point ("+x+" "+y+") value:"+grayMatrix.get(x, y)+"\torigin ("+grayMatrix.pixels[y * getBarCodeWidth() + x].x+" "+grayMatrix.pixels[y * getBarCodeWidth() + x].y+") value:"+grayMatrix.pixels[y * getBarCodeWidth() + x].value);}
                 if(toBinary(x, y, blackValue, whiteValue)==1){
                     bitSet.set(index);
                 }
@@ -138,12 +134,14 @@ public class MatrixNormal extends Matrix {
         }
         return bitSet;
     }
+    public BitSet getContent(){
+        return getContent(getBarCodeWidth(),getBarCodeHeight());
+    }
     public BitSet getContent(int dimensionX, int dimensionY){
         int[] firstColorX={frameBlackLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength};
         int[] secondColorX={frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
         int topY=frameBlackLength;
         int bottomY=frameBlackLength+contentLength;
-        barCodeWidth=dimensionX;
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
             isMixed=isMixed(dimensionX,dimensionY,new int[]{firstColorX[0],secondColorX[0]},topY,bottomY);

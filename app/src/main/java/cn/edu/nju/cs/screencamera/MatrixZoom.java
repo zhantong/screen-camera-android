@@ -9,14 +9,6 @@ import java.util.List;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixZoom extends Matrix{
-    public MatrixZoom(int dimension) {
-        super(dimension);
-    }
-
-    public MatrixZoom(int imgWidth, int imgHeight) {
-        super(imgWidth,imgHeight);
-    }
-
     public MatrixZoom(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
         super.bitsPerBlock=2;
@@ -82,7 +74,6 @@ public class MatrixZoom extends Matrix{
         return bitSet;
     }
     public BitSet getHead(int dimensionX, int dimensionY){
-        barCodeWidth=dimensionX;
         if(grayMatrix==null){
             initGrayMatrix(dimensionX,dimensionY);
         }
@@ -227,12 +218,13 @@ public class MatrixZoom extends Matrix{
         }
         return bitSet;
     }
+    public BitSet getContent(){
+        return getContent(getBarCodeWidth(),getBarCodeHeight());
+    }
     public BitSet getContent(int dimensionX, int dimensionY) {
-        barCodeWidth=dimensionX;
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
         }
-        if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
         isMixed=false;
         Log.i(TAG,"frame mixed:"+isMixed);
         if(isMixed){
