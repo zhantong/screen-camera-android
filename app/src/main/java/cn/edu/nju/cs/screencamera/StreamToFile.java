@@ -27,6 +27,7 @@ public class StreamToFile extends MediaToFile {
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final long queueWaitSeconds=2;
     private static BarcodeFormat barcodeFormat;
+    private VideoToFrames videoToFrames;
     public StreamToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format) {
         super(debugView, infoView, handler);
         barcodeFormat=format;
@@ -37,18 +38,12 @@ public class StreamToFile extends MediaToFile {
         int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
         int frameWidth=widthAndHeight[0];
         int frameHeight=widthAndHeight[1];
-        Thread testWorker = new Thread() {
-            @Override
-            public void run() {
-                VideoToFrames videoToFrames = new VideoToFrames();
-                try {
-                    videoToFrames.testExtractMpegFrames(frameQueue, videoFilePath);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        testWorker.run();
+        videoToFrames = new VideoToFrames();
+        try {
+            videoToFrames.doExtract(videoFilePath,frameQueue);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         streamToFile(frameQueue, frameWidth, frameHeight, fileName, null);
     }
     public void toFile(String fileName,CameraPreview mPreview){
@@ -153,6 +148,8 @@ public class StreamToFile extends MediaToFile {
                             }
                         });
                         Log.d(TAG,"stopped camera preview");
+                    }else{
+                        videoToFrames.stopExtract();
                     }
                     imgs.clear();
                 }

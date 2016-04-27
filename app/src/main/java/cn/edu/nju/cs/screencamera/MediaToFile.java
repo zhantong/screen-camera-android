@@ -35,6 +35,7 @@ public class MediaToFile{
     ReedSolomonDecoder decoder;
     public List<BitSet> realBitSetList;
     protected CRC8 crcCheck;
+    private boolean debugCheck=false;
     /**
      * 构造函数,获取必须的参数
      *
@@ -47,7 +48,9 @@ public class MediaToFile{
         this.infoView = infoView;
         this.handler = handler;
         crcCheck=new CRC8();
-        checkBitSet(null, null);
+        if(debugCheck) {
+            checkBitSet(null, null);
+        }
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI
@@ -108,9 +111,8 @@ public class MediaToFile{
         return index;
     }
     public int[] getRawContent(Matrix matrix){
-        final boolean check=false;
         BitSet content=matrix.getContent();
-        if(check){
+        if(debugCheck){
             boolean status=checkBitSet(content,matrix);
             Log.d(TAG,"check:"+status);
         }
