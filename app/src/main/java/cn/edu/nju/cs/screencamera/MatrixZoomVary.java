@@ -19,6 +19,9 @@ public class MatrixZoomVary extends Matrix{
         super.ecNum=40;
         super.ecLength=10;
     }
+    public void initGrayMatrix(){
+        initGrayMatrix(getBarCodeWidth(),getBarCodeHeight());
+    }
     public void initGrayMatrix(int dimensionX, int dimensionY){
         int samplePerBlock=5;//不能在这里设置
         grayMatrix=new GrayMatrixZoom(dimensionX,dimensionY);
@@ -73,9 +76,9 @@ public class MatrixZoomVary extends Matrix{
         }
         return bitSet;
     }
-    public BitSet getHead(int dimensionX, int dimensionY){
+    public BitSet getHead(){
         if(grayMatrix==null){
-            initGrayMatrix(dimensionX,dimensionY);
+            initGrayMatrix();
         }
         return getRawHead();
     }
