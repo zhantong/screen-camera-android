@@ -11,6 +11,13 @@ import java.util.HashMap;
 public class MatrixNormal extends Matrix {
     public HashMap<Integer,Integer>[] bars;
     protected boolean ordered=true;
+    private RawContent rawContent;
+    enum Overlap{
+        WHITE,
+        BLACK,
+        WTOB,
+        BTOW
+    }
     public MatrixNormal(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
         super.bitsPerBlock=1;
@@ -91,12 +98,11 @@ public class MatrixNormal extends Matrix {
         }
         return max-min;
     }
-    public BitSet getRawContent(){
-        if(grayMatrix.get(1,2)>grayMatrix.get(getBarCodeWidth() - 2, 2)){
+    public RawContent getRawContent(){
+        if(grayMatrix.get(1,2)>grayMatrix.get(2, 2)){
             ordered =false;
         }
         int index=0;
-        BitSet bitSet=new BitSet();
         for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
             int blackValue=grayMatrix.get(0, y);
             int whiteValue=grayMatrix.get(0, y - 1);
@@ -109,16 +115,22 @@ public class MatrixNormal extends Matrix {
                 Log.d(TAG,"line black value: "+blackValue+"\twhite value: "+whiteValue);}
             for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
                 if(VERBOSE){Log.d(TAG,"point ("+x+" "+y+") value:"+grayMatrix.get(x, y)+"\torigin ("+grayMatrix.pixels[y * getBarCodeWidth() + x].x+" "+grayMatrix.pixels[y * getBarCodeWidth() + x].y+") value:"+grayMatrix.pixels[y * getBarCodeWidth() + x].value);}
-                if(toBinary(x, y, blackValue, whiteValue)==1){
-                    bitSet.set(index);
+                switch (getOverlapSituation(x, y, blackValue, whiteValue)){
+                    case WHITE:
+                        rawContent.clear.set(index);
+                        break;
+                    case WTOB:
+                        rawContent.wTob.set(index);
+                        break;
+                    case BTOW:
+                        rawContent.bTow.set(index);
                 }
                 index++;
             }
         }
-        return bitSet;
+        return rawContent;
     }
-    public BitSet getRawContentSimple(){
-        BitSet bitSet=new BitSet();
+    public RawContent getRawContentSimple(){
         int index=0;
         for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
             int blackValue=grayMatrix.get(0, y);
@@ -127,17 +139,25 @@ public class MatrixNormal extends Matrix {
             if(VERBOSE){Log.d(TAG,"line black value: "+blackValue+"\twhite value: "+whiteValue);}
             for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
                 if(grayMatrix.get(x,y)>=threshold){
-                    bitSet.set(index);
+                    rawContent.clear.set(index);
                 }
                 index++;
             }
         }
-        return bitSet;
+        return rawContent;
     }
     public BitSet getContent(){
-        return getContent(getBarCodeWidth(),getBarCodeHeight());
+        if(rawContent==null){
+            sampleContent(getBarCodeWidth(),getBarCodeHeight());
+        }
+        if(reverse){
+            return rawContent.getRawContent(true);
+        }
+        else{
+            return rawContent.getRawContent(false);
+        }
     }
-    public BitSet getContent(int dimensionX, int dimensionY){
+    public void sampleContent(int dimensionX, int dimensionY){
         int[] firstColorX={frameBlackLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength};
         int[] secondColorX={frameBlackLength+frameVaryLength,frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength+frameVaryLength};
         int topY=frameBlackLength;
@@ -147,54 +167,57 @@ public class MatrixNormal extends Matrix {
             isMixed=isMixed(dimensionX,dimensionY,new int[]{firstColorX[0],secondColorX[0]},topY,bottomY);
             Log.i(TAG,"frame mixed:"+isMixed);
         }
+        rawContent=new RawContent(contentLength*contentLength);
         if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
         if(isMixed){
             if(bars==null){
                 bars=sampleVary(firstColorX,secondColorX,topY,bottomY);
             }
-            return getRawContent();
+            getRawContent();
         }
         else {
-            return getRawContentSimple();
+            getRawContentSimple();
         }
     }
-    public int toBinary(int x,int y,int blackValue,int whiteValue){
+    public Overlap getOverlapSituation(int x, int y, int blackValue, int whiteValue){
         Point orig=grayMatrix.getPoint(x,y);
         int value=orig.value;
         int origY=orig.y;
         int left=bars[0].get(origY);
         int right=bars[1].get(origY);
-        int minDistance=10000;
-        int index=-1;
+        int minDistance=Integer.MAX_VALUE;
+        Overlap overlap=null;
         int distance=Math.abs(value-blackValue);
         if(distance<minDistance){
             minDistance=distance;
-            index=0;
+            overlap=Overlap.BLACK;
         }
         distance=Math.abs(value-whiteValue);
         if(distance<minDistance){
             minDistance=distance;
-            index=1;
+            overlap=Overlap.WHITE;
         }
         distance=Math.abs(value-left);
         if(distance<minDistance){
             minDistance=distance;
-            if((ordered&&!reverse)||(!ordered&&reverse)){
-                index=0;
-            }else {
-                index=1;
+            if(ordered){
+                overlap=Overlap.BTOW;
+            }
+            else{
+                overlap=Overlap.WTOB;
             }
         }
         distance=Math.abs(value-right);
         if(distance<minDistance){
             minDistance=distance;
-            if((ordered&&!reverse)||(!ordered&&reverse)){
-                index=1;
-            }else {
-                index=0;
+            if(ordered){
+                overlap=Overlap.WTOB;
+            }
+            else{
+                overlap=Overlap.BTOW;
             }
         }
-        return index;
+        return overlap;
     }
     public HashMap<Integer,Integer>[] sampleVary(int[] firstColorX, int[] secondColorX, int topY, int bottomY){
         HashMap<Integer,Integer> firstColorMap=new HashMap<>();
