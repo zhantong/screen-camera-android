@@ -116,6 +116,10 @@ public class MediaToFile{
             boolean status=checkBitSet(content,matrix);
             Log.d(TAG,"check:"+status);
         }
+        int fecPayloadID=getFecPayloadID(content);
+        int sbn=extractSourceBlockNumber(fecPayloadID);
+        int esi=extractEncodingSymbolID(fecPayloadID);
+        System.out.println("SBN:"+sbn+"\tESI:"+esi);
         int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
         for(int i=0;i<con.length*matrix.ecLength;i++){
             if(content.get(i)){
@@ -276,5 +280,18 @@ public class MediaToFile{
         border[2]=origBorder[2]-horizonSub/10;
         border[3]=origBorder[3]-verticalSub/10;
         return border;
+    }
+    public int getFecPayloadID(BitSet bitSet){
+        int value=0;
+        for (int i = bitSet.nextSetBit(0); i <32; i = bitSet.nextSetBit(i + 1)) {
+            value|=(1<<(i%8))<<(3-i/8)*8;
+        }
+        return value;
+    }
+    public int extractSourceBlockNumber(int fecPayloadID){
+        return fecPayloadID>>24;
+    }
+    public int extractEncodingSymbolID(int fecPayloadID){
+        return fecPayloadID&0x0FFF;
     }
 }

@@ -2,6 +2,7 @@ package cn.edu.nju.cs.screencamera;
 
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
@@ -16,6 +17,7 @@ import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class StreamToFile extends MediaToFile {
     private static final String TAG = "StreamToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
-    private static final long queueWaitSeconds=2;
+    private static final long queueWaitSeconds=4;
     private static BarcodeFormat barcodeFormat;
     private VideoToFrames videoToFrames;
     public StreamToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format) {
@@ -44,6 +46,13 @@ public class StreamToFile extends MediaToFile {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        /*
+        try {
+            videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captueFrames");
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        */
         streamToFile(frameQueue, frameWidth, frameHeight, fileName, null);
     }
     public void toFile(String fileName,CameraPreview mPreview){
@@ -58,7 +67,7 @@ public class StreamToFile extends MediaToFile {
         ArrayDataDecoder dataDecoder=null;
         SourceBlockDecoder lastSourceBlock=null;
         int fileByteNum=-1;
-        int count = 0;
+        int count = -1;
         int lastSuccessIndex = 0;
         int frameAmount = 0;
         byte[] img = {};

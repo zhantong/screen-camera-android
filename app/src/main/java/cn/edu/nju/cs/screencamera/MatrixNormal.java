@@ -185,6 +185,25 @@ public class MatrixNormal extends Matrix {
         int origY=orig.y;
         int left=bars[0].get(origY);
         int right=bars[1].get(origY);
+        boolean isLineMixed=true;
+        final int grayThreshold=6;
+        if(ordered){
+            if(Math.abs(blackValue-left)<grayThreshold&&Math.abs(whiteValue-right)<grayThreshold){
+                isLineMixed=false;
+            }
+        }else{
+            if(Math.abs(blackValue-right)<grayThreshold&&Math.abs(whiteValue-left)<grayThreshold){
+                isLineMixed=false;
+            }
+        }
+        if(!isLineMixed){
+            int threshold=(blackValue+whiteValue)/2;
+            if(value>threshold){
+                return Overlap.WHITE;
+            }else{
+                return Overlap.BLACK;
+            }
+        }
         int minDistance=Integer.MAX_VALUE;
         Overlap overlap=null;
         int distance=Math.abs(value-blackValue);
