@@ -70,12 +70,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="选择视频/图片文件"
-            android:onClick="getfile"/>
+            android:onClick="getVideoFile"/>
     </LinearLayout>
     <LinearLayout
         android:layout_weight="3"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <EditText
+            android:id="@+id/truthFilePath"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="真实文件路径（比特错误调试）"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="选择文件"
+            android:onClick="getTruthFile"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

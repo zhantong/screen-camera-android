@@ -14,8 +14,8 @@ public class CameraToFile extends StreamToFile {
     private static final String TAG = "StreamToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     private CameraPreview mPreview;
-    public CameraToFile(TextView debugView, TextView infoView, Handler handler, BarcodeFormat format) {
-        super(debugView, infoView, handler,format);
+    public CameraToFile(TextView debugView, TextView infoView, Handler handler, BarcodeFormat format,String truthFilePath) {
+        super(debugView, infoView, handler,format,truthFilePath);
     }
     public void toFile(String fileName,CameraPreview mPreview){
         Log.i(TAG,"process camera");

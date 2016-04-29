@@ -18,6 +18,16 @@ public class MatrixNormal extends Matrix {
         WTOB,
         BTOW
     }
+    public MatrixNormal(){
+        super();
+        super.bitsPerBlock=1;
+        super.frameBlackLength=1;
+        super.frameVaryLength=1;
+        super.frameVaryTwoLength=1;
+        super.contentLength=80;
+        super.ecNum=80;
+        super.ecLength=10;
+    }
     public MatrixNormal(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
         super.bitsPerBlock=1;

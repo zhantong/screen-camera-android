@@ -12,9 +12,9 @@ import java.util.HashMap;
 public class Matrix{
     protected static final boolean VERBOSE = false;//是否记录详细log
     protected static final String TAG = "Matrix";//log tag
-    protected final int imgWidth;//图像宽度
-    protected final int imgHeight;//图像高度
-    protected final byte[] pixels;//图像每个像素点原始值
+    protected int imgWidth;//图像宽度
+    protected int imgHeight;//图像高度
+    protected byte[] pixels;//图像每个像素点原始值
     private int threshold = 0;//二值化阈值
     private int[] borders;//图像中二维码的四个顶点坐标值
     protected PerspectiveTransform transform;//透视变换参数
@@ -22,7 +22,7 @@ public class Matrix{
     int[] border;
     boolean isMixed=true;
     public boolean reverse=false;
-    public final int imgColorType;
+    public int imgColorType;
     int bitsPerBlock;
     int frameBlackLength;
     int frameVaryLength;
@@ -31,7 +31,8 @@ public class Matrix{
     int ecNum;
     int ecLength;
 
-
+    public Matrix(){
+    }
     /**
      * 构造函数,有原始数据
      *

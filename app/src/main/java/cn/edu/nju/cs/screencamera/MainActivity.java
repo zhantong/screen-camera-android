@@ -81,10 +81,13 @@ public class MainActivity extends AppCompatActivity {
         EditText editTextFileName = (EditText) findViewById(R.id.fileName);
         final String newFileName = editTextFileName.getText().toString();
         final Handler nHandler = new Handler();
+
+        EditText editTextTruthFilePath = (EditText) findViewById(R.id.truthFilePath);
+        final String truthFilePath = editTextTruthFilePath.getText().toString();
         Thread worker = new Thread() {
             @Override
             public void run() {
-                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler,barcodeFormat);
+                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
                 cameraToFile.toFile(newFileName, mPreview);
             }
         };
@@ -113,19 +116,29 @@ public class MainActivity extends AppCompatActivity {
         mPreview.stop();
     }
 
-    private static final int REQUEST_PATH = 1;
-    public void getfile(View view){
+    public void getVideoFile(View view){
         Intent intent1 = new Intent(this, FileChooser.class);
-        startActivityForResult(intent1,REQUEST_PATH);
+        startActivityForResult(intent1,1);
+    }
+    public void getTruthFile(View view){
+        Intent intent1 = new Intent(this, FileChooser.class);
+        startActivityForResult(intent1,2);
     }
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         // See which child activity is calling us back.
-        if (requestCode == REQUEST_PATH){
-            if (resultCode == RESULT_OK) {
-                EditText editText = (EditText) findViewById(R.id.videoFilePath);
-                String curFileName = data.getStringExtra("GetFilePath");
-                editText.setText(curFileName);
-            }
+        int id=0;
+        switch (requestCode){
+            case 1:
+                id=R.id.videoFilePath;
+                break;
+            case 2:
+                id=R.id.truthFilePath;
+                break;
+        }
+        if (resultCode == RESULT_OK) {
+            EditText editText = (EditText) findViewById(id);
+            String curFileName = data.getStringExtra("GetFilePath");
+            editText.setText(curFileName);
         }
     }
     /**
@@ -157,10 +170,12 @@ public class MainActivity extends AppCompatActivity {
         EditText editTextFileName = (EditText) findViewById(R.id.fileName);
         final String newFileName = editTextFileName.getText().toString();
         final Handler nHandler = new Handler();
+        EditText editTextTruthFilePath = (EditText) findViewById(R.id.truthFilePath);
+        final String truthFilePath = editTextTruthFilePath.getText().toString();
         Thread worker = new Thread() {
             @Override
             public void run() {
-                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler,barcodeFormat);
+                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
                 videoToFile.toFile(newFileName, videoFilePath);
             }
         };

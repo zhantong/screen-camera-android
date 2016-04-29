@@ -16,8 +16,8 @@ public class VideoToFile extends StreamToFile {
     private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     private VideoToFrames videoToFrames;
-    public VideoToFile(TextView debugView, TextView infoView, Handler handler, BarcodeFormat format) {
-        super(debugView, infoView, handler,format);
+    public VideoToFile(TextView debugView, TextView infoView, Handler handler, BarcodeFormat format,String truthFilePath) {
+        super(debugView, infoView, handler,format,truthFilePath);
     }
     public int getImgColorType(){
         return 0;

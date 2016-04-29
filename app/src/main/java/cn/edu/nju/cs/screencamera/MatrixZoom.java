@@ -9,6 +9,16 @@ import java.util.List;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixZoom extends Matrix{
+    public MatrixZoom(){
+        super();
+        super.bitsPerBlock=2;
+        super.frameBlackLength=1;
+        super.frameVaryLength=1;
+        super.frameVaryTwoLength=1;
+        super.contentLength=40;
+        super.ecNum=40;
+        super.ecLength=10;
+    }
     public MatrixZoom(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
         super.bitsPerBlock=2;
