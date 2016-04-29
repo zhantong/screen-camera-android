@@ -1,8 +1,5 @@
 package cn.edu.nju.cs.screencamera;
 
-import android.media.MediaExtractor;
-import android.media.MediaFormat;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
@@ -16,8 +13,6 @@ import net.fec.openrq.SymbolType;
 import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -29,41 +24,17 @@ public class StreamToFile extends MediaToFile {
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final long queueWaitSeconds=4;
     private static BarcodeFormat barcodeFormat;
-    private VideoToFrames videoToFrames;
     public StreamToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format) {
         super(debugView, infoView, handler);
         barcodeFormat=format;
     }
-    public void toFile(String fileName,final String videoFilePath){
-        Log.i(TAG,"process video file");
-        final LinkedBlockingQueue<byte[]> frameQueue = new LinkedBlockingQueue<>();
-        int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
-        int frameWidth=widthAndHeight[0];
-        int frameHeight=widthAndHeight[1];
-        videoToFrames = new VideoToFrames();
-        try {
-            videoToFrames.doExtract(videoFilePath,frameQueue);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        /*
-        try {
-            videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captueFrames");
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        */
-        streamToFile(frameQueue, frameWidth, frameHeight, fileName, null);
+    public int getImgColorType(){
+        return -1;
     }
-    public void toFile(String fileName,CameraPreview mPreview){
-        Log.i(TAG,"process camera");
-        LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
-        int frameWidth=CameraSettings.previewWidth();
-        int frameHeight=CameraSettings.previewHeight();
-        mPreview.start(rev);
-        streamToFile(rev,frameWidth,frameHeight,fileName,mPreview);
-    }
-    private void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName,final CameraPreview mPreview) {
+    public void notFound(int fileByteNum){}
+    public void crcCheckFailed(){}
+    public void beforeDataDecoded(){}
+    protected void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName) {
         ArrayDataDecoder dataDecoder=null;
         SourceBlockDecoder lastSourceBlock=null;
         int fileByteNum=-1;
@@ -74,13 +45,7 @@ public class StreamToFile extends MediaToFile {
         Matrix matrix;
         int[] border=null;
         int index = 0;
-        int imgColorType;
-        if(mPreview!=null){
-            imgColorType=1;
-        }
-        else {
-            imgColorType = 0;
-        }
+        int imgColorType=getImgColorType();
         while (true) {
             count++;
             updateInfo("正在识别...");
@@ -100,10 +65,7 @@ public class StreamToFile extends MediaToFile {
                 matrix.perspectiveTransform();
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
-                if(fileByteNum==-1&&mPreview!=null){
-                    Log.d(TAG,"camera focusing");
-                    mPreview.focus();
-                }
+                notFound(fileByteNum);
                 border=null;
                 continue;
             }
@@ -121,10 +83,7 @@ public class StreamToFile extends MediaToFile {
                         fileByteNum = getFileByteNum(matrix);
                     }catch (CRCCheckException e){
                         Log.d(TAG, "head CRC check failed");
-                        if(mPreview!=null) {
-                            Log.d(TAG, "camera focusing");
-                            mPreview.focus();
-                        }
+                        crcCheckFailed();
                         continue;
                     }
                     if(fileByteNum==0){
@@ -149,17 +108,7 @@ public class StreamToFile extends MediaToFile {
                 EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
                 Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if((lastSourceBlock.missingSourceSymbols().size()-lastSourceBlock.availableRepairSymbols().size()==1)&&((encodingPacket.symbolType()== SymbolType.SOURCE&&!lastSourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))||(encodingPacket.symbolType()== SymbolType.REPAIR&&!lastSourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())))){
-                    if(mPreview!=null) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mPreview.stop();
-                            }
-                        });
-                        Log.d(TAG,"stopped camera preview");
-                    }else{
-                        videoToFrames.stopExtract();
-                    }
+                    beforeDataDecoded();
                     imgs.clear();
                 }
                 Log.d(TAG,"received repair symbols:"+lastSourceBlock.availableRepairSymbols().size()+"\tmissing source symbols:"+lastSourceBlock.missingSourceSymbols().size());
@@ -184,41 +133,5 @@ public class StreamToFile extends MediaToFile {
             bytesToFile(out, fileName);
         }
 
-    }
-    private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
-        Log.i(TAG,"check source block status:");
-        for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
-            Log.i(TAG, "source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
-        }
-    }
-    private int[] frameWidthAndHeight(String videoFilePath){
-        File inputFile = new File(videoFilePath);
-        MediaExtractor extractor = new MediaExtractor();
-        try {
-            extractor.setDataSource(inputFile.toString());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        int trackIndex = selectTrack(extractor);
-        extractor.selectTrack(trackIndex);
-        MediaFormat format = extractor.getTrackFormat(trackIndex);
-        int imgWidth = format.getInteger(MediaFormat.KEY_WIDTH);
-        int imgHeight = format.getInteger(MediaFormat.KEY_HEIGHT);
-        return new int[] {imgWidth,imgHeight};
-    }
-    private int selectTrack(MediaExtractor extractor) {
-        // Select the first video track we find, ignore the rest.
-        int numTracks = extractor.getTrackCount();
-        for (int i = 0; i < numTracks; i++) {
-            MediaFormat format = extractor.getTrackFormat(i);
-            String mime = format.getString(MediaFormat.KEY_MIME);
-            if (mime.startsWith("video/")) {
-                if (VERBOSE) {
-                    Log.d(TAG, "Extractor selected track " + i + " (" + mime + "): " + format);
-                }
-                return i;
-            }
-        }
-        return -1;
     }
 }

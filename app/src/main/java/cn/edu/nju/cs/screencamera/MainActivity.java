@@ -21,7 +21,6 @@ import android.widget.TextView;
 import cn.edu.nju.cs.screencamera.FileExplorer.FileChooser;
 
 import java.io.File;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * UI主要操作
@@ -85,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamToFile cameraToFile=new StreamToFile(debugView, infoView, nHandler,barcodeFormat);
+                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler,barcodeFormat);
                 cameraToFile.toFile(newFileName, mPreview);
             }
         };
@@ -161,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamToFile videoToFile=new StreamToFile(debugView, infoView, nHandler,barcodeFormat);
+                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler,barcodeFormat);
                 videoToFile.toFile(newFileName, videoFilePath);
             }
         };
