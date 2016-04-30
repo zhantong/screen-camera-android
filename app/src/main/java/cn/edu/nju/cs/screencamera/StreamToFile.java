@@ -50,6 +50,8 @@ public class StreamToFile extends MediaToFile {
         int[] border=null;
         int index = 0;
         int imgColorType=getImgColorType();
+        long startTime;
+        long endTime;
         while (true) {
             count++;
             updateInfo("正在识别...");
@@ -64,6 +66,7 @@ public class StreamToFile extends MediaToFile {
                 break;
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
+            startTime= System.currentTimeMillis();
             try {
                 matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
                 matrix.perspectiveTransform();
@@ -100,7 +103,9 @@ public class StreamToFile extends MediaToFile {
                     FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                     Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);
-                    lastSourceBlock=dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks()-1);
+                    if(lastSourceBlock==null) {
+                        lastSourceBlock = dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks() - 1);
+                    }
                 }
                 byte[] current;
                 try {
@@ -115,7 +120,7 @@ public class StreamToFile extends MediaToFile {
                     beforeDataDecoded();
                     imgs.clear();
                 }
-                Log.d(TAG,"received repair symbols:"+lastSourceBlock.availableRepairSymbols().size()+"\tmissing source symbols:"+lastSourceBlock.missingSourceSymbols().size());
+                if(VERBOSE){Log.d(TAG,lastSourceBlock.availableRepairSymbols().size()+" repair symbols received"+"\tmissing "+lastSourceBlock.missingSourceSymbols().size()+"source symbols");}
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }
             if(fileByteNum!=-1) {
@@ -128,6 +133,8 @@ public class StreamToFile extends MediaToFile {
             border=smallBorder(matrix.border);
             if(VERBOSE){Log.d(TAG, "reduced borders (to 4/5): left:" + border[0] + "\tup:" + border[1] + "\tright:" + border[2] + "\tdown:" + border[3]);}
             matrix = null;
+            endTime= System.currentTimeMillis();
+            Log.d(TAG,"process frame "+count+" takes "+(endTime-startTime)+"ms");
         }
         if(dataDecoder!=null&&dataDecoder.isDataDecoded()) {
             updateInfo("识别完成！正在写入文件...");

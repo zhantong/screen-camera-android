@@ -50,7 +50,9 @@ public class MediaToFile{
     }
     public void setDebug(Matrix matrix,String filePath){
         debugCheck=true;
+        updateInfo("正在加载调试文件");
         truthBitSet=new FileToBitSet(matrix,filePath);
+        updateInfo("调试文件加载成功！");
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI
@@ -115,10 +117,6 @@ public class MediaToFile{
         if(debugCheck){
             checkBitSet(content);
         }
-        int fecPayloadID=getFecPayloadID(content);
-        int sbn=extractSourceBlockNumber(fecPayloadID);
-        int esi=extractEncodingSymbolID(fecPayloadID);
-        System.out.println("SBN:"+sbn+"\tESI:"+esi);
         int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
         for(int i=0;i<con.length*matrix.ecLength;i++){
             if(content.get(i)){
@@ -153,7 +151,7 @@ public class MediaToFile{
             BitSet truth=truthBitSet.getPacket(esi);
             BitSet clone=(BitSet)con.clone();
             clone.xor(truth);
-            System.out.println("esi "+esi+" has "+clone.cardinality()+" bit errors");
+            Log.d(TAG,"esi "+esi+" has "+clone.cardinality()+" bit errors");
         }
     }
     public void printContentBitSet(BitSet content,int bitsPerBlock,int contentLength,Matrix matrix,BitSet right,BitSet wrong){

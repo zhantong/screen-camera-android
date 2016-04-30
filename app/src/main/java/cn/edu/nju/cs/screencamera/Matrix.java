@@ -57,6 +57,10 @@ public class Matrix{
                 this.borders = findBorder(genInitBorder());
             }
         }
+        Log.d(TAG,"倾斜角度："+calcAngle());
+    }
+    public double calcAngle(){
+        return Math.toDegrees(1.0*(borders[1]-borders[3])/(borders[2]-borders[0]));
     }
     public int[] genInitBorder(){
         int init = 20;
