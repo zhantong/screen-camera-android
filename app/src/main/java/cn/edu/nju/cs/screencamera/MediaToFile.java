@@ -115,7 +115,7 @@ public class MediaToFile{
     public int[] getRawContent(Matrix matrix){
         BitSet content=matrix.getContent();
         if(debugCheck){
-            checkBitSet(content);
+            checkBitSet(content,matrix);
         }
         int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
         for(int i=0;i<con.length*matrix.ecLength;i++){
@@ -145,13 +145,16 @@ public class MediaToFile{
         }
         return res;
     }
-    public void checkBitSet(BitSet con){
+    public void checkBitSet(BitSet con,Matrix matrix){
         int esi=extractEncodingSymbolID(getFecPayloadID(con));
         if(esi>=0&&esi<truthBitSet.packetNum()){
             BitSet truth=truthBitSet.getPacket(esi);
             BitSet clone=(BitSet)con.clone();
             clone.xor(truth);
             Log.d(TAG,"esi "+esi+" has "+clone.cardinality()+" bit errors");
+            if(clone.cardinality()!=0){
+                printContentBitSet(clone,matrix.bitsPerBlock,matrix.contentLength,matrix,truth,con);
+            }
         }
     }
     public void printContentBitSet(BitSet content,int bitsPerBlock,int contentLength,Matrix matrix,BitSet right,BitSet wrong){

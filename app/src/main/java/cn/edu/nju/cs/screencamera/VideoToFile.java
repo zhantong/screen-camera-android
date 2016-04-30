@@ -2,11 +2,13 @@ package cn.edu.nju.cs.screencamera;
 
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
+import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -39,7 +41,7 @@ public class VideoToFile extends StreamToFile {
         }
         /*
         try {
-            videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captueFrames");
+            videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captureFrames");
         }catch (IOException e){
             e.printStackTrace();
         }

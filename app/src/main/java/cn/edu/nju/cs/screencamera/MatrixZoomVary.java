@@ -9,6 +9,25 @@ import java.util.List;
  * Created by zhantong on 16/4/24.
  */
 public class MatrixZoomVary extends Matrix{
+    private RawContent rawContent;
+    enum Overlap{
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
+        UTOD,
+        UTOL,
+        UTOR,
+        DTOU,
+        DTOL,
+        DTOR,
+        LTOU,
+        LTOD,
+        LTOR,
+        RTOU,
+        RTOD,
+        RTOL
+    }
     public MatrixZoomVary(){
         super();
         super.bitsPerBlock=2;
@@ -99,8 +118,9 @@ public class MatrixZoomVary extends Matrix{
         }
         return sum/(high-low+1);
     }
-    private int maxIndex(int x,int y){
+    private Overlap maxIndex(int x,int y){
         int[] samples=grayMatrix.getSamples(x,y);
+        int index;
         if((x+y)%2==0){
             int maxIndex=-1;
             int max=-1;
@@ -110,7 +130,7 @@ public class MatrixZoomVary extends Matrix{
                     max=samples[i];
                 }
             }
-            return maxIndex;
+            index=maxIndex;
         }
         else{
             int minIndex=-1;
@@ -121,60 +141,294 @@ public class MatrixZoomVary extends Matrix{
                     min=samples[i];
                 }
             }
-            return minIndex;
+            index=minIndex;
         }
+        switch (index){
+            case 1:
+                return Overlap.UP;
+            case 2:
+                return Overlap.DOWN;
+            case 3:
+                return Overlap.LEFT;
+            case 4:
+                return Overlap.RIGHT;
+        }
+        return Overlap.UP;
     }
-    public BitSet getRawContentSimple(){
-        BitSet bitSet=new BitSet();
+    public void getRawContentSimple(){
         int index=0;
         for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
-            int blackValue=grayMatrix.get(0, y);
-            int whiteValue=grayMatrix.get(0, y - 1);
-            int threshold=(blackValue+whiteValue)/2;
-            //if(VERBOSE){Log.d(TAG,"line black value: "+blackValue+"\twhite value: "+whiteValue);}
             for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
                 //int[] samples=grayMatrix.getSamples(x,y);
                 //int maxIndex=maxIndex(samples,1)-1;
-                int maxIndex=maxIndex(x,y)-1;
-                switch (maxIndex){
-                    case 0:
+                switch (maxIndex(x,y)){
+                    case UP:
                         index++;
                         break;
-                    case 1:
+                    case DOWN:
                         index++;
-                        bitSet.set(index);
+                        rawContent.clear.set(index);
                         break;
-                    case 2:
-                        bitSet.set(index);
+                    case LEFT:
+                        rawContent.clear.set(index);
                         index++;
                         break;
-                    case 3:
-                        bitSet.set(index);
+                    case RIGHT:
+                        rawContent.clear.set(index);
                         index++;
-                        bitSet.set(index);
+                        rawContent.clear.set(index);
                 }
                 index++;
             }
         }
-        return bitSet;
+    }
+    public void getRawContent(){
+        int index=0;
+        for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
+            for(int x=frameBlackLength+frameVaryLength+frameVaryTwoLength;x<frameBlackLength+frameVaryLength+frameVaryTwoLength+contentLength;x++){
+                switch (getOverlapSituation(x,y)) {
+                    case UP:
+                        index++;
+                        break;
+                    case DOWN:
+                        index++;
+                        rawContent.clear.set(index);
+                        break;
+                    case LEFT:
+                        rawContent.clear.set(index);
+                        index++;
+                        break;
+                    case RIGHT:
+                        rawContent.clear.set(index);
+                        index++;
+                        rawContent.clear.set(index);
+                        break;
+                    case UTOD:
+                        index++;
+                        rawContent.bTow.set(index);
+                        break;
+                    case UTOL:
+                        rawContent.bTow.set(index);
+                        index++;
+                        break;
+                    case UTOR:
+                        rawContent.bTow.set(index);
+                        index++;
+                        rawContent.bTow.set(index);
+                        break;
+                    case DTOU:
+                        index++;
+                        rawContent.wTob.set(index);
+                        break;
+                    case DTOL:
+                        rawContent.bTow.set(index);
+                        index++;
+                        rawContent.wTob.set(index);
+                        break;
+                    case DTOR:
+                        rawContent.bTow.set(index);
+                        index++;
+                        rawContent.clear.set(index);
+                        break;
+                    case LTOU:
+                        rawContent.wTob.set(index);
+                        index++;
+                        break;
+                    case LTOD:
+                        rawContent.wTob.set(index);
+                        index++;
+                        rawContent.bTow.set(index);
+                        break;
+                    case LTOR:
+                        rawContent.clear.set(index);
+                        index++;
+                        rawContent.bTow.set(index);
+                        break;
+                    case RTOU:
+                        rawContent.wTob.set(index);
+                        index++;
+                        rawContent.wTob.set(index);
+                        break;
+                    case RTOD:
+                        rawContent.wTob.set(index);
+                        index++;
+                        rawContent.clear.set(index);
+                        break;
+                    case RTOL:
+                        rawContent.clear.set(index);
+                        index++;
+                        rawContent.wTob.set(index);
+                        break;
+                }
+                index++;
+            }
+        }
+    }
+    public Overlap getOverlapSituation(int x, int y){
+        int[] samples=grayMatrix.getSamples(x,y);
+        int mean=mean(samples,1,4);
+        int countGreat=0;
+        int countLess=0;
+        int[] temp=new int[samples.length];
+        int maxIndex=-1;
+        int minIndex=-1;
+        for(int i=1;i<5;i++){
+            if(samples[i]>mean){
+                countGreat++;
+                temp[i]=1;
+                maxIndex=i;
+            }else{
+                countLess++;
+                temp[i]=-1;
+                minIndex=i;
+            }
+        }
+        if(countGreat==1||countLess==1){
+            int index=(countGreat==1)?maxIndex:minIndex;
+            switch (index){
+                case 1:
+                    return Overlap.UP;
+                case 2:
+                    return Overlap.DOWN;
+                case 3:
+                    return Overlap.LEFT;
+                case 4:
+                    return Overlap.RIGHT;
+            }
+        }else{
+            if((x+y)%2==0) {
+                if (temp[1]==1&&temp[2]==1) {
+                    if (samples[1] > samples[2]) {
+                        return Overlap.UTOD;
+                    } else {
+                        return Overlap.DTOU;
+                    }
+                }
+                if (temp[1]==1&&temp[3]==1) {
+                    if (samples[1] > samples[3]) {
+                        return Overlap.UTOL;
+                    } else {
+                        return Overlap.LTOU;
+                    }
+                }
+                if (temp[1]==1&&temp[4]==1) {
+                    if (samples[1] > samples[4]) {
+                        return Overlap.UTOR;
+                    } else {
+                        return Overlap.RTOU;
+                    }
+                }
+                if (temp[2]==1&&temp[3]==1) {
+                    if (samples[2] > samples[3]) {
+                        return Overlap.DTOL;
+                    } else {
+                        return Overlap.LTOD;
+                    }
+                }
+                if (temp[2]==1&&temp[4]==1) {
+                    if (samples[2] > samples[4]) {
+                        return Overlap.DTOR;
+                    } else {
+                        return Overlap.RTOD;
+                    }
+                }
+                if (temp[3]==1&&temp[4]==1) {
+                    if (samples[3] > samples[4]) {
+                        return Overlap.LTOR;
+                    } else {
+                        return Overlap.RTOL;
+                    }
+                }
+            }else{
+                if (temp[1]==-1&&temp[2]==-1) {
+                    if (samples[1] < samples[2]) {
+                        return Overlap.UTOD;
+                    } else {
+                        return Overlap.DTOU;
+                    }
+                }
+                if (temp[1]==-1&&temp[3]==-1) {
+                    if (samples[1] < samples[3]) {
+                        return Overlap.UTOL;
+                    } else {
+                        return Overlap.LTOU;
+                    }
+                }
+                if (temp[1]==-1&&temp[4]==-1) {
+                    if (samples[1] < samples[4]) {
+                        return Overlap.UTOR;
+                    } else {
+                        return Overlap.RTOU;
+                    }
+                }
+                if (temp[2]==-1&&temp[3]==-1) {
+                    if (samples[2] < samples[3]) {
+                        return Overlap.DTOL;
+                    } else {
+                        return Overlap.LTOD;
+                    }
+                }
+                if (temp[2]==-1&&temp[4]==-1) {
+                    if (samples[2] < samples[4]) {
+                        return Overlap.DTOR;
+                    } else {
+                        return Overlap.RTOD;
+                    }
+                }
+                if (temp[3]==-1&&temp[4]==-1) {
+                    if (samples[3] < samples[4]) {
+                        return Overlap.LTOR;
+                    } else {
+                        return Overlap.RTOL;
+                    }
+                }
+            }
+        }
+        System.out.println("wrong");
+        return Overlap.RTOL;
     }
     public BitSet getContent(){
-        return getContent(getBarCodeWidth(),getBarCodeHeight());
+        if(rawContent==null){
+            sampleContent(getBarCodeWidth(),getBarCodeHeight());
+        }
+        if(reverse){
+            return rawContent.getRawContent(true);
+        }
+        else{
+            return rawContent.getRawContent(false);
+        }
     }
-    public BitSet getContent(int dimensionX, int dimensionY) {
+    public void sampleContent(int dimensionX, int dimensionY){
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
+            isMixed=isMixed();
+            Log.i(TAG,"frame mixed:"+isMixed);
         }
-        if(VERBOSE){
-            Log.d(TAG,"color reversed:"+reverse);}
-        isMixed=false;
-        Log.i(TAG,"frame mixed:"+isMixed);
+        rawContent=new RawContent(bitsPerBlock*contentLength*contentLength);
+        if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
         if(isMixed){
-            return null;
+            getRawContent();
         }
         else {
-            return getRawContentSimple();
+            getRawContentSimple();
         }
+    }
+    public boolean isMixed(){
+        int x=frameBlackLength+frameVaryLength;
+        for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
+            int[] current=grayMatrix.getSamples(x,y);
+            int mean=mean(current,1,4);
+            int count=0;
+            for(int i=1;i<5;i++){
+                if(current[i]>mean){
+                    count++;
+                }
+            }
+            if(count>1){
+                return true;
+            }
+        }
+        return false;
     }
     public void check(List<Integer> points){
         int baseX=frameBlackLength+frameVaryLength+frameVaryTwoLength;

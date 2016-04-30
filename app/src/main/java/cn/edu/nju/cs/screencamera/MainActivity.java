@@ -193,10 +193,12 @@ public class MainActivity extends AppCompatActivity {
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.videoFilePath);
         final String imageFilePath = editTextVideoFilePath.getText().toString();
         final Handler nHandler = new Handler();
+        EditText editTextTruthFilePath = (EditText) findViewById(R.id.truthFilePath);
+        final String truthFilePath = editTextTruthFilePath.getText().toString();
         Thread worker = new Thread() {
             @Override
             public void run() {
-                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler,barcodeFormat);
+                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
                 singleImgToFile.singleImg(imageFilePath);
             }
         };

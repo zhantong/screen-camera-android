@@ -29,7 +29,7 @@ public class StreamToFile extends MediaToFile {
         super(debugView, infoView, handler);
         barcodeFormat=format;
         if(!truthFilePath.equals("")) {
-            setDebug(MatrixFactory.createMatrix(format), Environment.getExternalStorageDirectory() + "/truth.txt");
+            setDebug(MatrixFactory.createMatrix(format), truthFilePath);
         }
     }
     public int getImgColorType(){
@@ -143,6 +143,5 @@ public class StreamToFile extends MediaToFile {
             Log.d(TAG, "file SHA-1 verification: " + sha1);
             bytesToFile(out, fileName);
         }
-
     }
 }

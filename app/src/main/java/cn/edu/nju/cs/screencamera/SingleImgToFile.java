@@ -32,9 +32,12 @@ public class SingleImgToFile extends MediaToFile {
      * @param infoView  实例
      * @param handler   实例
      */
-    public SingleImgToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format) {
+    public SingleImgToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format,String truthFilePath) {
         super(debugView, infoView, handler);
         barcodeFormat=format;
+        if(!truthFilePath.equals("")) {
+            setDebug(MatrixFactory.createMatrix(format), truthFilePath);
+        }
     }
 
     /**
@@ -55,26 +58,36 @@ public class SingleImgToFile extends MediaToFile {
         ArrayDataDecoder dataDecoder=null;
         int fileByteNum=-1;
         int[] border=null;
+        long startTime;
+        long endTime;
+        startTime= System.currentTimeMillis();
         try {
             matrix=MatrixFactory.createMatrix(barcodeFormat,byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
             matrix.perspectiveTransform();
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
-            return;
         }
-        for(int i=0;i<2;i++) {
-            matrix.reverse=!matrix.reverse;
+        for(int i=1;i<3;i++) {
+            if(i==2){
+                if(!matrix.isMixed){
+                    break;
+                }
+                matrix.reverse=true;
+            }
+            Log.i(TAG,"try "+i+" :");
             if(fileByteNum==-1){
                 try {
                     fileByteNum = getFileByteNum(matrix);
                 }catch (CRCCheckException e){
-                    Log.d(TAG,"head CRC check failed");
+                    Log.d(TAG, "head CRC check failed");
                     continue;
                 }
                 if(fileByteNum==0){
+                    Log.d(TAG,"wrong file byte number");
                     fileByteNum=-1;
                     continue;
                 }
+                Log.i(TAG,"file is "+fileByteNum+" bytes");
                 int length=matrix.realContentByteLength();
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
                 Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
@@ -91,16 +104,8 @@ public class SingleImgToFile extends MediaToFile {
             Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
         }
-        if(fileByteNum!=-1) {
-            checkSourceBlockStatus(dataDecoder);
-            Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
-        }
         matrix = null;
-    }
-    private void checkSourceBlockStatus(ArrayDataDecoder dataDecoder){
-        Log.i(TAG,"check source block status:");
-        for (SourceBlockDecoder sourceBlockDecoder : dataDecoder.sourceBlockIterable()) {
-            Log.i(TAG,"source block number:" + sourceBlockDecoder.sourceBlockNumber() + "\tstate:" + sourceBlockDecoder.latestState());
-        }
+        endTime= System.currentTimeMillis();
+        Log.d(TAG,"process frame takes "+(endTime-startTime)+"ms");
     }
 }
