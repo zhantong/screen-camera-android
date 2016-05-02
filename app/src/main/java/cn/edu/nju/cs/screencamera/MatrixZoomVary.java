@@ -87,6 +87,8 @@ public class MatrixZoomVary extends Matrix{
                 //grayMatrix.set(x / 2, y, gray,Math.round(points[x]),Math.round(points[x + 1]));
             }
         }
+        isMixed=isMixed();
+        Log.i(TAG,"frame mixed:"+isMixed);
         //grayMatrix.print();
     }
     public BitSet getRawHead(){
@@ -401,8 +403,6 @@ public class MatrixZoomVary extends Matrix{
     public void sampleContent(int dimensionX, int dimensionY){
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
-            isMixed=isMixed();
-            Log.i(TAG,"frame mixed:"+isMixed);
         }
         rawContent=new RawContent(bitsPerBlock*contentLength*contentLength);
         if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
@@ -415,6 +415,7 @@ public class MatrixZoomVary extends Matrix{
     }
     public boolean isMixed(){
         int x=frameBlackLength+frameVaryLength;
+        int countMix=0;
         for(int y=frameBlackLength;y<frameBlackLength+contentLength;y++){
             int[] current=grayMatrix.getSamples(x,y);
             int mean=mean(current,1,4);
@@ -425,8 +426,13 @@ public class MatrixZoomVary extends Matrix{
                 }
             }
             if(count>1){
-                return true;
+                countMix++;
+                //return true;
             }
+        }
+        if(countMix>2){
+            System.out.println("count mix:"+countMix);
+            return true;
         }
         return false;
     }

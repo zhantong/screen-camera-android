@@ -84,7 +84,7 @@ public class StreamToFile extends MediaToFile {
                     }
                     matrix.reverse=true;
                 }
-                Log.i(TAG,"try "+i+" :");
+                Log.i(TAG,"try reverse "+matrix.reverse+" :");
                 if(fileByteNum==-1){
                     try {
                         fileByteNum = getFileByteNum(matrix);
