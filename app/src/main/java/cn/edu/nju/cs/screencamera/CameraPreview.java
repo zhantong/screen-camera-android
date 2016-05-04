@@ -1,6 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -38,7 +39,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceCreated(SurfaceHolder holder) {
         getCameraInstance();
         mCamera.setPreviewCallback(this);
-        //mCamera.setParameters(CameraSettings.parameters);
         try {
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
@@ -122,4 +122,32 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void stop() {
         ((ViewGroup)getParent()).removeView(this);
     }
+
+    public void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        if (changed) {
+            System.out.println(left+"\t"+top+"\t"+right+"\t"+bottom);
+            ViewGroup parent=((ViewGroup)getParent());
+            Rect rect=new Rect();
+            parent.getLocalVisibleRect(rect);
+            //parent.getDrawingRect(rect);
+            int width=rect.width();
+            int height=rect.height();
+            Camera.Size previewSize=mCamera.getParameters().getPreviewSize();
+            ViewGroup.LayoutParams params=getLayoutParams();
+            int previewWidth=previewSize.width;
+            int previewHeight=previewSize.height;
+
+            if (width * previewHeight > height * previewWidth) {
+                final int scaledChildWidth = previewWidth * height / previewHeight;
+
+                layout((width - scaledChildWidth) / 2, 0,
+                        (width + scaledChildWidth) / 2, height);
+            } else {
+                final int scaledChildHeight = previewHeight * width / previewWidth;
+                layout(0, (height - scaledChildHeight) / 2,
+                        width, (height + scaledChildHeight) / 2);
+            }
+        }
+    }
+
 }

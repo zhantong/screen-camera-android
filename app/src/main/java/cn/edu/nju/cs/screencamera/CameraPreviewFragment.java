@@ -17,6 +17,7 @@ import android.widget.FrameLayout;
  */
 public class CameraPreviewFragment extends Fragment {
     OnStartListener mCallback;
+    boolean onWorking=false;
     public interface OnStartListener{
         public void onStartReco();
     }
@@ -45,7 +46,13 @@ public class CameraPreviewFragment extends Fragment {
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCallback.onStartReco();
+                if(onWorking){
+                    getActivity().getFragmentManager().popBackStack();
+                }else{
+                    buttonStart.setText("停止");
+                    mCallback.onStartReco();
+                    onWorking=true;
+                }
             }
         });
         mPreview = new CameraPreview(this.getActivity());

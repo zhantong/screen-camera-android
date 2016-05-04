@@ -28,12 +28,6 @@ public class CameraToFile extends StreamToFile {
         mPreview.start(rev);
         streamToFile(rev,frameWidth,frameHeight,fileName);
     }
-    public void toFile(String fileName,CameraPreviewFragment fragment){
-        LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
-        int frameWidth=CameraSettings.previewWidth();
-        int frameHeight=CameraSettings.previewHeight();
-        streamToFile(rev,frameWidth,frameHeight,fileName);
-    }
     public int getImgColorType(){
         return 1;
     }

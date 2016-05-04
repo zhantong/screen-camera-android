@@ -30,8 +30,8 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        System.out.println("settings fragment");
         addPreferencesFromResource(R.xml.preferences);
+        getActivity().setTheme(R.style.PreferenceTheme);
 
         loadSupportedPreviewSize();
         loadSupportedPictureSize();

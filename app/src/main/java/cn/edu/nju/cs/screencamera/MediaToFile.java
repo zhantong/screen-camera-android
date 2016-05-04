@@ -149,11 +149,15 @@ public class MediaToFile{
         int esi=extractEncodingSymbolID(getFecPayloadID(con));
         if(esi>=0&&esi<truthBitSet.packetNum()){
             BitSet truth=truthBitSet.getPacket(esi);
-            BitSet clone=(BitSet)con.clone();
-            clone.xor(truth);
-            Log.d(TAG,"esi "+esi+" has "+clone.cardinality()+" bit errors");
-            if(clone.cardinality()!=0){
-                printContentBitSet(clone,matrix.bitsPerBlock,matrix.contentLength,matrix,truth,con);
+            if(truth==null){
+                Log.d(TAG,"esi "+esi+" don't exist");
+            }else {
+                BitSet clone = (BitSet) con.clone();
+                clone.xor(truth);
+                Log.d(TAG, "esi " + esi + " has " + clone.cardinality() + " bit errors");
+                if (clone.cardinality() != 0) {
+                    //printContentBitSet(clone,matrix.bitsPerBlock,matrix.contentLength,matrix,truth,con);
+                }
             }
         }
     }

@@ -3,114 +3,153 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
-    <LinearLayout
+    android:orientation="horizontal"
+    android:layout_margin="20dp">
+    <FrameLayout
+        android:id="@+id/left_part"
         android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="match_parent">
         <LinearLayout
-            android:id="@+id/camera_preview_parent"
-            android:orientation="horizontal"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/gray">
-            <FrameLayout
-                android:id="@+id/camera_preview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </FrameLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_weight="2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
-            <TextView
-                android:id="@+id/debug_view"
-                android:layout_weight="1"
-                android:scrollbars = "vertical"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/text_barcode_format"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:text="类型:"/>
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/text_barcode_format"
+                    android:id="@+id/barcode_format"></Spinner>
+            </RelativeLayout>
+            <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
             <TextView
-                android:id="@+id/info_view"
-                android:layout_weight="1"
-                android:scrollbars = "vertical"
+                android:id="@+id/text_file_name_created"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:text="生成文件名:"/>
+            <EditText
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/text_file_name_created"
+                android:layout_toLeftOf="@+id/button_file_name_created"
+                android:id="@+id/file_name_created"/>
+            <Button
+                android:id="@+id/button_file_name_created"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="打开文件"
+                android:onClick="openFile"
+                android:layout_alignParentRight="true"
+                />
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/text_file_path_input"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:text="图片/视频文件路径:"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/text_file_path_input"
+                    android:layout_toLeftOf="@+id/button_file_path_input"
+                    android:id="@+id/file_path_input"/>
+                <Button
+                    android:id="@+id/button_file_path_input"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="选择图片/视频文件"
+                    android:onClick="openFile"
+                    android:layout_alignParentRight="true"
+                    />
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/text_file_path_truth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:text="真实文件路径:"/>
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/text_file_path_truth"
+                    android:layout_toLeftOf="@+id/button_file_path_truth"
+                    android:id="@+id/file_path_truth"
+                    android:hint="（比特错误调试用）"/>
+                <Button
+                    android:id="@+id/button_file_path_truth"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="选择文件"
+                    android:onClick="openFile"
+                    android:layout_alignParentRight="true"
+                    />
+            </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="识别视频"
+                    android:onClick="processVideo"
+                    android:layout_weight="1"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="打开相机"
+                    android:onClick="processCamera"
+                    android:layout_weight="1"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="识别图片"
+                    android:onClick="processImg"
+                    android:layout_weight="1"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="停止"
+                    android:onClick="stop"
+                    android:layout_weight="1"/>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </FrameLayout>
     <LinearLayout
-        android:layout_weight="3"
+        android:layout_weight="2"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <Spinner
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/barcode_format"></Spinner>
-        <EditText
-            android:id="@+id/fileName"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/debug_view"
             android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="生成文件名"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="打开文件"
-            android:onClick="openFile"/>
-        <EditText
-            android:id="@+id/videoFilePath"
+            android:scrollbars = "vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:id="@+id/info_view"
             android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="视频文件路径"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="选择视频/图片文件"
-            android:onClick="getVideoFile"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_weight="3"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <EditText
-            android:id="@+id/truthFilePath"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="真实文件路径（比特错误调试）"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="选择文件"
-            android:onClick="getTruthFile"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="识别视频"
-            android:onClick="processVideo"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="识别实时图像"
-            android:onClick="processCamera"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="停止"
-            android:onClick="stop"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="识别图片"
-            android:onClick="processImg"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="测试"
-            android:onClick="test"/>
+            android:scrollbars = "vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
     </LinearLayout>
 </LinearLayout>
