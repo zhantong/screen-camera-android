@@ -67,8 +67,8 @@ public class MainActivity extends AppCompatActivity {
      * 一个线程将相机预览帧加入队列
      * 一个线程从队列中取出预览帧进行二维码识别
      *
-     * @param view 默认参数
      */
+    /*
     public void processCamera(View view) {
         CameraSettings.init();
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
         };
         worker.start();
     }
+    */
 
     public void adjustPreviewSize(LinearLayout parent){
         float cameraAspectRatio=(float)CameraSettings.previewWidth()/CameraSettings.previewHeight();
@@ -266,5 +267,26 @@ public class MainActivity extends AppCompatActivity {
             new AlertDialog.Builder(this).setTitle("错误").setItems(new String[]{"对不起，这不是文件！"}, null).setNegativeButton("确定", null).show();
         }
     }
+    public void test(View view){
+        CameraSettings.init();
+        final CameraPreviewFragment fragment=new CameraPreviewFragment();
+        getFragmentManager().beginTransaction().add(R.id.camera_preview, fragment).addToBackStack(null).commit();
+        getFragmentManager().executePendingTransactions();
+        final TextView debugView = (TextView) findViewById(R.id.debug_view);
+        final TextView infoView = (TextView) findViewById(R.id.info_view);
+        EditText editTextFileName = (EditText) findViewById(R.id.fileName);
+        final String newFileName = editTextFileName.getText().toString();
+        final Handler nHandler = new Handler();
 
+        EditText editTextTruthFilePath = (EditText) findViewById(R.id.truthFilePath);
+        final String truthFilePath = editTextTruthFilePath.getText().toString();
+        Thread worker = new Thread() {
+            @Override
+            public void run() {
+                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
+                cameraToFile.toFile(newFileName, fragment.mPreview);
+            }
+        };
+        worker.start();
+    }
 }

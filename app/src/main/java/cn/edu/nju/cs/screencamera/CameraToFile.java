@@ -1,5 +1,6 @@
 package cn.edu.nju.cs.screencamera;
 
+import android.hardware.Camera;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
@@ -20,10 +21,17 @@ public class CameraToFile extends StreamToFile {
     public void toFile(String fileName,CameraPreview mPreview){
         Log.i(TAG,"process camera");
         LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
-        int frameWidth=CameraSettings.previewWidth();
-        int frameHeight=CameraSettings.previewHeight();
+        Camera.Size previewSize=mPreview.getPreviewSize();
+        int frameWidth=previewSize.width;
+        int frameHeight=previewSize.height;
         this.mPreview=mPreview;
         mPreview.start(rev);
+        streamToFile(rev,frameWidth,frameHeight,fileName);
+    }
+    public void toFile(String fileName,CameraPreviewFragment fragment){
+        LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
+        int frameWidth=CameraSettings.previewWidth();
+        int frameHeight=CameraSettings.previewHeight();
         streamToFile(rev,frameWidth,frameHeight,fileName);
     }
     public int getImgColorType(){

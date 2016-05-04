@@ -21,38 +21,41 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Camera mCamera;
     private LinkedBlockingQueue<byte[]> frames;
     private boolean pause;
-    private ViewGroup cameraParentView;
 
-    public CameraPreview(Context context,ViewGroup cameraParentView) {
+    public CameraPreview(Context context) {
         super(context);
         pause=true;
         mHolder = getHolder();
         mHolder.addCallback(this);
-        this.cameraParentView = cameraParentView;
     }
     public void start(LinkedBlockingQueue<byte[]> frames){
         this.frames=frames;
         pause=false;
     }
-
-    /**
-     * surface创建时即获得相机,设置环境和相机参数.
-     * 相机参数由CameraSetting类提前设定好.
-     *
-     * @param holder SurfaceHolder
-     */
-    @Override
+    public Camera.Size getPreviewSize(){
+        return mCamera.getParameters().getPreviewSize();
+    }
     public void surfaceCreated(SurfaceHolder holder) {
-        mCamera = Camera.open();
+        getCameraInstance();
         mCamera.setPreviewCallback(this);
+        //mCamera.setParameters(CameraSettings.parameters);
         try {
             mCamera.setPreviewDisplay(holder);
+            mCamera.startPreview();
         } catch (IOException e) {
-            Log.d(TAG, "preview failed");
+            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
-        mCamera.setParameters(CameraSettings.parameters);
     }
-
+    public Camera getCameraInstance() {
+        if (mCamera == null) {
+            try {
+                mCamera = Camera.open();
+            } catch (Exception e) {
+                Log.d(TAG, "camera is not available");
+            }
+        }
+        return mCamera;
+    }
     /**
      * surface销毁时释放相机
      *
@@ -93,13 +96,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        Thread preview_thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mCamera.startPreview();
-            }
-        }, "preview_thread");
-        preview_thread.start();
     }
 
     /**
@@ -124,6 +120,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * 主动控制释放相机资源
      */
     public void stop() {
-        cameraParentView.removeView(this);
+        ((ViewGroup)getParent()).removeView(this);
     }
 }
