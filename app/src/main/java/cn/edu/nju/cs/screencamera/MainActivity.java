@@ -1,19 +1,17 @@
 package cn.edu.nju.cs.screencamera;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -26,9 +24,10 @@ import java.io.File;
  * UI主要操作
  * 也是控制二维码识别的主要入口
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity implements CameraPreviewFragment.OnStartListener{
     private CameraPreview mPreview;//相机
     private BarcodeFormat barcodeFormat;
+    CameraPreviewFragment fragment;
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
@@ -68,32 +67,6 @@ public class MainActivity extends AppCompatActivity {
      * 一个线程从队列中取出预览帧进行二维码识别
      *
      */
-    /*
-    public void processCamera(View view) {
-        CameraSettings.init();
-        final TextView debugView = (TextView) findViewById(R.id.debug_view);
-        final TextView infoView = (TextView) findViewById(R.id.info_view);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        mPreview = new CameraPreview(this, preview);
-        LinearLayout previewParent=(LinearLayout)findViewById(R.id.camera_preview_parent);
-        adjustPreviewSize(previewParent);
-        preview.addView(mPreview);
-        EditText editTextFileName = (EditText) findViewById(R.id.fileName);
-        final String newFileName = editTextFileName.getText().toString();
-        final Handler nHandler = new Handler();
-
-        EditText editTextTruthFilePath = (EditText) findViewById(R.id.truthFilePath);
-        final String truthFilePath = editTextTruthFilePath.getText().toString();
-        Thread worker = new Thread() {
-            @Override
-            public void run() {
-                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
-                cameraToFile.toFile(newFileName, mPreview);
-            }
-        };
-        worker.start();
-    }
-    */
 
     public void adjustPreviewSize(LinearLayout parent){
         float cameraAspectRatio=(float)CameraSettings.previewWidth()/CameraSettings.previewHeight();
@@ -267,17 +240,17 @@ public class MainActivity extends AppCompatActivity {
             new AlertDialog.Builder(this).setTitle("错误").setItems(new String[]{"对不起，这不是文件！"}, null).setNegativeButton("确定", null).show();
         }
     }
-    public void test(View view){
-        CameraSettings.init();
-        final CameraPreviewFragment fragment=new CameraPreviewFragment();
-        getFragmentManager().beginTransaction().add(R.id.camera_preview, fragment).addToBackStack(null).commit();
+    public void processCamera(View view){
+        fragment=new CameraPreviewFragment();
+        getFragmentManager().beginTransaction().replace(R.id.camera_preview, fragment).addToBackStack(null).commit();
         getFragmentManager().executePendingTransactions();
+    }
+    public void onStartReco(){
         final TextView debugView = (TextView) findViewById(R.id.debug_view);
         final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextFileName = (EditText) findViewById(R.id.fileName);
         final String newFileName = editTextFileName.getText().toString();
         final Handler nHandler = new Handler();
-
         EditText editTextTruthFilePath = (EditText) findViewById(R.id.truthFilePath);
         final String truthFilePath = editTextTruthFilePath.getText().toString();
         Thread worker = new Thread() {
