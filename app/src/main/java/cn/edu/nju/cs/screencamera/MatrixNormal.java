@@ -12,6 +12,16 @@ public class MatrixNormal extends Matrix {
     public HashMap<Integer,Integer>[] bars;
     protected boolean ordered=true;
     private RawContent rawContent;
+
+    private final int mBitsPerBlock=1;
+    private final int mFrameBlackLength=1;
+    private final int mFrameVaryLength=1;
+    private final int mFrameVaryTwoLength=1;
+    private final int mContentLength=80;
+    private final int mEcNum=80;
+    private final int mEcLength=10;
+
+
     enum Overlap{
         WHITE,
         BLACK,
@@ -20,23 +30,23 @@ public class MatrixNormal extends Matrix {
     }
     public MatrixNormal(){
         super();
-        super.bitsPerBlock=1;
-        super.frameBlackLength=1;
-        super.frameVaryLength=1;
-        super.frameVaryTwoLength=1;
-        super.contentLength=80;
-        super.ecNum=80;
-        super.ecLength=10;
+        super.bitsPerBlock=mBitsPerBlock;
+        super.frameBlackLength=mFrameBlackLength;
+        super.frameVaryLength=mFrameVaryLength;
+        super.frameVaryTwoLength=mFrameVaryTwoLength;
+        super.contentLength=mContentLength;
+        super.ecNum=mEcNum;
+        super.ecLength=mEcLength;
     }
     public MatrixNormal(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
-        super.bitsPerBlock=1;
-        super.frameBlackLength=1;
-        super.frameVaryLength=1;
-        super.frameVaryTwoLength=1;
-        super.contentLength=80;
-        super.ecNum=80;
-        super.ecLength=10;
+        super.bitsPerBlock=mBitsPerBlock;
+        super.frameBlackLength=mFrameBlackLength;
+        super.frameVaryLength=mFrameVaryLength;
+        super.frameVaryTwoLength=mFrameVaryTwoLength;
+        super.contentLength=mContentLength;
+        super.ecNum=mEcNum;
+        super.ecLength=mEcLength;
     }
     public void initGrayMatrix(){
         initGrayMatrix(getBarCodeWidth(),getBarCodeHeight());

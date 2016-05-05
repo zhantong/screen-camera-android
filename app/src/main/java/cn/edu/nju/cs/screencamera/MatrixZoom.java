@@ -9,25 +9,34 @@ import java.util.List;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixZoom extends Matrix{
+
+    private final int mBitsPerBlock=2;
+    private final int mFrameBlackLength=1;
+    private final int mFrameVaryLength=1;
+    private final int mFrameVaryTwoLength=1;
+    private final int mContentLength=40;
+    private final int mEcNum=40;
+    private final int mEcLength=10;
+
     public MatrixZoom(){
         super();
-        super.bitsPerBlock=2;
-        super.frameBlackLength=1;
-        super.frameVaryLength=1;
-        super.frameVaryTwoLength=1;
-        super.contentLength=40;
-        super.ecNum=40;
-        super.ecLength=10;
+        super.bitsPerBlock=mBitsPerBlock;
+        super.frameBlackLength=mFrameBlackLength;
+        super.frameVaryLength=mFrameVaryLength;
+        super.frameVaryTwoLength=mFrameVaryTwoLength;
+        super.contentLength=mContentLength;
+        super.ecNum=mEcNum;
+        super.ecLength=mEcLength;
     }
     public MatrixZoom(byte[] pixels,int imgColorType, int imgWidth, int imgHeight,int[] initBorder) throws NotFoundException {
         super(pixels,imgColorType,imgWidth,imgHeight,initBorder);
-        super.bitsPerBlock=2;
-        super.frameBlackLength=1;
-        super.frameVaryLength=1;
-        super.frameVaryTwoLength=1;
-        super.contentLength=40;
-        super.ecNum=40;
-        super.ecLength=10;
+        super.bitsPerBlock=mBitsPerBlock;
+        super.frameBlackLength=mFrameBlackLength;
+        super.frameVaryLength=mFrameVaryLength;
+        super.frameVaryTwoLength=mFrameVaryTwoLength;
+        super.contentLength=mContentLength;
+        super.ecNum=mEcNum;
+        super.ecLength=mEcLength;
     }
     public void initGrayMatrix(){
         initGrayMatrix(getBarCodeWidth(),getBarCodeHeight());
