@@ -39,6 +39,8 @@ public class StreamToFile extends MediaToFile {
     public void crcCheckFailed(){}
     public void beforeDataDecoded(){}
     protected void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName) {
+        long processStartTime=System.currentTimeMillis();
+        long processEndTime=0;
         ArrayDataDecoder dataDecoder=null;
         SourceBlockDecoder lastSourceBlock=null;
         int fileByteNum=-1;
@@ -117,6 +119,7 @@ public class StreamToFile extends MediaToFile {
                 EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
                 Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if((lastSourceBlock.missingSourceSymbols().size()-lastSourceBlock.availableRepairSymbols().size()==1)&&((encodingPacket.symbolType()== SymbolType.SOURCE&&!lastSourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))||(encodingPacket.symbolType()== SymbolType.REPAIR&&!lastSourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())))){
+                    processEndTime=System.currentTimeMillis();
                     beforeDataDecoded();
                     imgs.clear();
                 }
@@ -143,5 +146,7 @@ public class StreamToFile extends MediaToFile {
             Log.d(TAG, "file SHA-1 verification: " + sha1);
             bytesToFile(out, fileName);
         }
+        bitErrorCount.logAverageBitError();
+        Log.d(TAG,"totally takes "+(processEndTime-processStartTime)+"ms");
     }
 }

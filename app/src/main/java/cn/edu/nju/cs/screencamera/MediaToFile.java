@@ -35,6 +35,7 @@ public class MediaToFile{
     protected CRC8 crcCheck;
     private boolean debugCheck=false;
     private FileToBitSet truthBitSet;
+    protected BitErrorCount bitErrorCount;
     /**
      * 构造函数,获取必须的参数
      *
@@ -47,6 +48,7 @@ public class MediaToFile{
         this.infoView = infoView;
         this.handler = handler;
         crcCheck=new CRC8();
+        bitErrorCount=new BitErrorCount();
     }
     public void setDebug(Matrix matrix,String filePath){
         debugCheck=true;
@@ -154,7 +156,9 @@ public class MediaToFile{
             }else {
                 BitSet clone = (BitSet) con.clone();
                 clone.xor(truth);
-                Log.d(TAG, "esi " + esi + " has " + clone.cardinality() + " bit errors");
+                int bitError=clone.cardinality();
+                Log.d(TAG, "esi " + esi + " has " + bitError + " bit errors");
+                bitErrorCount.put(esi,bitError);
                 if (clone.cardinality() != 0) {
                     //printContentBitSet(clone,matrix.bitsPerBlock,matrix.contentLength,matrix,truth,con);
                 }
