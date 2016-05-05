@@ -20,6 +20,8 @@ public class BitErrorCount {
             if(old>bitError){
                 map.put(esi,bitError);
             }
+        }else{
+            map.put(esi,bitError);
         }
     }
     public double averageBitError(){
