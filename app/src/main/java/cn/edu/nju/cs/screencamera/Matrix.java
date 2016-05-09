@@ -63,7 +63,7 @@ public class Matrix{
         return Math.toDegrees(1.0*(borders[1]-borders[3])/(borders[2]-borders[0]));
     }
     public int[] genInitBorder(){
-        int init = 20;
+        int init = 60;
         int left = imgWidth / 2 - init;
         int right = imgWidth / 2 + init;
         int up = imgHeight / 2 - init;

@@ -66,6 +66,7 @@ public class SingleImgToFile extends MediaToFile {
             matrix.perspectiveTransform();
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
+            return;
         }
         for(int i=1;i<3;i++) {
             if(i==2){
