@@ -16,6 +16,8 @@ public class MatrixFactory {
             case ZOOMVARY:
                 matrix=new MatrixZoomVary(pixels,imgColorType,imgWidth,imgHeight,initBorder);
                 break;
+            case ZOOMVARYALT:
+                matrix=new MatrixZoomVaryAlt(pixels,imgColorType,imgWidth,imgHeight,initBorder);
         }
         return matrix;
     }
@@ -30,6 +32,9 @@ public class MatrixFactory {
                 break;
             case ZOOMVARY:
                 matrix=new MatrixZoomVary();
+                break;
+            case ZOOMVARYALT:
+                matrix=new MatrixZoomVaryAlt();
                 break;
         }
         return matrix;
