@@ -178,8 +178,6 @@ public class MatrixZoomVaryAlt extends Matrix {
         int minIndex=-1;
         int max=-1;
         int min=256;
-        int countGreat=0;
-        int mean=mean(samples,1,4);
         for(int i=1;i<5;i++){
             int current=samples[i];
             if(current>max){
@@ -190,11 +188,16 @@ public class MatrixZoomVaryAlt extends Matrix {
                 minIndex=i;
                 min=current;
             }
-            if(current>mean){
-                countGreat++;
+        }
+        int minDis=0;
+        int maxDis=0;
+        for(int i=1;i<5;i++){
+            if((i!=minIndex)&&(i!=maxIndex)){
+                minDis+=(samples[i]-min)*(samples[i]-min);
+                maxDis+=(samples[i]-max)*(samples[i]-max);
             }
         }
-        if(countGreat==1){
+        if(minDis<maxDis){
             index=maxIndex;
         }else{
             index=minIndex;
