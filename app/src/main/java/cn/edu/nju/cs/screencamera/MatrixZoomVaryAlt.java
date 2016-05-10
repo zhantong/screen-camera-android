@@ -21,6 +21,7 @@ public class MatrixZoomVaryAlt extends Matrix {
     private int grayThreshold=6;
 
     private boolean overlapCon=false;
+    private boolean isWhiteBackground;
 
     enum Overlap{
         UP,
@@ -107,6 +108,11 @@ public class MatrixZoomVaryAlt extends Matrix {
         int checkPointTwo=grayMatrix.get(2,contentLength);
         System.out.println("white:"+white+"\tblack:"+black+"\tone:"+checkPointOne+"\ttwo:"+checkPointTwo);
         if(((checkPointOne>white-grayThreshold)&&(checkPointTwo>white-grayThreshold))||((checkPointOne<black+grayThreshold)&&(checkPointTwo<black+grayThreshold))){
+            if(checkPointOne>(white+black)/2){
+                isWhiteBackground=true;
+            }else{
+                isWhiteBackground=false;
+            }
             return false;
         }
 
@@ -189,18 +195,18 @@ public class MatrixZoomVaryAlt extends Matrix {
                 min=current;
             }
         }
-        int minDis=0;
-        int maxDis=0;
-        for(int i=1;i<5;i++){
-            if((i!=minIndex)&&(i!=maxIndex)){
-                minDis+=(samples[i]-min)*(samples[i]-min);
-                maxDis+=(samples[i]-max)*(samples[i]-max);
+        if((x+y)%2==0){
+            if(isWhiteBackground){
+                index=minIndex;
+            }else{
+                index=maxIndex;
             }
-        }
-        if(minDis<maxDis){
-            index=maxIndex;
         }else{
-            index=minIndex;
+            if(isWhiteBackground){
+                index=maxIndex;
+            }else{
+                index=minIndex;
+            }
         }
         switch (index){
             case 1:
