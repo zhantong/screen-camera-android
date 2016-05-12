@@ -17,15 +17,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class VideoToFile extends StreamToFile {
     private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
-    private VideoToFrames videoToFrames;
+    private New videoToFrames;
     public VideoToFile(TextView debugView, TextView infoView, Handler handler, BarcodeFormat format,String truthFilePath) {
         super(debugView, infoView, handler,format,truthFilePath);
     }
     public int getImgColorType(){
-        return 0;
+        return 1;
     }
     public void beforeDataDecoded(){
-        videoToFrames.stopExtract();
+        //videoToFrames.stopExtract();
     }
     public void toFile(String fileName,final String videoFilePath){
         Log.i(TAG,"process video file");
@@ -33,12 +33,20 @@ public class VideoToFile extends StreamToFile {
         int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
         int frameWidth=widthAndHeight[0];
         int frameHeight=widthAndHeight[1];
-        videoToFrames = new VideoToFrames();
-        try {
-            videoToFrames.doExtract(videoFilePath,frameQueue);
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
+        Thread worker=new Thread(){
+            @Override
+            public void run() {
+                videoToFrames = new New(frameQueue);
+                try {
+                    videoToFrames.videoDecode(videoFilePath);
+                    //videoToFrames.doExtract(videoFilePath,frameQueue);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        worker.start();
+
         /*
         try {
             videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captureFrames");
