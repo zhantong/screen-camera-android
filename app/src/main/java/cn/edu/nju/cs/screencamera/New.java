@@ -2,6 +2,7 @@ package cn.edu.nju.cs.screencamera;
 
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.media.Image;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
@@ -19,31 +20,45 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Created by zhantong on 16/5/12.
  */
 public class New {
-    private static final String TAG="VideoToFrames";
-    private static final boolean VERBOSE=true;
+    private static final String TAG = "VideoToFrames";
+    private static final boolean VERBOSE = true;
     private static final long DEFAULT_TIMEOUT_US = 10000;
-    private LinkedBlockingQueue<byte[]> mQueue;
 
-    private boolean saveFrames=false;
+    private static final int COLOR_FormatI420 = 1;
+    private static final int COLOR_FormatNV21 = 2;
+
+    public static final int FILE_TypeI420 = 1;
+    public static final int FILE_TypeNV21 = 2;
+    public static final int FILE_TypeJPEG = 3;
+
+    private final int decodeColorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
+
+    private LinkedBlockingQueue<byte[]> mQueue;
+    private int outputImageFileType = -1;
     private String OUTPUT_DIR;
 
 
-    public New(LinkedBlockingQueue<byte[]> queue){
-        mQueue=queue;
+    public New(LinkedBlockingQueue<byte[]> queue) {
+        mQueue = queue;
     }
-    public void setSaveFrames(String dir) throws IOException{
-        File theDir=new File(dir);
-        if(!theDir.exists()){
+
+    public void setSaveFrames(String dir, int fileType) throws IOException {
+        if (fileType != FILE_TypeI420 && fileType != FILE_TypeNV21 && fileType != FILE_TypeJPEG) {
+            throw new IllegalArgumentException("only support FILE_TypeI420 " + "and FILE_TypeNV21 " + "and FILE_TypeJPEG");
+        }
+        outputImageFileType = fileType;
+        File theDir = new File(dir);
+        if (!theDir.exists()) {
             theDir.mkdirs();
-        } else if(!theDir.isDirectory()){
+        } else if (!theDir.isDirectory()) {
             throw new IOException("Not a directory");
         }
-        OUTPUT_DIR=theDir.getAbsolutePath()+"/";
-        saveFrames=true;
+        OUTPUT_DIR = theDir.getAbsolutePath() + "/";
     }
-    public void videoDecode(String videoFilePath) throws IOException{
-        MediaExtractor extractor=null;
-        MediaCodec decoder=null;
+
+    public void videoDecode(String videoFilePath) throws IOException {
+        MediaExtractor extractor = null;
+        MediaCodec decoder = null;
         try {
             File videoFile = new File(videoFilePath);
             extractor = new MediaExtractor();
@@ -56,15 +71,15 @@ public class New {
             MediaFormat mediaFormat = extractor.getTrackFormat(trackIndex);
             String mime = mediaFormat.getString(MediaFormat.KEY_MIME);
             decoder = MediaCodec.createDecoderByType(mime);
-            if(isFlexibleFormatSupported(decoder.getCodecInfo().getCapabilitiesForType(mime))){
-                mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
-                Log.i(TAG,"set decode color format to COLOR_FormatYUV420Flexible");
-            }else{
-                Log.i(TAG,"unable to set decode color format to COLOR_FormatYUV420Flexible, codec not supported");
+            if (isColorFormatSupported(decodeColorFormat, decoder.getCodecInfo().getCapabilitiesForType(mime))) {
+                mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, decodeColorFormat);
+                Log.i(TAG, "set decode color format to type " + decodeColorFormat);
+            } else {
+                Log.i(TAG, "unable to set decode color format, color format type " + decodeColorFormat + " not supported");
             }
-            decodeFramesToImage(decoder,extractor,mediaFormat);
+            decodeFramesToImage(decoder, extractor, mediaFormat);
             decoder.stop();
-        }finally {
+        } finally {
             if (decoder != null) {
                 decoder.stop();
                 decoder.release();
@@ -76,29 +91,41 @@ public class New {
             }
         }
     }
-    private boolean isFlexibleFormatSupported(MediaCodecInfo.CodecCapabilities caps){
-        for(int c:caps.colorFormats){
-            if(c== MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible){
+
+    private void showSupportedColorFormat(MediaCodecInfo.CodecCapabilities caps) {
+        System.out.println("supported color format: ");
+        for (int c : caps.colorFormats) {
+            System.out.print(c + "\t");
+        }
+        System.out.println();
+    }
+
+    private boolean isColorFormatSupported(int colorFormat, MediaCodecInfo.CodecCapabilities caps) {
+        for (int c : caps.colorFormats) {
+            if (c == colorFormat) {
                 return true;
             }
         }
         return false;
     }
-    private void decodeFramesToImage(MediaCodec decoder,MediaExtractor extractor,MediaFormat mediaFormat){
+
+    private void decodeFramesToImage(MediaCodec decoder, MediaExtractor extractor, MediaFormat mediaFormat) {
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-        boolean sawInputEOS=false;
-        boolean sawOutputEOS=false;
-        decoder.configure(mediaFormat,null,null,0);
+        boolean sawInputEOS = false;
+        boolean sawOutputEOS = false;
+        decoder.configure(mediaFormat, null, null, 0);
         decoder.start();
+        final int width = mediaFormat.getInteger(MediaFormat.KEY_WIDTH);
+        final int height = mediaFormat.getInteger(MediaFormat.KEY_HEIGHT);
         int outputFrameCount = 0;
-        while (!sawOutputEOS){
-            if(!sawInputEOS) {
+        while (!sawOutputEOS) {
+            if (!sawInputEOS) {
                 int inputBufferId = decoder.dequeueInputBuffer(DEFAULT_TIMEOUT_US);
                 if (inputBufferId >= 0) {
                     ByteBuffer inputBuffer = decoder.getInputBuffer(inputBufferId);
                     int sampleSize = extractor.readSampleData(inputBuffer, 0);
                     if (sampleSize < 0) {
-                        decoder.queueInputBuffer(inputBufferId, 0, 0, 0l, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                        decoder.queueInputBuffer(inputBufferId, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
                         sawInputEOS = true;
                     } else {
                         long presentationTimeUs = extractor.getSampleTime();
@@ -107,16 +134,16 @@ public class New {
                     }
                 }
             }
-            int outputBufferId=decoder.dequeueOutputBuffer(info,DEFAULT_TIMEOUT_US);
-            if(outputBufferId>=0){
-                if((info.flags&MediaCodec.BUFFER_FLAG_END_OF_STREAM)!=0){
-                    sawOutputEOS=true;
+            int outputBufferId = decoder.dequeueOutputBuffer(info, DEFAULT_TIMEOUT_US);
+            if (outputBufferId >= 0) {
+                if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
+                    sawOutputEOS = true;
                 }
                 boolean doRender = (info.size != 0);
-                if(doRender){
+                if (doRender) {
                     outputFrameCount++;
-                    Image image=decoder.getOutputImage(outputBufferId);
-                    System.out.println(image.getFormat());
+                    Image image = decoder.getOutputImage(outputBufferId);
+                    System.out.println("image format: " + image.getFormat());
                     /*
                     ByteBuffer buffer=image.getPlanes()[0].getBuffer();
                     byte[] arr=new byte[buffer.remaining()];
@@ -129,17 +156,30 @@ public class New {
                         }
                     }
                     */
-                    if(saveFrames){
-                        String fileName=OUTPUT_DIR+String.format("frame-%05d.yuv", outputFrameCount);
-                        dumpFile(fileName,getDataFromImage(image));
+                    if (outputImageFileType != -1) {
+                        String fileName;
+                        switch (outputImageFileType) {
+                            case FILE_TypeI420:
+                                fileName = OUTPUT_DIR + String.format("frame_%05d_I420_%dx%d.yuv", outputFrameCount, width, height);
+                                dumpFile(fileName, getDataFromImage(image, COLOR_FormatI420));
+                                break;
+                            case FILE_TypeNV21:
+                                fileName = OUTPUT_DIR + String.format("frame_%05d_NV21_%dx%d.yuv", outputFrameCount, width, height);
+                                dumpFile(fileName, getDataFromImage(image, COLOR_FormatNV21));
+                                break;
+                            case FILE_TypeJPEG:
+                                fileName = OUTPUT_DIR + String.format("frame_%05d.jpg", outputFrameCount);
+                                compressToJpeg(fileName, image);
+                                break;
+                        }
                     }
                     image.close();
                     decoder.releaseOutputBuffer(outputBufferId, true);
                 }
             }
         }
-
     }
+
     private static int selectTrack(MediaExtractor extractor) {
         int numTracks = extractor.getTrackCount();
         for (int i = 0; i < numTracks; i++) {
@@ -152,9 +192,9 @@ public class New {
                 return i;
             }
         }
-
         return -1;
     }
+
     private static boolean isImageFormatSupported(Image image) {
         int format = image.getFormat();
         switch (format) {
@@ -165,86 +205,77 @@ public class New {
         }
         return false;
     }
-    /*
-    private static byte[] getDataFromImage(Image image) {
-        if(!isImageFormatSupported(image)){
-            throw new RuntimeException("can't convert Image to byte array, format "+image.getFormat());
-        }
-        int width= image.getWidth();
-        int height=image.getHeight();
-        byte[] raw=new byte[0];
-        int offset=0;
-        for(int pos=0;pos<2;pos++){
-            ByteBuffer buffer=image.getPlanes()[pos].getBuffer();
-            byte[] arr=new byte[buffer.remaining()];
-            buffer.get(arr);
-            for(int i=0;i<20;i++){
-                System.out.print(arr[i]);
-            }
-            System.out.println();
-            System.out.println("array length:"+arr.length);
-            byte[] newRaw=new byte[raw.length+arr.length];
-            System.arraycopy(raw,0,newRaw,0,raw.length);
-            System.arraycopy(arr,0,newRaw,raw.length,arr.length);
-            raw=newRaw;
-        }
-        return raw;
-    }
-    */
 
-    private static byte[] getDataFromImage(Image image) {
-        if(!isImageFormatSupported(image)){
-            throw new RuntimeException("can't convert Image to byte array, format "+image.getFormat());
+    private static byte[] getDataFromImage(Image image, int colorFormat) {
+        if (colorFormat != COLOR_FormatI420 && colorFormat != COLOR_FormatNV21) {
+            throw new IllegalArgumentException("only support COLOR_FormatI420 " + "and COLOR_FormatNV21");
+        }
+        if (!isImageFormatSupported(image)) {
+            throw new RuntimeException("can't convert Image to byte array, format " + image.getFormat());
         }
         Rect crop = image.getCropRect();
         int format = image.getFormat();
         int width = crop.width();
         int height = crop.height();
-        int rowStride, pixelStride;
-        byte[] data = null;
-        // Read image data
         Image.Plane[] planes = image.getPlanes();
-        // Check image validity
-        ByteBuffer buffer = null;
-        int offset = 0;
-        data = new byte[width * height * ImageFormat.getBitsPerPixel(format) / 8];
+        byte[] data = new byte[width * height * ImageFormat.getBitsPerPixel(format) / 8];
         byte[] rowData = new byte[planes[0].getRowStride()];
-        if(VERBOSE) Log.v(TAG, "get data from " + planes.length + " planes");
+        if (VERBOSE) Log.v(TAG, "get data from " + planes.length + " planes");
+        int channelOffset = 0;
+        int outputStride = 1;
         for (int i = 0; i < planes.length; i++) {
-            int shift = (i == 0) ? 0 : 1;
-            buffer = planes[i].getBuffer();
-            System.out.println("position:"+buffer.position()+"\tlimit:"+buffer.limit()+"\tcapacity:"+buffer.capacity());
-            rowStride = planes[i].getRowStride();
-            pixelStride = planes[i].getPixelStride();
+            switch (i) {
+                case 0:
+                    channelOffset = 0;
+                    outputStride = 1;
+                    break;
+                case 1:
+                    if (colorFormat == COLOR_FormatI420) {
+                        channelOffset = width * height;
+                        outputStride = 1;
+                    } else if (colorFormat == COLOR_FormatNV21) {
+                        channelOffset = width * height + 1;
+                        outputStride = 2;
+                    }
+                    break;
+                case 2:
+                    if (colorFormat == COLOR_FormatI420) {
+                        channelOffset = (int) (width * height * 1.25);
+                        outputStride = 1;
+                    } else if (colorFormat == COLOR_FormatNV21) {
+                        channelOffset = width * height;
+                        outputStride = 2;
+                    }
+                    break;
+            }
+            ByteBuffer buffer = planes[i].getBuffer();
+            int rowStride = planes[i].getRowStride();
+            int pixelStride = planes[i].getPixelStride();
             if (VERBOSE) {
                 Log.v(TAG, "pixelStride " + pixelStride);
                 Log.v(TAG, "rowStride " + rowStride);
                 Log.v(TAG, "width " + width);
                 Log.v(TAG, "height " + height);
+                Log.v(TAG, "buffer size " + buffer.remaining());
             }
-            // For multi-planar yuv images, assuming yuv420 with 2x2 chroma subsampling.
-            int w = crop.width() >> shift;
-            int h = crop.height() >> shift;
+            int shift = (i == 0) ? 0 : 1;
+            int w = width >> shift;
+            int h = height >> shift;
             buffer.position(rowStride * (crop.top >> shift) + pixelStride * (crop.left >> shift));
             for (int row = 0; row < h; row++) {
-                int bytesPerPixel = ImageFormat.getBitsPerPixel(format) / 8;
                 int length;
-                if (pixelStride == bytesPerPixel) {
-                    // Special case: optimized read of the entire row
-                    length = w * bytesPerPixel;
-                    buffer.get(data, offset, length);
-                    offset += length;
+                if (pixelStride == 1 && outputStride == 1) {
+                    length = w;
+                    buffer.get(data, channelOffset, length);
+                    channelOffset += length;
                 } else {
-                    // Generic case: should work for any pixelStride but slower.
-                    // Use intermediate buffer to avoid read byte-by-byte from
-                    // DirectByteBuffer, which is very bad for performance
-                    length = (w - 1) * pixelStride + bytesPerPixel;
+                    length = (w - 1) * pixelStride + 1;
                     buffer.get(rowData, 0, length);
                     for (int col = 0; col < w; col++) {
-                        data[offset++] = rowData[col * pixelStride];
+                        data[channelOffset] = rowData[col * pixelStride];
+                        channelOffset += outputStride;
                     }
                 }
-                // Advance buffer the remainder of the row stride
                 if (row < h - 1) {
                     buffer.position(buffer.position() + rowStride - length);
                 }
@@ -267,5 +298,17 @@ public class New {
         } catch (IOException ioe) {
             throw new RuntimeException("failed writing data to file " + fileName, ioe);
         }
+    }
+
+    private void compressToJpeg(String fileName, Image image) {
+        FileOutputStream outStream;
+        try {
+            outStream = new FileOutputStream(fileName);
+        } catch (IOException ioe) {
+            throw new RuntimeException("Unable to create output file " + fileName, ioe);
+        }
+        Rect rect = image.getCropRect();
+        YuvImage yuvImage = new YuvImage(getDataFromImage(image, COLOR_FormatNV21), ImageFormat.NV21, rect.width(), rect.height(), null);
+        yuvImage.compressToJpeg(rect, 100, outStream);
     }
 }
