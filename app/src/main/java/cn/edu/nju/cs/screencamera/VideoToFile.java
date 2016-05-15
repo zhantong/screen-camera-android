@@ -38,6 +38,7 @@ public class VideoToFile extends StreamToFile {
             public void run() {
                 videoToFrames = new New(frameQueue);
                 try {
+                    videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captureFrames",New.FILE_TypeJPEG);
                     videoToFrames.videoDecode(videoFilePath);
                     //videoToFrames.doExtract(videoFilePath,frameQueue);
                 } catch (Throwable e) {
@@ -47,13 +48,6 @@ public class VideoToFile extends StreamToFile {
         };
         worker.start();
 
-        /*
-        try {
-            videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captureFrames");
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        */
         streamToFile(frameQueue, frameWidth, frameHeight, fileName);
     }
     private int[] frameWidthAndHeight(String videoFilePath){
