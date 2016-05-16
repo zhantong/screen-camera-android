@@ -71,6 +71,7 @@ public class New {
             MediaFormat mediaFormat = extractor.getTrackFormat(trackIndex);
             String mime = mediaFormat.getString(MediaFormat.KEY_MIME);
             decoder = MediaCodec.createDecoderByType(mime);
+            showSupportedColorFormat(decoder.getCodecInfo().getCapabilitiesForType(mime));
             if (isColorFormatSupported(decodeColorFormat, decoder.getCodecInfo().getCapabilitiesForType(mime))) {
                 mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, decodeColorFormat);
                 Log.i(TAG, "set decode color format to type " + decodeColorFormat);
@@ -93,7 +94,7 @@ public class New {
     }
 
     private void showSupportedColorFormat(MediaCodecInfo.CodecCapabilities caps) {
-        System.out.println("supported color format: ");
+        System.out.print("supported color format: ");
         for (int c : caps.colorFormats) {
             System.out.print(c + "\t");
         }
@@ -154,6 +155,17 @@ public class New {
                         }catch (InterruptedException e){
                             e.printStackTrace();
                         }
+                    }
+                    */
+                    /*
+                    for(Image.Plane plane:image.getPlanes()){
+                        ByteBuffer buffer=plane.getBuffer();
+                        byte[] arr=new byte[buffer.remaining()];
+                        buffer.get(arr);
+                        for(int i=20000;i<20020;i++){
+                            System.out.print(arr[i]+" ");
+                        }
+                        System.out.println();
                     }
                     */
                     if (outputImageFileType != -1) {
