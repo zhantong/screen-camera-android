@@ -2,13 +2,11 @@ package cn.edu.nju.cs.screencamera;
 
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
-import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.TextView;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -17,7 +15,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class VideoToFile extends StreamToFile {
     private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
-    private New videoToFrames;
+    private VideoToFrames videoToFrames;
     public VideoToFile(TextView debugView, TextView infoView, Handler handler, BarcodeFormat format,String truthFilePath) {
         super(debugView, infoView, handler,format,truthFilePath);
     }
@@ -36,11 +34,11 @@ public class VideoToFile extends StreamToFile {
         Thread worker=new Thread(){
             @Override
             public void run() {
-                videoToFrames = new New(frameQueue);
+                videoToFrames = new VideoToFrames();
                 try {
-                    videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captureFrames",New.FILE_TypeJPEG);
+                    videoToFrames.setEnqueue(frameQueue);
+                    //videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captureFrames",VideoToFrames.FILE_TypeJPEG);
                     videoToFrames.videoDecode(videoFilePath);
-                    //videoToFrames.doExtract(videoFilePath,frameQueue);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
