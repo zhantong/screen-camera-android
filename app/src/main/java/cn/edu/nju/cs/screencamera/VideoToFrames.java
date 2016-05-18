@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by zhantong on 16/5/12.
  */
-public class VideoToFrames {
+public class VideoToFrames implements Runnable{
     private static final String TAG = "VideoToFrames";
     private static final boolean VERBOSE = false;
     private static final long DEFAULT_TIMEOUT_US = 10000;
@@ -36,6 +36,10 @@ public class VideoToFrames {
     private LinkedBlockingQueue<byte[]> mQueue;
     private int outputImageFileType = -1;
     private String OUTPUT_DIR;
+
+    private String videoFilePath;
+    private Throwable throwable;
+    private Thread childThread;
 
 
     public void setEnqueue(LinkedBlockingQueue<byte[]> queue) {
@@ -55,8 +59,24 @@ public class VideoToFrames {
         }
         OUTPUT_DIR = theDir.getAbsolutePath() + "/";
     }
-
-    public void videoDecode(String videoFilePath) throws IOException {
+    public void decode(String videoFilePath) throws Throwable{
+        this.videoFilePath=videoFilePath;
+        if(childThread==null){
+            childThread=new Thread(this,"decode");
+            childThread.start();
+            if(throwable!=null){
+                throw throwable;
+            }
+        }
+    }
+    public void run(){
+        try {
+            videoDecode(videoFilePath);
+        }catch (Throwable t){
+            throwable=t;
+        }
+    }
+    private void videoDecode(String videoFilePath) throws IOException {
         MediaExtractor extractor = null;
         MediaCodec decoder = null;
         try {

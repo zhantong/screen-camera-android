@@ -31,20 +31,13 @@ public class VideoToFile extends StreamToFile {
         int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
         int frameWidth=widthAndHeight[0];
         int frameHeight=widthAndHeight[1];
-        Thread worker=new Thread(){
-            @Override
-            public void run() {
-                videoToFrames = new VideoToFrames();
-                try {
-                    videoToFrames.setEnqueue(frameQueue);
-                    //videoToFrames.setSaveFrames(Environment.getExternalStorageDirectory() + "/captureFrames",VideoToFrames.FILE_TypeJPEG);
-                    videoToFrames.videoDecode(videoFilePath);
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        worker.start();
+        videoToFrames = new VideoToFrames();
+        videoToFrames.setEnqueue(frameQueue);
+        try {
+            videoToFrames.decode(videoFilePath);
+        }catch (Throwable t){
+            t.printStackTrace();
+        }
 
         streamToFile(frameQueue, frameWidth, frameHeight, fileName);
     }
