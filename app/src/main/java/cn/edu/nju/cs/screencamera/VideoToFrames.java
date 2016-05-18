@@ -39,7 +39,15 @@ public class VideoToFrames implements Runnable {
     private Throwable throwable;
     private Thread childThread;
 
+    private Callback callback;
 
+    public interface Callback{
+        void onFinishDecode();
+        void onDecodeFrame(int index);
+    }
+    public void setCallback(Callback callback){
+        this.callback=callback;
+    }
     public void setEnqueue(LinkedBlockingQueue<byte[]> queue) {
         mQueue = queue;
     }
@@ -165,6 +173,9 @@ public class VideoToFrames implements Runnable {
                 boolean doRender = (info.size != 0);
                 if (doRender) {
                     outputFrameCount++;
+                    if(callback!=null){
+                        callback.onDecodeFrame(outputFrameCount);
+                    }
                     Image image = decoder.getOutputImage(outputBufferId);
                     //System.out.println("image format: " + image.getFormat());
 
@@ -200,6 +211,9 @@ public class VideoToFrames implements Runnable {
                     decoder.releaseOutputBuffer(outputBufferId, true);
                 }
             }
+        }
+        if(callback!=null) {
+            callback.onFinishDecode();
         }
     }
 

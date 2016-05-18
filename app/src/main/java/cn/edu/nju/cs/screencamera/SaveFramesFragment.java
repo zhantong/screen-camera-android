@@ -5,6 +5,8 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,16 +15,25 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import cn.edu.nju.cs.screencamera.FileExplorer.FileChooser;
 
 /**
  * Created by zhantong on 16/5/18.
  */
-public class SaveFramesFragment extends Fragment{
+public class SaveFramesFragment extends Fragment implements VideoToFrames.Callback{
     private static final int REQUEST_CODE_GET_FILE_PATH=1;
     private View thisView;
     private OutputImageFormat outputImageFormat;
+    private SaveFramesFragment self=this;
+
+    final Handler handler=new Handler(){
+      public void handleMessage(Message msg){
+          String str=(String)msg.obj;
+          updateInfo(str);
+      }
+    };
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         thisView = inflater.inflate(R.layout.fragment_save_frames, container, false);
@@ -44,11 +55,11 @@ public class SaveFramesFragment extends Fragment{
                 EditText editTextInputFilePath=(EditText)thisView.findViewById(R.id.file_path_input);
                 String inputFilePath= editTextInputFilePath.getText().toString();
                 VideoToFrames videoToFrames = new VideoToFrames();
+                videoToFrames.setCallback(self);
                 try {
                     videoToFrames.setSaveFrames(outputDir, outputImageFormat);
-                    buttonStart.setClickable(false);
-                    videoToFrames.videoDecode(inputFilePath);
-                    buttonStart.setClickable(true);
+                    updateInfo("运行中...");
+                    videoToFrames.decode(inputFilePath);
                 }catch (Throwable t){
                     t.printStackTrace();
                 }
@@ -82,5 +93,19 @@ public class SaveFramesFragment extends Fragment{
                 editText.setText(path);
             }
         }
+    }
+    private void updateInfo(String info){
+        TextView textView = (TextView) thisView.findViewById(R.id.info);
+        textView.setText(info);
+    }
+    public void onDecodeFrame(int index){
+        Message msg=handler.obtainMessage();
+        msg.obj="运行中...第"+index+"帧";
+        handler.sendMessage(msg);
+    }
+    public void onFinishDecode(){
+        Message msg=handler.obtainMessage();
+        msg.obj="完成！";
+        handler.sendMessage(msg);
     }
 }

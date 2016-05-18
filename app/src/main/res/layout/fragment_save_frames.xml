@@ -69,4 +69,8 @@
             android:id="@+id/button_start"
             android:layout_weight="1"/>
     </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/info"/>
 </LinearLayout>
