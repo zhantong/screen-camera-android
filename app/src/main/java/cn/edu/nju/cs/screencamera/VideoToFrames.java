@@ -27,14 +27,11 @@ public class VideoToFrames implements Runnable {
     private static final int COLOR_FormatI420 = 1;
     private static final int COLOR_FormatNV21 = 2;
 
-    public static final int FILE_TypeI420 = 1;
-    public static final int FILE_TypeNV21 = 2;
-    public static final int FILE_TypeJPEG = 3;
 
     private final int decodeColorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
 
     private LinkedBlockingQueue<byte[]> mQueue;
-    private int outputImageFileType = -1;
+    private OutputImageFormat outputImageFormat;
     private String OUTPUT_DIR;
     private boolean stopDecode = false;
 
@@ -47,11 +44,8 @@ public class VideoToFrames implements Runnable {
         mQueue = queue;
     }
 
-    public void setSaveFrames(String dir, int fileType) throws IOException {
-        if (fileType != FILE_TypeI420 && fileType != FILE_TypeNV21 && fileType != FILE_TypeJPEG) {
-            throw new IllegalArgumentException("only support FILE_TypeI420 " + "and FILE_TypeNV21 " + "and FILE_TypeJPEG");
-        }
-        outputImageFileType = fileType;
+    public void setSaveFrames(String dir, OutputImageFormat imageFormat) throws IOException {
+        outputImageFormat = imageFormat;
         File theDir = new File(dir);
         if (!theDir.exists()) {
             theDir.mkdirs();
@@ -84,7 +78,7 @@ public class VideoToFrames implements Runnable {
         }
     }
 
-    private void videoDecode(String videoFilePath) throws IOException {
+    public void videoDecode(String videoFilePath) throws IOException {
         MediaExtractor extractor = null;
         MediaCodec decoder = null;
         try {
@@ -185,18 +179,18 @@ public class VideoToFrames implements Runnable {
                         }
                     }
 
-                    if (outputImageFileType != -1) {
+                    if (outputImageFormat != null) {
                         String fileName;
-                        switch (outputImageFileType) {
-                            case FILE_TypeI420:
+                        switch (outputImageFormat) {
+                            case I420:
                                 fileName = OUTPUT_DIR + String.format("frame_%05d_I420_%dx%d.yuv", outputFrameCount, width, height);
                                 dumpFile(fileName, getDataFromImage(image, COLOR_FormatI420));
                                 break;
-                            case FILE_TypeNV21:
+                            case NV21:
                                 fileName = OUTPUT_DIR + String.format("frame_%05d_NV21_%dx%d.yuv", outputFrameCount, width, height);
                                 dumpFile(fileName, getDataFromImage(image, COLOR_FormatNV21));
                                 break;
-                            case FILE_TypeJPEG:
+                            case JPEG:
                                 fileName = OUTPUT_DIR + String.format("frame_%05d.jpg", outputFrameCount);
                                 compressToJpeg(fileName, image);
                                 break;
