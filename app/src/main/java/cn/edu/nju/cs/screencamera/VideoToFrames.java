@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by zhantong on 16/5/12.
  */
-public class VideoToFrames implements Runnable{
+public class VideoToFrames implements Runnable {
     private static final String TAG = "VideoToFrames";
     private static final boolean VERBOSE = false;
     private static final long DEFAULT_TIMEOUT_US = 10000;
@@ -36,6 +36,7 @@ public class VideoToFrames implements Runnable{
     private LinkedBlockingQueue<byte[]> mQueue;
     private int outputImageFileType = -1;
     private String OUTPUT_DIR;
+    private boolean stopDecode = false;
 
     private String videoFilePath;
     private Throwable throwable;
@@ -59,23 +60,30 @@ public class VideoToFrames implements Runnable{
         }
         OUTPUT_DIR = theDir.getAbsolutePath() + "/";
     }
-    public void decode(String videoFilePath) throws Throwable{
-        this.videoFilePath=videoFilePath;
-        if(childThread==null){
-            childThread=new Thread(this,"decode");
+
+    public void stopDecode() {
+        stopDecode = true;
+    }
+
+    public void decode(String videoFilePath) throws Throwable {
+        this.videoFilePath = videoFilePath;
+        if (childThread == null) {
+            childThread = new Thread(this, "decode");
             childThread.start();
-            if(throwable!=null){
+            if (throwable != null) {
                 throw throwable;
             }
         }
     }
-    public void run(){
+
+    public void run() {
         try {
             videoDecode(videoFilePath);
-        }catch (Throwable t){
-            throwable=t;
+        } catch (Throwable t) {
+            throwable = t;
         }
     }
+
     private void videoDecode(String videoFilePath) throws IOException {
         MediaExtractor extractor = null;
         MediaCodec decoder = null;
@@ -139,7 +147,7 @@ public class VideoToFrames implements Runnable{
         final int width = mediaFormat.getInteger(MediaFormat.KEY_WIDTH);
         final int height = mediaFormat.getInteger(MediaFormat.KEY_HEIGHT);
         int outputFrameCount = 0;
-        while (!sawOutputEOS) {
+        while (!sawOutputEOS && !stopDecode) {
             if (!sawInputEOS) {
                 int inputBufferId = decoder.dequeueInputBuffer(DEFAULT_TIMEOUT_US);
                 if (inputBufferId >= 0) {

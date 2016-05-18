@@ -23,7 +23,7 @@ public class VideoToFile extends StreamToFile {
         return 1;
     }
     public void beforeDataDecoded(){
-        //videoToFrames.stopExtract();
+        videoToFrames.stopDecode();
     }
     public void toFile(String fileName,final String videoFilePath){
         Log.i(TAG,"process video file");
