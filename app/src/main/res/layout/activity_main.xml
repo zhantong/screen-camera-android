@@ -130,6 +130,12 @@
                     android:text="停止"
                     android:onClick="stop"
                     android:layout_weight="1"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="保存视频帧"
+                    android:id="@+id/save_frames"
+                    android:layout_weight="1"/>
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>

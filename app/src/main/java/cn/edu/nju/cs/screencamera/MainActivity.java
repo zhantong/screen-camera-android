@@ -59,6 +59,14 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
                 getTruthFile(v);
             }
         });
+
+        Button buttonSaveFrames=(Button)findViewById(R.id.save_frames);
+        buttonSaveFrames.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveFrames(v);
+            }
+        });
     }
     private void initBarcodeFormatSpinner(){
         Spinner barcodeFormatSpinner=(Spinner)findViewById(R.id.barcode_format);
@@ -86,7 +94,11 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
     public void stop(View view) {
         mPreview.stop();
     }
-
+    public void saveFrames(View view){
+        SaveFramesFragment fragment=new SaveFramesFragment();
+        getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
+        getFragmentManager().executePendingTransactions();
+    }
     public void getVideoFile(View view){
         Intent intent1 = new Intent(this, FileChooser.class);
         startActivityForResult(intent1,1);
