@@ -19,7 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import cn.edu.nju.cs.screencamera.FileExplorer.FileChooser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,6 +36,9 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
 
     public static final int MESSAGE_UI_DEBUG_VIEW=1;
     public static final int MESSAGE_UI_INFO_VIEW=2;
+
+    public static final int REQUEST_CODE_FILE_PATH_INPUT=1;
+    public static final int REQUEST_CODE_FILE_PATH_TRUTH=2;
 
     final Handler mHandler=new Handler(new Handler.Callback() {
         @Override
@@ -128,27 +130,37 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         getFragmentManager().executePendingTransactions();
     }
     public void getVideoFile(View view){
-        Intent intent1 = new Intent(this, FileChooser.class);
-        startActivityForResult(intent1,1);
+        getFilePath(REQUEST_CODE_FILE_PATH_INPUT);
     }
     public void getTruthFile(View view){
-        Intent intent1 = new Intent(this, FileChooser.class);
-        startActivityForResult(intent1,2);
+        getFilePath(REQUEST_CODE_FILE_PATH_TRUTH);
+    }
+    private void getFilePath(int requestCode){
+        Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        if(intent.resolveActivity(getPackageManager())!=null){
+            startActivityForResult(Intent.createChooser(intent, "Select a File"), requestCode);
+        }else{
+            new AlertDialog.Builder(this).setTitle("未找到文件管理器")
+                    .setMessage("请安装文件管理器以选择文件")
+                    .setPositiveButton("确定",null)
+                    .show();
+        }
     }
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        // See which child activity is calling us back.
         int id=0;
         switch (requestCode){
-            case 1:
+            case REQUEST_CODE_FILE_PATH_INPUT:
                 id=R.id.file_path_input;
                 break;
-            case 2:
+            case REQUEST_CODE_FILE_PATH_TRUTH:
                 id=R.id.file_path_truth;
                 break;
         }
         if (resultCode == RESULT_OK) {
             EditText editText = (EditText) findViewById(id);
-            String curFileName = data.getStringExtra("GetFilePath");
+            String curFileName=data.getData().getPath();
             editText.setText(curFileName);
         }
     }

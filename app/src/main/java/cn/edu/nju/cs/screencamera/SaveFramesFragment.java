@@ -1,6 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,7 +18,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import cn.edu.nju.cs.screencamera.FileExplorer.FileChooser;
 
 /**
  * Created by zhantong on 16/5/18.
@@ -41,8 +41,7 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
         buttonFilePathInput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), FileChooser.class);
-                startActivityForResult(intent,REQUEST_CODE_GET_FILE_PATH);
+                getFilePath(REQUEST_CODE_GET_FILE_PATH);
             }
         });
 
@@ -68,6 +67,32 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
         initImageFormatSpinner();
         return thisView;
     }
+    private void getFilePath(int requestCode){
+        Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        if(intent.resolveActivity(getActivity().getPackageManager())!=null){
+            startActivityForResult(Intent.createChooser(intent, "Select a File"), requestCode);
+        }else{
+            new AlertDialog.Builder(getActivity()).setTitle("未找到文件管理器")
+                    .setMessage("请安装文件管理器以选择文件")
+                    .setPositiveButton("确定",null)
+                    .show();
+        }
+    }
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        int id=0;
+        switch (requestCode){
+            case REQUEST_CODE_GET_FILE_PATH:
+                id=R.id.file_path_input;
+                break;
+        }
+        if (resultCode == Activity.RESULT_OK) {
+            EditText editText = (EditText) thisView.findViewById(id);
+            String curFileName=data.getData().getPath();
+            editText.setText(curFileName);
+        }
+    }
     private void initImageFormatSpinner(){
         Spinner barcodeFormatSpinner=(Spinner)thisView.findViewById(R.id.image_format);
         ArrayAdapter<OutputImageFormat> adapter=new ArrayAdapter<>(getActivity(),android.R.layout.simple_spinner_item, OutputImageFormat.values());
@@ -84,15 +109,6 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
 
             }
         });
-    }
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode==REQUEST_CODE_GET_FILE_PATH){
-            if(resultCode== Activity.RESULT_OK){
-                EditText editText=(EditText)thisView.findViewById(R.id.file_path_input);
-                String path = data.getStringExtra("GetFilePath");
-                editText.setText(path);
-            }
-        }
     }
     private void updateInfo(String info){
         TextView textView = (TextView) thisView.findViewById(R.id.info);
