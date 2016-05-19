@@ -4,6 +4,7 @@ package cn.edu.nju.cs.screencamera;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -21,6 +22,9 @@ import android.widget.TextView;
 import cn.edu.nju.cs.screencamera.FileExplorer.FileChooser;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 
 /**
  * UI主要操作
@@ -148,21 +152,6 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
             editText.setText(curFileName);
         }
     }
-    /**
-     * 打开文件时的方法,寻找指定后缀文件的打开方法
-     *
-     * @param checkItsEnd 用来判断的文件后缀类型
-     * @param fileEndings 指定的文件后缀类型
-     * @return 匹配则返回true, 否则返回false
-     */
-    public boolean checkEndsWithInStringArray(String checkItsEnd,
-                                              String[] fileEndings) {
-        for (String aEnd : fileEndings) {
-            if (checkItsEnd.endsWith(aEnd))
-                return true;
-        }
-        return false;
-    }
 
     /**
      * 处理视频文件,从视频帧识别二维码
@@ -215,56 +204,26 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
         String newFileName = editTextFileName.getText().toString();
         String filePath = Environment.getExternalStorageDirectory() + "/Download/" + newFileName;
+        Intent newIntent=new Intent(Intent.ACTION_VIEW);
+        String mimeType="";
         File file = new File(filePath);
-        if (file.isFile()) {
-            String fileName = file.toString();
-            Intent intent;
-            if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingImage))) {
-                intent = OpenFiles.getImageFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingWebText))) {
-                intent = OpenFiles.getHtmlFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingPackage))) {
-                intent = OpenFiles.getApkFileIntent(file);
-                startActivity(intent);
-
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingAudio))) {
-                intent = OpenFiles.getAudioFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingVideo))) {
-                intent = OpenFiles.getVideoFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingText))) {
-                intent = OpenFiles.getTextFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingPdf))) {
-                intent = OpenFiles.getPdfFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingWord))) {
-                intent = OpenFiles.getWordFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingExcel))) {
-                intent = OpenFiles.getExcelFileIntent(file);
-                startActivity(intent);
-            } else if (checkEndsWithInStringArray(fileName, getResources().
-                    getStringArray(R.array.fileEndingPPT))) {
-                intent = OpenFiles.getPPTFileIntent(file);
-                startActivity(intent);
-            } else {
-                new AlertDialog.Builder(this).setTitle("错误").setItems(new String[]{"无法打开，请安装相应的软件！"}, null).setNegativeButton("确定", null).show();
+        try {
+            mimeType = URLConnection.guessContentTypeFromName(URLEncoder.encode(file.getAbsolutePath(), "UTF-8"));
+            if(mimeType==null){
+                mimeType=URLConnection.guessContentTypeFromStream(new FileInputStream(file));
             }
-        } else {
-            new AlertDialog.Builder(this).setTitle("错误").setItems(new String[]{"对不起，这不是文件！"}, null).setNegativeButton("确定", null).show();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        if(mimeType!=null) {
+            newIntent.setDataAndType(Uri.fromFile(file), mimeType);
+            newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(newIntent);
+        }else{
+            new AlertDialog.Builder(this).setTitle("未识别的文件类型")
+                    .setMessage("未识别的文件后缀名或文件内容")
+                    .setPositiveButton("确定",null)
+                    .show();
         }
     }
     public void processCamera(View view){
