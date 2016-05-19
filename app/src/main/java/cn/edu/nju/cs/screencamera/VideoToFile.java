@@ -4,7 +4,6 @@ import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.TextView;
 
 import java.io.File;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -16,8 +15,8 @@ public class VideoToFile extends StreamToFile {
     private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     private VideoToFrames videoToFrames;
-    public VideoToFile(TextView debugView, TextView infoView, Handler handler, BarcodeFormat format,String truthFilePath) {
-        super(debugView, infoView, handler,format,truthFilePath);
+    public VideoToFile(Handler handler, BarcodeFormat format,String truthFilePath) {
+        super(handler,format,truthFilePath);
     }
     public int getImgColorType(){
         return 1;

@@ -2,8 +2,8 @@ package cn.edu.nju.cs.screencamera;
 
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
-import android.widget.TextView;
 
 import cn.edu.nju.cs.screencamera.ReedSolomon.GenericGF;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonDecoder;
@@ -28,8 +28,6 @@ import java.util.List;
 public class MediaToFile{
     private static final String TAG = "MediaToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
-    private TextView debugView;//输出处理信息的TextView
-    private TextView infoView;//输出全局信息的TextView
     protected Handler handler;//与UI进程通信
     ReedSolomonDecoder decoder;
     protected CRC8 crcCheck;
@@ -39,13 +37,9 @@ public class MediaToFile{
     /**
      * 构造函数,获取必须的参数
      *
-     * @param debugView 实例
-     * @param infoView  实例
      * @param handler   实例
      */
-    public MediaToFile(TextView debugView, TextView infoView, Handler handler) {
-        this.debugView = debugView;
-        this.infoView = infoView;
+    public MediaToFile(Handler handler) {
         this.handler = handler;
         crcCheck=new CRC8();
         bitErrorCount=new BitErrorCount();
@@ -66,27 +60,22 @@ public class MediaToFile{
      */
     protected void updateDebug(int index, int lastSuccessIndex, int frameAmount, int count) {
         //final String text = "当前:" + index + "已识别:" + lastSuccessIndex + "帧总数:" + frameAmount + "已处理:" + count;
-        final String text = "已处理:" + count;
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                debugView.setText(text);
-            }
-        });
+        String text = "已处理:" + count;
+        Message msg=handler.obtainMessage();
+        msg.what=MainActivity.MESSAGE_UI_DEBUG_VIEW;
+        msg.obj=text;
+        handler.sendMessage(msg);
     }
     /**
      * 更新全局信息,即将此线程的信息输出到UI
      *
-     * @param msg 信息
+     * @param text 信息
      */
-    protected void updateInfo(String msg) {
-        final String text = msg;
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                infoView.setText(text);
-            }
-        });
+    protected void updateInfo(String text) {
+        Message msg=handler.obtainMessage();
+        msg.what=MainActivity.MESSAGE_UI_INFO_VIEW;
+        msg.obj=text;
+        handler.sendMessage(msg);
     }
     public int getFileByteNum(Matrix matrix) throws CRCCheckException{
         BitSet head=matrix.getHead();

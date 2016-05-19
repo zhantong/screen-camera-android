@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
@@ -28,12 +27,10 @@ public class SingleImgToFile extends MediaToFile {
     /**
      * 构造函数,获取必须的参数
      *
-     * @param debugView 实例
-     * @param infoView  实例
      * @param handler   实例
      */
-    public SingleImgToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format,String truthFilePath) {
-        super(debugView, infoView, handler);
+    public SingleImgToFile(Handler handler,BarcodeFormat format,String truthFilePath) {
+        super(handler);
         barcodeFormat=format;
         if(!truthFilePath.equals("")) {
             setDebug(MatrixFactory.createMatrix(format), truthFilePath);

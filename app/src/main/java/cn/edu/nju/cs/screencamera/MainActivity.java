@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -30,6 +31,29 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
     private BarcodeFormat barcodeFormat;
     CameraPreviewFragment fragment;
 
+    public static final int MESSAGE_UI_DEBUG_VIEW=1;
+    public static final int MESSAGE_UI_INFO_VIEW=2;
+
+    final Handler mHandler=new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            String text;
+            switch (msg.what){
+                case MESSAGE_UI_DEBUG_VIEW:
+                    text=(String)msg.obj;
+                    TextView debugView=(TextView)findViewById(R.id.debug_view);
+                    debugView.setText(text);
+                    return true;
+                case MESSAGE_UI_INFO_VIEW:
+                    text=(String)msg.obj;
+                    TextView infoView=(TextView)findViewById(R.id.info_view);
+                    infoView.setText(text);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    });
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
      *
@@ -146,19 +170,16 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
      * @param view 默认参数
      */
     public void processVideo(View view) {
-        final TextView debugView = (TextView) findViewById(R.id.debug_view);
-        final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.file_path_input);
         final String videoFilePath = editTextVideoFilePath.getText().toString();
         EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
         final String newFileName = editTextFileName.getText().toString();
-        final Handler nHandler = new Handler();
         EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
         final String truthFilePath = editTextTruthFilePath.getText().toString();
         Thread worker = new Thread() {
             @Override
             public void run() {
-                VideoToFile videoToFile=new VideoToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
+                VideoToFile videoToFile=new VideoToFile(mHandler,barcodeFormat,truthFilePath);
                 videoToFile.toFile(newFileName, videoFilePath);
             }
         };
@@ -171,17 +192,14 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
      * @param view 默认参数
      */
     public void processImg(View view) {
-        final TextView debugView = (TextView) findViewById(R.id.debug_view);
-        final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.file_path_input);
         final String imageFilePath = editTextVideoFilePath.getText().toString();
-        final Handler nHandler = new Handler();
         EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
         final String truthFilePath = editTextTruthFilePath.getText().toString();
         Thread worker = new Thread() {
             @Override
             public void run() {
-                SingleImgToFile singleImgToFile=new SingleImgToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
+                SingleImgToFile singleImgToFile=new SingleImgToFile(mHandler,barcodeFormat,truthFilePath);
                 singleImgToFile.singleImg(imageFilePath);
             }
         };
@@ -255,17 +273,14 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         getFragmentManager().executePendingTransactions();
     }
     public void onStartReco(){
-        final TextView debugView = (TextView) findViewById(R.id.debug_view);
-        final TextView infoView = (TextView) findViewById(R.id.info_view);
         EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
         final String newFileName = editTextFileName.getText().toString();
-        final Handler nHandler = new Handler();
         EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
         final String truthFilePath = editTextTruthFilePath.getText().toString();
         Thread worker = new Thread() {
             @Override
             public void run() {
-                CameraToFile cameraToFile=new CameraToFile(debugView, infoView, nHandler,barcodeFormat,truthFilePath);
+                CameraToFile cameraToFile=new CameraToFile(mHandler,barcodeFormat,truthFilePath);
                 cameraToFile.toFile(newFileName, fragment.mPreview);
             }
         };

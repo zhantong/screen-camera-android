@@ -3,7 +3,6 @@ package cn.edu.nju.cs.screencamera;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.TextView;
 
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
@@ -25,8 +24,8 @@ public class StreamToFile extends MediaToFile {
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final long queueWaitSeconds=4;
     private static BarcodeFormat barcodeFormat;
-    public StreamToFile(TextView debugView, TextView infoView, Handler handler,BarcodeFormat format,String truthFilePath) {
-        super(debugView, infoView, handler);
+    public StreamToFile(Handler handler,BarcodeFormat format,String truthFilePath) {
+        super(handler);
         barcodeFormat=format;
         if(!truthFilePath.equals("")) {
             setDebug(MatrixFactory.createMatrix(format), truthFilePath);
