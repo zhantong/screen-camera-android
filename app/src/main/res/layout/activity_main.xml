@@ -73,7 +73,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="选择图片/视频文件"
-                    android:onClick="openFile"
                     android:layout_alignParentRight="true"
                     />
             </RelativeLayout>
@@ -98,7 +97,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="选择文件"
-                    android:onClick="openFile"
                     android:layout_alignParentRight="true"
                     />
             </RelativeLayout>

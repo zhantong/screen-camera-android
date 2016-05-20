@@ -75,18 +75,18 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         infoView.setGravity(Gravity.BOTTOM);
         initBarcodeFormatSpinner();
 
-        Button buttonVideoFile=(Button)findViewById(R.id.button_file_path_input);
-        buttonVideoFile.setOnClickListener(new View.OnClickListener() {
+        Button buttonFilePathInput=(Button)findViewById(R.id.button_file_path_input);
+        buttonFilePathInput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getVideoFile(v);
+                getFilePath(REQUEST_CODE_FILE_PATH_INPUT);
             }
         });
-        Button buttonTruthFile=(Button)findViewById(R.id.button_file_path_truth);
-        buttonTruthFile.setOnClickListener(new View.OnClickListener() {
+        Button buttonFilePathTruth=(Button)findViewById(R.id.button_file_path_truth);
+        buttonFilePathTruth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getTruthFile(v);
+                getFilePath(REQUEST_CODE_FILE_PATH_TRUTH);
             }
         });
 
@@ -128,12 +128,6 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         SaveFramesFragment fragment=new SaveFramesFragment();
         getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
         getFragmentManager().executePendingTransactions();
-    }
-    public void getVideoFile(View view){
-        getFilePath(REQUEST_CODE_FILE_PATH_INPUT);
-    }
-    public void getTruthFile(View view){
-        getFilePath(REQUEST_CODE_FILE_PATH_TRUTH);
     }
     private void getFilePath(int requestCode){
         Intent intent=new Intent(Intent.ACTION_GET_CONTENT);
