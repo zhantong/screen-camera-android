@@ -38,10 +38,11 @@ public class StreamToFile extends MediaToFile {
     public void crcCheckFailed(){}
     public void beforeDataDecoded(){}
     protected void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName) {
+        final int NUMBER_OF_SOURCE_BLOCKS=1;
         long processStartTime=System.currentTimeMillis();
         long processEndTime=0;
         ArrayDataDecoder dataDecoder=null;
-        SourceBlockDecoder lastSourceBlock=null;
+        SourceBlockDecoder sourceBlock=null;
         int fileByteNum=-1;
         int count = -1;
         int lastSuccessIndex = 0;
@@ -53,6 +54,7 @@ public class StreamToFile extends MediaToFile {
         int imgColorType=getImgColorType();
         long startTime;
         long endTime;
+        boolean frameDecodeSuccess;
         while (true) {
             count++;
             updateInfo("正在识别...");
@@ -66,6 +68,7 @@ public class StreamToFile extends MediaToFile {
                 updateInfo("识别失败！");
                 break;
             }
+            frameDecodeSuccess=false;
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             startTime= System.currentTimeMillis();
             try {
@@ -101,11 +104,11 @@ public class StreamToFile extends MediaToFile {
                     }
                     Log.i(TAG,"file is "+fileByteNum+" bytes");
                     int length=matrix.realContentByteLength();
-                    FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
+                    FECParameters parameters = FECParameters.newParameters(fileByteNum, length, NUMBER_OF_SOURCE_BLOCKS);
                     Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);
-                    if(lastSourceBlock==null) {
-                        lastSourceBlock = dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks() - 1);
+                    if(sourceBlock==null) {
+                        sourceBlock = dataDecoder.sourceBlock(NUMBER_OF_SOURCE_BLOCKS - 1);
                     }
                 }
                 byte[] current;
@@ -116,36 +119,43 @@ public class StreamToFile extends MediaToFile {
                     continue;
                 }
                 EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-                Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-                if((lastSourceBlock.missingSourceSymbols().size()-lastSourceBlock.availableRepairSymbols().size()==1)&&((encodingPacket.symbolType()== SymbolType.SOURCE&&!lastSourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))||(encodingPacket.symbolType()== SymbolType.REPAIR&&!lastSourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())))){
+                Log.i(TAG, "got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
+                if(isLastEncodingPacket(sourceBlock,encodingPacket)){
                     processEndTime=System.currentTimeMillis();
                     beforeDataDecoded();
                     imgs.clear();
                 }
-                if(VERBOSE){Log.d(TAG,lastSourceBlock.availableRepairSymbols().size()+" repair symbols received"+"\tmissing "+lastSourceBlock.missingSourceSymbols().size()+"source symbols");}
+                if(VERBOSE){Log.d(TAG,sourceBlock.toString());}
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+                frameDecodeSuccess=true;
             }
-            if(fileByteNum!=-1) {
-                //checkSourceBlockStatus(dataDecoder);
-                Log.d(TAG, "is file decoded: " + dataDecoder.isDataDecoded());
+            if(frameDecodeSuccess){
                 if(dataDecoder.isDataDecoded()){
                     break;
                 }
+                border=smallBorder(matrix.border);
+                if(VERBOSE){Log.d(TAG, "reduced borders (to 4/5): left:" + border[0] + "\tup:" + border[1] + "\tright:" + border[2] + "\tdown:" + border[3]);}
             }
-            border=smallBorder(matrix.border);
-            if(VERBOSE){Log.d(TAG, "reduced borders (to 4/5): left:" + border[0] + "\tup:" + border[1] + "\tright:" + border[2] + "\tdown:" + border[3]);}
             matrix = null;
             endTime= System.currentTimeMillis();
             Log.d(TAG,"process frame "+count+" takes "+(endTime-startTime)+"ms");
         }
         if(dataDecoder!=null&&dataDecoder.isDataDecoded()) {
             updateInfo("识别完成！正在写入文件...");
-            byte[] out = dataDecoder.dataArray();
-            String sha1 = FileVerification.bytesToSHA1(out);
-            Log.d(TAG, "file SHA-1 verification: " + sha1);
-            bytesToFile(out, fileName);
+            writeRaptorQDataFile(dataDecoder,fileName);
         }
         bitErrorCount.logAverageBitError();
         Log.d(TAG,"totally takes "+(processEndTime-processStartTime)+"ms");
+    }
+    private boolean isLastEncodingPacket(SourceBlockDecoder sourceBlock,EncodingPacket encodingPacket){
+        return (sourceBlock.missingSourceSymbols().size()-sourceBlock.availableRepairSymbols().size()==1)
+                &&((encodingPacket.symbolType()== SymbolType.SOURCE&&!sourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))
+                ||(encodingPacket.symbolType()== SymbolType.REPAIR&&!sourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())));
+    }
+    private void writeRaptorQDataFile(ArrayDataDecoder decoder,String fileName){
+        byte[] out = decoder.dataArray();
+        String sha1 = FileVerification.bytesToSHA1(out);
+        Log.d(TAG, "file SHA-1 verification: " + sha1);
+        bytesToFile(out, fileName);
     }
 }
