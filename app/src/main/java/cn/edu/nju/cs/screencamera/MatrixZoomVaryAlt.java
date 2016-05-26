@@ -106,7 +106,7 @@ public class MatrixZoomVaryAlt extends Matrix {
         int black=grayMatrix.get(0,2);
         int checkPointOne=grayMatrix.get(2,1);
         int checkPointTwo=grayMatrix.get(2,contentLength);
-        System.out.println("white:"+white+"\tblack:"+black+"\tone:"+checkPointOne+"\ttwo:"+checkPointTwo);
+        if(VERBOSE){Log.d(TAG,"white:"+white+"\tblack:"+black+"\tone:"+checkPointOne+"\ttwo:"+checkPointTwo);}
         if(((checkPointOne>white-grayThreshold)&&(checkPointTwo>white-grayThreshold))||((checkPointOne<black+grayThreshold)&&(checkPointTwo<black+grayThreshold))){
             if(checkPointOne>(white+black)/2){
                 isWhiteBackground=true;
@@ -121,7 +121,7 @@ public class MatrixZoomVaryAlt extends Matrix {
         }else{
             overlapCon=true;
         }
-        System.out.println("reverse:"+reverse);
+        Log.d(TAG,"reverse:"+reverse);
         return true;
     }
     public BitSet getHead(){
@@ -136,7 +136,7 @@ public class MatrixZoomVaryAlt extends Matrix {
         int white=grayMatrix.get(0,1);
         grayMatrix.get(0,1);
         int threshold=(black+white)/2;
-        System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
+        if(VERBOSE){Log.d(TAG,"black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);}
         int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
         BitSet bitSet=new BitSet();
         for(int i=0;i<length;i++){
@@ -453,7 +453,6 @@ public class MatrixZoomVaryAlt extends Matrix {
                 }
             }
         }
-        System.out.println("wrong");
-        return Overlap.RTOL;
+        throw new UnsupportedOperationException("unrecognized overlap situation");
     }
 }

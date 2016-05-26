@@ -71,6 +71,7 @@ public class StreamToFile extends MediaToFile {
             frameDecodeSuccess=false;
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             startTime= System.currentTimeMillis();
+            Log.i(TAG, "current frame:" + count);
             try {
                 matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
                 matrix.perspectiveTransform();
@@ -80,7 +81,6 @@ public class StreamToFile extends MediaToFile {
                 border=null;
                 continue;
             }
-            Log.i(TAG, "current frame:" + count);
             for(int i=1;i<3;i++) {
                 if(i==2){
                     if(!matrix.isMixed){
