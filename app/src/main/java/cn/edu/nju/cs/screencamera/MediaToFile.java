@@ -117,11 +117,19 @@ public class MediaToFile{
         return con;
     }
     public int[] decode(int[] raw,int ecNum) throws ReedSolomonException {
-        if(decoder==null){
-            decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
-            //decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
+        boolean USE_JNI=false;
+        if(USE_JNI){
+            raw=AndroidJni.RSDecode(raw,raw.length);
+            if(raw==null){
+                throw new ReedSolomonException("decode failed");
+            }
+        }else {
+            if (decoder == null) {
+                decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
+                //decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
+            }
+            decoder.decode(raw, ecNum);
         }
-        decoder.decode(raw, ecNum);
         return raw;
     }
     public byte[] getContent(Matrix matrix) throws ReedSolomonException{

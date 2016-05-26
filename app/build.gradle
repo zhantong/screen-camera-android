@@ -19,8 +19,9 @@ model {
             }
         }
         ndk {
-            moduleName = "Reed-Solomon"
+            moduleName = "Android-Jni"
             cppFlags.addAll(["-std=c++11","-fexceptions"])
+            ldLibs.add("log")
             stl = "gnustl_shared"
         }
     }

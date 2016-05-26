@@ -1,0 +1,110 @@
+//
+// Created by zhantong on 16/5/26.
+//
+#include <jni.h>
+#include <vector>
+
+struct Find_border {
+    jbyte *pixels;
+    int imgWidth;
+    int imgHeight;
+    int threshold;
+    int imgColorType;
+
+    Find_border(jbyte *pixels, int imgColorType, int imgWidth, int imgHeight, int threshold) {
+        this->pixels = pixels;
+        this->imgWidth = imgWidth;
+        this->imgHeight = imgHeight;
+        this->threshold = threshold;
+        this->imgColorType = imgColorType;
+    }
+
+    int getRGBGray(int x, int y) {
+        int offset = (y * imgWidth + x) * 4;
+        int r = (unsigned char) pixels[offset];
+        int g = (unsigned char) pixels[offset + 1];
+        int b = (unsigned char) pixels[offset + 2];
+        int gray = ((b * 29 + g * 150 + r * 77 + 128) >> 8);
+        return gray;
+    }
+
+    int getGray(int x, int y) {
+        if (imgColorType == 0) {
+            return getRGBGray(x, y);
+        }
+        else {
+            return getYUVGray(x, y);
+        }
+    }
+
+    int getYUVGray(int x, int y) {
+        return (unsigned char) pixels[y * imgWidth + x];
+    }
+
+    int getBinary(int x, int y) {
+        if (getGray(x, y) <= threshold) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
+    bool pixelEquals(int x, int y, int pixel) {
+        return getBinary(x, y) == pixel;
+    }
+
+    bool pixelIsBlack(int x, int y) {
+        return pixelEquals(x, y, 0);
+    }
+
+    bool containsBlack(int start, int end, int fixed, bool horizontal) {
+        if (horizontal) {
+            for (int x = start; x <= end; x++) {
+                if (pixelIsBlack(x, fixed)) {
+                    return true;
+                }
+
+            }
+        } else {
+            for (int y = start; y <= end; y++) {
+                if (pixelIsBlack(fixed, y)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    std::vector<int> findBorder(jint *init) {
+        int left = init[0];
+        int up = init[1];
+        int right = init[2];
+        int down = init[3];
+        bool flag;
+        while (true) {
+            flag = false;
+            while (right < imgWidth && containsBlack(up, down, right, false)) {
+                right++;
+                flag = true;
+
+            }
+            while (down < imgHeight && containsBlack(left, right, down, true)) {
+                down++;
+                flag = true;
+            }
+            while (left > 0 && containsBlack(up, down, left, false)) {
+                left--;
+                flag = true;
+            }
+            while (up > 0 && containsBlack(left, right, up, true)) {
+                up--;
+                flag = true;
+            }
+            if (!flag) {
+                break;
+            }
+        }
+        std::vector<int> result{left, up, right, down};
+        return result;
+    }
+};

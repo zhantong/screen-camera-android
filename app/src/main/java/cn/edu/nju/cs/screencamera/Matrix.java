@@ -3,7 +3,6 @@ package cn.edu.nju.cs.screencamera;
 import android.util.Log;
 
 import java.util.BitSet;
-import java.util.HashMap;
 
 /**
  * 保存YUV格式图像的相关信息,如原始像素信息
@@ -299,6 +298,7 @@ public class Matrix{
      * @throws NotFoundException 能够确定不可能发现二维码时,则抛出未找到二维码异常
      */
     public int[] findBorder(int[] initBorder) throws NotFoundException {
+        boolean USE_JNI=true;
         int left=initBorder[0];
         int up=initBorder[1];
         int right=initBorder[2];
@@ -313,28 +313,36 @@ public class Matrix{
         if (left < 0 || right >= imgWidth || up < 0 || down >= imgHeight) {
             throw new NotFoundException("frame size too small");
         }
-        boolean flag;
-        while (true) {
-            flag = false;
-            while (right < imgWidth && containsBlack(up, down, right, false)) {
-                right++;
-                flag = true;
+        if(USE_JNI) {
+            int[] res = AndroidJni.findBorder(pixels, imgColorType, threshold, imgWidth, imgHeight, initBorder);
+            left = res[0];
+            up = res[1];
+            right = res[2];
+            down = res[3];
+        }else {
+            boolean flag;
+            while (true) {
+                flag = false;
+                while (right < imgWidth && containsBlack(up, down, right, false)) {
+                    right++;
+                    flag = true;
 
-            }
-            while (down < imgHeight && containsBlack(left, right, down, true)) {
-                down++;
-                flag = true;
-            }
-            while (left > 0 && containsBlack(up, down, left, false)) {
-                left--;
-                flag = true;
-            }
-            while (up > 0 && containsBlack(left, right, up, true)) {
-                up--;
-                flag = true;
-            }
-            if (!flag) {
-                break;
+                }
+                while (down < imgHeight && containsBlack(left, right, down, true)) {
+                    down++;
+                    flag = true;
+                }
+                while (left > 0 && containsBlack(up, down, left, false)) {
+                    left--;
+                    flag = true;
+                }
+                while (up > 0 && containsBlack(left, right, up, true)) {
+                    up--;
+                    flag = true;
+                }
+                if (!flag) {
+                    break;
+                }
             }
         }
         if (VERBOSE) {
