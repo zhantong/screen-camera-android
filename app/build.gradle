@@ -1,22 +1,28 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.model.application'
 
-android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
-    defaultConfig {
-        applicationId "cn.edu.nju.cs.screencamera"
-        minSdkVersion 21
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+model {
+    android {
+        compileSdkVersion = 23
+        buildToolsVersion = "23.0.2"
+
+        defaultConfig {
+            applicationId = "cn.edu.nju.cs.screencamera"
+            minSdkVersion.apiLevel = 21
+            targetSdkVersion.apiLevel = 23
+            versionCode = 1
+            versionName = "1.0"
         }
-    }
-    productFlavors {
+        buildTypes {
+            release {
+                minifyEnabled = false
+                proguardFiles.add(file('proguard-android.txt'))
+            }
+        }
+        ndk {
+            moduleName = "Reed-Solomon"
+            cppFlags.addAll(["-std=c++11","-fexceptions"])
+            stl = "gnustl_shared"
+        }
     }
 }
 
