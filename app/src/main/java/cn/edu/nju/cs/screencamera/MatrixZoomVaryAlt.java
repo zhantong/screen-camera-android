@@ -62,6 +62,9 @@ public class MatrixZoomVaryAlt extends Matrix {
         super.ecNum=mEcNum;
         super.ecLength=mEcLength;
     }
+    public RawContent getRaw(){
+        return rawContent;
+    }
     public void initGrayMatrix(){
         initGrayMatrix(getBarCodeWidth(),getBarCodeHeight());
     }
@@ -149,7 +152,7 @@ public class MatrixZoomVaryAlt extends Matrix {
     }
     public BitSet getContent(){
         if(rawContent==null){
-            sampleContent(getBarCodeWidth(),getBarCodeHeight());
+            sampleContent();
         }
         if(reverse){
             return rawContent.getRawContent(true);
@@ -161,13 +164,14 @@ public class MatrixZoomVaryAlt extends Matrix {
     public BitSet getOverlapSituation(){
         return rawContent.getOverlapSituation();
     }
-    public void sampleContent(int dimensionX, int dimensionY){
+    public void sampleContent(){
         if (grayMatrix == null) {
-            initGrayMatrix(dimensionX,dimensionY);
+            initGrayMatrix(getBarCodeWidth(),getBarCodeHeight());
         }
         rawContent=new RawContent(bitsPerBlock*contentLength*contentLength);
         if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
         if(isMixed){
+            rawContent.isMixed=true;
             getRawContent();
         }
         else {
@@ -259,20 +263,28 @@ public class MatrixZoomVaryAlt extends Matrix {
                 //System.out.println("("+x+","+y+") overlap:"+overlap.name());
                 switch (overlap) {
                     case UP://00
+                        rawContent.clearTag.set(index);
                         index++;
+                        rawContent.clearTag.set(index);
                         break;
                     case DOWN://01
+                        rawContent.clearTag.set(index);
                         index++;
                         rawContent.clear.set(index);
+                        rawContent.clearTag.set(index);
                         break;
                     case LEFT://10
+                        rawContent.clearTag.set(index);
                         rawContent.clear.set(index);
                         index++;
+                        rawContent.clearTag.set(index);
                         break;
                     case RIGHT://11
+                        rawContent.clearTag.set(index);
                         rawContent.clear.set(index);
                         index++;
                         rawContent.clear.set(index);
+                        rawContent.clearTag.set(index);
                         break;
                     case UTOD:
                         index++;

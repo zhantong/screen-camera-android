@@ -197,6 +197,9 @@ public class Matrix{
     public BitSet getOverlapSituation(){
         return null;
     }
+    public RawContent getRaw(){return null;}
+    public void sampleContent(){
+    }
     /**
      * 获取图像的阈值
      * 阈值由灰度值确定,获得阈值的方法为双峰法

@@ -1,7 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
-import android.os.Environment;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
@@ -24,12 +24,19 @@ public class StreamToFile extends MediaToFile {
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final long queueWaitSeconds=4;
     private static BarcodeFormat barcodeFormat;
+    private HandlerThread handlerThread;
+    private Handler processHandler;
     public StreamToFile(Handler handler,BarcodeFormat format,String truthFilePath) {
         super(handler);
         barcodeFormat=format;
         if(!truthFilePath.equals("")) {
             setDebug(MatrixFactory.createMatrix(format), truthFilePath);
         }
+
+        handlerThread=new ProcessFrame("process");
+        handlerThread.start();
+        processHandler=new Handler(handlerThread.getLooper(), (Handler.Callback) handlerThread);
+        processHandler.sendMessage(processHandler.obtainMessage(1,format));
     }
     public int getImgColorType(){
         return -1;
@@ -81,6 +88,29 @@ public class StreamToFile extends MediaToFile {
                 border=null;
                 continue;
             }
+            if(fileByteNum==-1){
+                try {
+                    fileByteNum = getFileByteNum(matrix);
+                }catch (CRCCheckException e){
+                    Log.d(TAG, "head CRC check failed");
+                    crcCheckFailed();
+                    continue;
+                }
+                if(fileByteNum==0){
+                    Log.d(TAG,"wrong file byte number");
+                    fileByteNum=-1;
+                    continue;
+                }
+                Log.i(TAG,"file is "+fileByteNum+" bytes");
+                int length=matrix.realContentByteLength();
+                FECParameters parameters = FECParameters.newParameters(fileByteNum, length, NUMBER_OF_SOURCE_BLOCKS);
+                processHandler.sendMessage(processHandler.obtainMessage(2,parameters));
+            }
+            byte[] current;
+            matrix.sampleContent();
+            processHandler.sendMessage(processHandler.obtainMessage(3,matrix.getRaw()));
+            border=null;
+            /*
             for(int i=1;i<3;i++) {
                 if(i==2){
                     if(!matrix.isMixed){
@@ -105,13 +135,19 @@ public class StreamToFile extends MediaToFile {
                     Log.i(TAG,"file is "+fileByteNum+" bytes");
                     int length=matrix.realContentByteLength();
                     FECParameters parameters = FECParameters.newParameters(fileByteNum, length, NUMBER_OF_SOURCE_BLOCKS);
+                    processHandler.sendMessage(processHandler.obtainMessage(2,parameters));
+
                     Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
                     dataDecoder = OpenRQ.newDecoder(parameters, 0);
                     if(sourceBlock==null) {
                         sourceBlock = dataDecoder.sourceBlock(NUMBER_OF_SOURCE_BLOCKS - 1);
                     }
+
                 }
                 byte[] current;
+                matrix.sampleContent();
+                processHandler.sendMessage(processHandler.obtainMessage(3,matrix.getRaw()));
+
                 try {
                     current = getContent(matrix);
                 }catch (ReedSolomonException e){
@@ -128,7 +164,10 @@ public class StreamToFile extends MediaToFile {
                 if(VERBOSE){Log.d(TAG,sourceBlock.toString());}
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
                 frameDecodeSuccess=true;
+
             }
+            */
+            /*
             if(frameDecodeSuccess){
                 if(dataDecoder.isDataDecoded()){
                     break;
@@ -139,6 +178,7 @@ public class StreamToFile extends MediaToFile {
             matrix = null;
             endTime= System.currentTimeMillis();
             Log.d(TAG,"process frame "+count+" takes "+(endTime-startTime)+"ms");
+            */
         }
         if(dataDecoder!=null&&dataDecoder.isDataDecoded()) {
             updateInfo("识别完成！正在写入文件...");
