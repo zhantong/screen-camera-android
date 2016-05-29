@@ -157,12 +157,13 @@ public class MediaToFile{
                 Log.d(TAG, "esi " + esi + " has " + bitError + " bit errors");
                 bitErrorCount.put(esi,bitError);
                 if (clone.cardinality() != 0) {
-                    //printContentBitSet(clone,matrix.bitsPerBlock,matrix.contentLength,matrix,truth,con);
+                    printContentBitSet(clone,matrix.bitsPerBlock,matrix.contentLength,matrix,truth,con);
                 }
             }
         }
     }
     public void printContentBitSet(BitSet content,int bitsPerBlock,int contentLength,Matrix matrix,BitSet right,BitSet wrong){
+        BitSet overlapSituation=matrix.getOverlapSituation();
         class Pair{
             int x;
             int y;
@@ -198,9 +199,24 @@ public class MediaToFile{
         int offsetY=1;
         for(Pair pair:pairs){
             int bitsetPos=(pair.y*contentLength+pair.x)*bitsPerBlock;
+            System.out.print("get:");
             for(int i=0;i<bitsPerBlock;i++){
-                System.out.print(right.get(bitsetPos+i)+" "+wrong.get(bitsetPos+i)+"\t");
+                System.out.print(wrong.get(bitsetPos+i)?1:0);
             }
+            System.out.print("\treal:");
+            for(int i=0;i<bitsPerBlock;i++){
+                System.out.print(right.get(bitsetPos+i)?1:0);
+            }
+            System.out.print("\toverlap:");
+            boolean flag=false;
+            for(int i=0;i<bitsPerBlock;i++){
+                if(overlapSituation.get(bitsetPos+i)){
+                    flag=true;
+                    break;
+                }
+            }
+            System.out.print(flag?1:0);
+            System.out.print("\t");
             matrix.grayMatrix.print(offsetX+pair.x,offsetY+pair.y);
         }
     }

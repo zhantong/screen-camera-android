@@ -2,6 +2,7 @@ package cn.edu.nju.cs.screencamera;
 
 import android.util.Log;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -157,6 +158,9 @@ public class MatrixZoomVaryAlt extends Matrix {
             return rawContent.getRawContent(false);
         }
     }
+    public BitSet getOverlapSituation(){
+        return rawContent.getOverlapSituation();
+    }
     public void sampleContent(int dimensionX, int dimensionY){
         if (grayMatrix == null) {
             initGrayMatrix(dimensionX,dimensionY);
@@ -254,18 +258,18 @@ public class MatrixZoomVaryAlt extends Matrix {
                 Overlap overlap=getOverlapSituation(x,y);
                 //System.out.println("("+x+","+y+") overlap:"+overlap.name());
                 switch (overlap) {
-                    case UP:
+                    case UP://00
                         index++;
                         break;
-                    case DOWN:
+                    case DOWN://01
                         index++;
                         rawContent.clear.set(index);
                         break;
-                    case LEFT:
+                    case LEFT://10
                         rawContent.clear.set(index);
                         index++;
                         break;
-                    case RIGHT:
+                    case RIGHT://11
                         rawContent.clear.set(index);
                         index++;
                         rawContent.clear.set(index);
@@ -356,6 +360,44 @@ public class MatrixZoomVaryAlt extends Matrix {
         }
         int center=samples[0];
         if((Math.abs(center-min)<grayThreshold)||(Math.abs(center-max)<grayThreshold)){
+/*
+            int closestDistance=256;
+            int closestIndex=-1;
+            for(int i=1;i<5;i++){
+                int current=samples[i];
+                int distance=Math.abs(center-current);
+                if(distance<closestDistance){
+                    closestDistance=distance;
+                    closestIndex=i;
+                }
+            }
+            int index=closestIndex;
+*/
+/*
+            int index;
+            if(overlapCon==booIndex){
+                index=maxIndex;
+            }else{
+                index=minIndex;
+            }
+            */
+            /*
+            int index;
+            int disMax=0;
+            int disMin=0;
+            for(int i=1;i<5;i++){
+                if(i!=maxIndex&&i!=minIndex){
+                    int current=samples[i];
+                    disMax+=(max-current)*(max-current);
+                    disMin+=(min-current)*(min-current);
+                }
+            }
+            if(disMax>disMin){
+                index=maxIndex;
+            }else{
+                index=minIndex;
+            }
+            */
             int index=(Math.abs(center-min)<grayThreshold)?minIndex:maxIndex;
             switch (index){
                 case 1:
@@ -453,6 +495,7 @@ public class MatrixZoomVaryAlt extends Matrix {
                 }
             }
         }
-        throw new UnsupportedOperationException("unrecognized overlap situation");
+        Log.i(TAG,"unrecognized overlap situation: minIndex "+minIndex+"\tmaxIndex "+maxIndex+"\tsamples "+ Arrays.toString(samples));
+        return Overlap.UTOD;
     }
 }

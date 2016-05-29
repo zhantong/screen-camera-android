@@ -26,4 +26,9 @@ public class RawContent {
         }
         return res;
     }
+    public BitSet getOverlapSituation(){
+        BitSet res=(BitSet)wTob.clone();
+        res.or(bTow);
+        return res;
+    }
 }
