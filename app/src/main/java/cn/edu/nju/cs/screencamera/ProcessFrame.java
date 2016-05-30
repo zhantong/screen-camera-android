@@ -1,5 +1,6 @@
 package cn.edu.nju.cs.screencamera;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
@@ -8,8 +9,15 @@ import android.util.Log;
 import net.fec.openrq.ArrayDataDecoder;
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
+import net.fec.openrq.SymbolType;
+import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -26,37 +34,49 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     List<RawContent> list;
     Matrix matrix;
     ArrayDataDecoder dataDecoder;
+    SourceBlockDecoder sourceBlock;
     ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
+    String fileName;
+    FrameCallback mFrameCallback;
     public ProcessFrame(String name){
         super(name);
         list=new ArrayList<>();
     }
+
+
+
+    public interface FrameCallback{
+        void onLastPacket();
+    }
+    public void setCallback(FrameCallback callback){
+        mFrameCallback=callback;
+    }
     public void put(RawContent content){
         byte[] raw;
         EncodingPacket encodingPacket;
-        if(!content.isMixed){
-            try {
-                raw = getContent(content.getRawContent(false));
-                encodingPacket = dataDecoder.parsePacket(raw, true).value();
-                Log.i(TAG, "got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-            }catch (ReedSolomonException e){
-                Log.d(TAG,"RS decode failed");
-            }
-        }else{
-            try {
-                raw = getContent(content.getRawContent(false));
-                encodingPacket = dataDecoder.parsePacket(raw, true).value();
-                Log.i(TAG, "got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-            }catch (ReedSolomonException e){
-                Log.d(TAG,"RS decode failed");
+        boolean reverse=false;
+        for(int i=1;i<3;i++){
+            if(i==2){
+                if(content.isMixed){
+                    reverse=true;
+                }else{
+                    break;
+                }
             }
             try {
-                raw = getContent(content.getRawContent(true));
+                raw = getContent(content.getRawContent(reverse));
                 encodingPacket = dataDecoder.parsePacket(raw, true).value();
                 Log.i(TAG, "got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
+                if(isLastEncodingPacket(sourceBlock,encodingPacket)){
+                    if(mFrameCallback!=null) {
+                        mFrameCallback.onLastPacket();
+                    }
+                }
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+                if(dataDecoder.isDataDecoded()){
+                    writeRaptorQDataFile(dataDecoder,fileName);
+                    break;
+                }
             }catch (ReedSolomonException e){
                 Log.d(TAG,"RS decode failed");
             }
@@ -88,22 +108,59 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         decoder.decode(raw, ecNum);
         return raw;
     }
-
-    @Override
-    public boolean handleMessage(Message msg){
-        switch (msg.what){
-            case 1:
-                BarcodeFormat format=(BarcodeFormat)msg.obj;
-                matrix=MatrixFactory.createMatrix(format);
-                break;
-            case 2:
-                FECParameters parameters=(FECParameters)msg.obj;
-                dataDecoder = OpenRQ.newDecoder(parameters, 0);
-                break;
-            case 3:
-                RawContent content=(RawContent)msg.obj;
-                put(content);
+    private boolean isLastEncodingPacket(SourceBlockDecoder sourceBlock,EncodingPacket encodingPacket){
+        return (sourceBlock.missingSourceSymbols().size()-sourceBlock.availableRepairSymbols().size()==1)
+                &&((encodingPacket.symbolType()== SymbolType.SOURCE&&!sourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))
+                ||(encodingPacket.symbolType()== SymbolType.REPAIR&&!sourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())));
+    }
+    private void writeRaptorQDataFile(ArrayDataDecoder decoder,String fileName){
+        byte[] out = decoder.dataArray();
+        String sha1 = FileVerification.bytesToSHA1(out);
+        Log.d(TAG, "file SHA-1 verification: " + sha1);
+        bytesToFile(out, fileName);
+    }
+    public boolean bytesToFile(byte[] bytes,String fileName){
+        if(fileName.isEmpty()){
+            Log.i(TAG, "file name is empty");
+            return false;
         }
+        File file = new File(Environment.getExternalStorageDirectory() + "/Download/" + fileName);
+        OutputStream os;
+        try {
+            os = new FileOutputStream(file);
+            os.write(bytes);
+            os.close();
+        } catch (FileNotFoundException e) {
+            Log.i(TAG, "file path error, cannot create file:" + e.toString());
+            return false;
+        }catch (IOException e){
+            Log.i(TAG, "IOException:" + e.toString());
+            return false;
+        }
+        Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
         return true;
     }
+
+@Override
+public boolean handleMessage(Message msg) {
+    switch (msg.what) {
+        case 1:
+            BarcodeFormat format = (BarcodeFormat) msg.obj;
+            matrix = MatrixFactory.createMatrix(format);
+            break;
+        case 2:
+            FECParameters parameters = (FECParameters) msg.obj;
+            dataDecoder = OpenRQ.newDecoder(parameters, 0);
+            sourceBlock = dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks() - 1);
+            break;
+        case 3:
+            RawContent content = (RawContent) msg.obj;
+            put(content);
+            break;
+        case 4:
+            fileName = (String) msg.obj;
+            break;
+    }
+    return true;
+}
 }

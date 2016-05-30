@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by zhantong on 16/2/29.
  */
-public class StreamToFile extends MediaToFile {
+public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallback{
     private static final String TAG = "StreamToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     private static final long queueWaitSeconds=4;
@@ -32,11 +32,11 @@ public class StreamToFile extends MediaToFile {
         if(!truthFilePath.equals("")) {
             setDebug(MatrixFactory.createMatrix(format), truthFilePath);
         }
-
-        handlerThread=new ProcessFrame("process");
-        handlerThread.start();
-        processHandler=new Handler(handlerThread.getLooper(), (Handler.Callback) handlerThread);
+        ProcessFrame processFrame=new ProcessFrame("process");
+        processFrame.start();
+        processHandler=new Handler(processFrame.getLooper(), processFrame);
         processHandler.sendMessage(processHandler.obtainMessage(1,format));
+        processFrame.setCallback(this);
     }
     public int getImgColorType(){
         return -1;
@@ -45,6 +45,7 @@ public class StreamToFile extends MediaToFile {
     public void crcCheckFailed(){}
     public void beforeDataDecoded(){}
     protected void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName) {
+        processHandler.sendMessage(processHandler.obtainMessage(4,fileName));
         final int NUMBER_OF_SOURCE_BLOCKS=1;
         long processStartTime=System.currentTimeMillis();
         long processEndTime=0;
@@ -198,4 +199,11 @@ public class StreamToFile extends MediaToFile {
         Log.d(TAG, "file SHA-1 verification: " + sha1);
         bytesToFile(out, fileName);
     }
+
+    @Override
+    public void onLastPacket() {
+        beforeDataDecoded();
+        System.out.println("called");
+    }
+
 }
