@@ -52,19 +52,45 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         mFrameCallback=callback;
     }
     public void put(RawContent content){
-        byte[] raw;
         EncodingPacket encodingPacket;
         boolean reverse=false;
-        for(int i=1;i<3;i++){
-            if(i==2){
+        for(int j=1;j<3;j++){
+            if(j==2){
                 if(content.isMixed){
                     reverse=true;
+                    if(!content.alreayPut) {
+                        list.add(content);
+                    }
                 }else{
                     break;
                 }
             }
+            if(!reverse){
+                if(content.isEsi1Done){
+                    continue;
+                }
+            }else{
+                if(content.isEsi2Done){
+                    continue;
+                }
+            }
             try {
-                raw = getContent(content.getRawContent(reverse));
+                BitSet bitSetContent=content.getRawContent(reverse);
+                if(!reverse){
+                    content.esi1=extractEncodingSymbolID(getFecPayloadID(bitSetContent));
+                }else{
+                    content.esi2=extractEncodingSymbolID(getFecPayloadID(bitSetContent));
+                }
+
+                int[] conIn10=getRawContent(bitSetContent);
+                decoder.decode(conIn10,matrix.ecNum);
+                int realByteNum=matrix.RSContentByteLength();
+                byte[] raw=new byte[realByteNum];
+                for(int i=0;i<raw.length*8;i++){
+                    if((conIn10[i/matrix.ecLength]&(1<<(i%matrix.ecLength)))>0){
+                        raw[i/8]|=1<<(i%8);
+                    }
+                }
                 encodingPacket = dataDecoder.parsePacket(raw, true).value();
                 Log.i(TAG, "got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if(isLastEncodingPacket(sourceBlock,encodingPacket)){
@@ -77,12 +103,46 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     writeRaptorQDataFile(dataDecoder,fileName);
                     break;
                 }
+                if(!reverse){
+                    content.isEsi1Done=true;
+                }else{
+                    content.isEsi2Done=true;
+                }
+                BitSet bitSet=toBitSet(conIn10,matrix.ecLength);
+                int esi=extractEncodingSymbolID(getFecPayloadID(bitSet));
+                if(!reverse){
+                    content.esi1=esi;
+                }else{
+                    content.esi2=esi;
+                }
+                test(esi,bitSet);
+                /*
+                BitSet clone = (BitSet) bitSet.clone();
+                clone.xor(bitSetContent);
+                int bitError=clone.cardinality();
+                System.out.println("bit error:"+bitError);
+                */
+
             }catch (ReedSolomonException e){
                 Log.d(TAG,"RS decode failed");
             }
+
         }
     }
-
+    private void test(int esi,BitSet bitSet){
+        for(RawContent content:list){
+            System.out.println("get"+content.esi1+" "+content.isEsi1Done+"\t"+content.esi2+" "+content.isEsi2Done);
+            if(content.isMixed&&(content.esi1==esi||content.esi2==esi)&&(!content.isEsi1Done||!content.isEsi2Done)){
+                System.out.println("test success");
+                BitSet clearTag=content.clearTag;
+                for(int i=clearTag.nextSetBit(0);i>=0;i=clearTag.nextSetBit(i+1)){
+                    content.clear.set(i,bitSet.get(i));
+                }
+                content.alreayPut=true;
+                put(content);
+            }
+        }
+    }
     public int[] getRawContent(BitSet content){
         int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
         for(int i=0;i<con.length*matrix.ecLength;i++){
@@ -140,7 +200,19 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
         return true;
     }
-
+    private static BitSet toBitSet(int data[],int bitNum){
+        int index=0;
+        BitSet bitSet=new BitSet();
+        for(int current:data){
+            for(int i=0;i<bitNum;i++){
+                if((current&(1<<i))>0){
+                    bitSet.set(index);
+                }
+                index++;
+            }
+        }
+        return bitSet;
+    }
 @Override
 public boolean handleMessage(Message msg) {
     switch (msg.what) {
@@ -163,4 +235,18 @@ public boolean handleMessage(Message msg) {
     }
     return true;
 }
+
+    public int getFecPayloadID(BitSet bitSet){
+        int value=0;
+        for (int i = bitSet.nextSetBit(0); i <32; i = bitSet.nextSetBit(i + 1)) {
+            value|=(1<<(i%8))<<(3-i/8)*8;
+        }
+        return value;
+    }
+    public int extractSourceBlockNumber(int fecPayloadID){
+        return fecPayloadID>>24;
+    }
+    public int extractEncodingSymbolID(int fecPayloadID){
+        return fecPayloadID&0x0FFF;
+    }
 }
