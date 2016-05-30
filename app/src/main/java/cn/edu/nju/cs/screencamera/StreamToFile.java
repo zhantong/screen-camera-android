@@ -79,7 +79,7 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
             frameDecodeSuccess=false;
             updateDebug(index, lastSuccessIndex, frameAmount, count);
             startTime= System.currentTimeMillis();
-            Log.i(TAG, "current frame:" + count);
+            Log.i(TAG, "--------------- "+"current frame:" + count+" ---------------");
             try {
                 matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
                 matrix.perspectiveTransform();
@@ -203,7 +203,6 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
     @Override
     public void onLastPacket() {
         beforeDataDecoded();
-        System.out.println("called");
     }
 
 }

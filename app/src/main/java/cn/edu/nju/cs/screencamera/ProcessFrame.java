@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +59,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public void setCallback(FrameCallback callback){
         mFrameCallback=callback;
     }
-    public void put(RawContent content,boolean redo){
+    public void put(RawContent content,boolean doRepair){
         EncodingPacket encodingPacket;
         boolean reverse=false;
         for(int j=1;j<3;j++){
@@ -68,6 +69,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     if(!content.alreayPut) {
                         content.alreayPut=true;
                         list.add(content);
+                        Log.d(TAG,"put into list:"+content.esi1 + " " + content.isEsi1Done + "\t" + content.esi2 + " " + content.isEsi2Done);
                     }
                 }else{
                     break;
@@ -85,17 +87,24 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             try {
                 BitSet bitSetContent=content.getRawContent(reverse);
                 if(!reverse){
-                    content.esi1=extractEncodingSymbolID(getFecPayloadID(bitSetContent));
+                    if(content.esi1==-1) {
+                        content.esi1 = extractEncodingSymbolID(getFecPayloadID(bitSetContent));
+                    }
                 }else{
-                    content.esi2=extractEncodingSymbolID(getFecPayloadID(bitSetContent));
-                    System.out.println("esi:"+content.esi1+" "+content.esi2+" "+numSymbols);
-                    if(content.esi1>numSymbols&&content.esi2<numSymbols){
-                        content.esi1=content.esi2-1;
-                    }else if(content.esi2>numSymbols&&content.esi1<numSymbols){
-                        content.esi2=content.esi1+1;
+                    if(content.esi2==-1) {
+                        content.esi2 = extractEncodingSymbolID(getFecPayloadID(bitSetContent));
+                        if (content.esi1 > numSymbols && content.esi2 < numSymbols) {
+                            content.esi1 = content.esi2 - 1;
+                        } else if (content.esi2 > numSymbols && content.esi1 < numSymbols) {
+                            content.esi2 = content.esi1 + 1;
+                        }
                     }
                 }
-                Log.d(TAG,"current "+content.esi1+" "+content.esi2);
+                if(content.isMixed){
+                    Log.d(TAG,"current mixed frame contains: esi1:"+content.esi1+" esi2:"+content.esi2);
+                }else{
+                    Log.d(TAG,"current clear frame contains: esi:"+content.esi1);
+                }
 
                 int[] conIn10=getRawContent(bitSetContent);
                 decoder.decode(conIn10,matrix.ecNum);
@@ -109,6 +118,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                 encodingPacket = dataDecoder.parsePacket(raw, true).value();
                 Log.i(TAG, "got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if(isLastEncodingPacket(sourceBlock,encodingPacket)){
+                    Log.d(TAG,"the last esi is "+encodingPacket.encodingSymbolID());
                     if(mFrameCallback!=null) {
                         mFrameCallback.onLastPacket();
                     }
@@ -118,26 +128,30 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     writeRaptorQDataFile(dataDecoder,fileName);
                     break;
                 }
-                if(!reverse){
-                    content.isEsi1Done=true;
-                }else{
-                    content.isEsi2Done=true;
+                if(!doRepair) {
+                    if (!reverse) {
+                        content.isEsi1Done = true;
+                    } else {
+                        content.isEsi2Done = true;
+                    }
                 }
                 BitSet bitSet=toBitSet(conIn10,matrix.ecLength);
                 int esi=extractEncodingSymbolID(getFecPayloadID(bitSet));
                 if(!reverse){
                     content.esi1=esi;
+                    content.esi2=esi+1;
                 }else{
+                    content.esi1=esi-1;
                     content.esi2=esi;
                 }
                 if(!map.containsKey(esi)){
-                    if(!redo) {
+                    if(!doRepair) {
                         temp.put(esi, bitSet);
                     }else{
                         map.put(esi, bitSet);
                     }
                 }
-                if(redo) {
+                if(doRepair) {
                     test();
                 }
                 /*
@@ -154,14 +168,22 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         }
     }
     private void test(){
+        Log.d(TAG,"start repair");
+        Log.d(TAG,"the list:");
+        for(RawContent con:list){
+            Log.d(TAG,con.esi1 + " " + con.isEsi1Done + "\t" + con.esi2 + " " + con.isEsi2Done);
+        }
         for(Map.Entry<Integer, BitSet> entry : map.entrySet()){
             int esi=entry.getKey();
             BitSet bitSet=entry.getValue();
-
-            for (RawContent content : list) {
-                System.out.println("get" + content.esi1 + " " + content.isEsi1Done + "\t" + content.esi2 + " " + content.isEsi2Done);
-                if (content.isMixed && (content.esi1 == esi || content.esi2 == esi) && (!content.isEsi1Done || !content.isEsi2Done)) {
-                    System.out.println("test success");
+            for (Iterator<RawContent> it=list.iterator();it.hasNext();) {
+                RawContent content=it.next();
+                if(map.containsKey(content.esi1)&&map.containsKey(content.esi2)){
+                    it.remove();
+                    continue;
+                }
+                if ((esi==content.esi1||esi==content.esi2)&&!content.isEsi1Done&&!content.isEsi2Done) {
+                    Log.d(TAG,"esi "+esi+" processing "+content.esi1 + " " + content.isEsi1Done + "\t" + content.esi2 + " " + content.isEsi2Done);
                     BitSet clearTag = content.clearTag;
                     for (int i = clearTag.nextSetBit(0); i >= 0; i = clearTag.nextSetBit(i + 1)) {
                         content.clear.set(i, bitSet.get(i));
@@ -171,6 +193,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             }
         }
         map.putAll(temp);
+        Log.d(TAG,"stop repair");
     }
     public int[] getRawContent(BitSet content){
         int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];

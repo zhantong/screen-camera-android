@@ -12,8 +12,8 @@ public class RawContent {
     public BitSet bTow;
     public BitSet clearTag;
     boolean isMixed=false;
-    int esi1;
-    int esi2;
+    int esi1=-1;
+    int esi2=-1;
     boolean isEsi1Done=false;
     boolean isEsi2Done=false;
     boolean alreayPut=false;
@@ -38,10 +38,6 @@ public class RawContent {
         BitSet res=(BitSet)wTob.clone();
         res.or(bTow);
         return res;
-    }
-    public void OK(){
-        esi1=extractEncodingSymbolID(getFecPayloadID(getRawContent(false)));
-        esi2=extractEncodingSymbolID(getFecPayloadID(getRawContent(true)));
     }
     public int getFecPayloadID(BitSet bitSet){
         int value=0;
