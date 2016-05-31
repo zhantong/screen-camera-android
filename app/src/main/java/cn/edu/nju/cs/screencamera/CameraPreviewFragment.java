@@ -34,7 +34,7 @@ public class CameraPreviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(getChildFragmentManager().getBackStackEntryCount()==0){
-                    getChildFragmentManager().beginTransaction().replace(R.id.cameraPreview, new SettingsFragment()).addToBackStack(null).commit();
+                    getChildFragmentManager().beginTransaction().replace(R.id.cameraPreview, new CameraSettingsFragment()).addToBackStack(null).commit();
                     buttonSettings.setText("取消");
                 }else{
                     getChildFragmentManager().popBackStack();
@@ -58,12 +58,12 @@ public class CameraPreviewFragment extends Fragment {
         mPreview = new CameraPreview(this.getActivity());
         FrameLayout preview = (FrameLayout) rootView.findViewById(R.id.cameraPreview);
         preview.addView(mPreview);
-        SettingsFragment.passCamera(mPreview.getCameraInstance());
-        SettingsFragment settingsFragment=new SettingsFragment();
+        CameraSettingsFragment.passCamera(mPreview.getCameraInstance());
+        CameraSettingsFragment cameraSettingsFragment =new CameraSettingsFragment();
         SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-        settingsFragment.setDefault(sharedPreferences);
-        PreferenceManager.setDefaultValues(this.getActivity(), R.xml.preferences, false);
-        SettingsFragment.init(PreferenceManager.getDefaultSharedPreferences(this.getActivity()));
+        cameraSettingsFragment.setDefault(sharedPreferences);
+        PreferenceManager.setDefaultValues(this.getActivity(), R.xml.camera_preferences, false);
+        CameraSettingsFragment.init(PreferenceManager.getDefaultSharedPreferences(this.getActivity()));
         return rootView;
     }
     public void onAttach(Activity activity){

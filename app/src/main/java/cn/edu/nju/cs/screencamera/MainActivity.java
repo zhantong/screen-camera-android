@@ -3,7 +3,9 @@ package cn.edu.nju.cs.screencamera;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -29,7 +31,7 @@ import java.net.URLEncoder;
  * UI主要操作
  * 也是控制二维码识别的主要入口
  */
-public class MainActivity extends Activity implements CameraPreviewFragment.OnStartListener{
+public class MainActivity extends Activity implements CameraPreviewFragment.OnStartListener,View.OnFocusChangeListener{
     private CameraPreview mPreview;//相机
     private BarcodeFormat barcodeFormat;
     CameraPreviewFragment fragment;
@@ -39,6 +41,9 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
 
     public static final int REQUEST_CODE_FILE_PATH_INPUT=1;
     public static final int REQUEST_CODE_FILE_PATH_TRUTH=2;
+
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor editor;
 
     final Handler mHandler=new Handler(new Handler.Callback() {
         @Override
@@ -73,7 +78,7 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         TextView infoView = (TextView) findViewById(R.id.info_view);
         debugView.setGravity(Gravity.BOTTOM);
         infoView.setGravity(Gravity.BOTTOM);
-        initBarcodeFormatSpinner();
+
 
         Button buttonFilePathInput=(Button)findViewById(R.id.button_file_path_input);
         buttonFilePathInput.setOnClickListener(new View.OnClickListener() {
@@ -97,16 +102,49 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
                 saveFrames(v);
             }
         });
+
+        sharedPref=getSharedPreferences("main", Context.MODE_PRIVATE);
+        editor=sharedPref.edit();
+
+        initBarcodeFormatSpinner();
+        final EditText editTextFileNameCreated=(EditText)findViewById(R.id.file_name_created);
+        editTextFileNameCreated.setTag("FILE_NAME_CREATED");
+        editTextFileNameCreated.setText(sharedPref.getString((String)editTextFileNameCreated.getTag(),""));
+        editTextFileNameCreated.setOnFocusChangeListener(this);
+
+        final EditText editTextFilePathInput=(EditText)findViewById(R.id.file_path_input);
+        editTextFilePathInput.setTag("FILE_PATH_INPUT");
+        editTextFilePathInput.setText(sharedPref.getString((String)editTextFilePathInput.getTag(),""));
+        editTextFilePathInput.setOnFocusChangeListener(this);
+
+        final EditText editTextFilePathTruth=(EditText)findViewById(R.id.file_path_truth);
+        editTextFilePathTruth.setTag("FILE_PATH_TRUTH");
+        editTextFilePathTruth.setText(sharedPref.getString((String)editTextFilePathTruth.getTag(),""));
+        editTextFilePathTruth.setOnFocusChangeListener(this);
+    }
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        EditText editText=(EditText)v;
+        if(!hasFocus){
+            editor.putString((String)editText.getTag(),editText.getText().toString());
+            editor.apply();
+        }
     }
     private void initBarcodeFormatSpinner(){
         Spinner barcodeFormatSpinner=(Spinner)findViewById(R.id.barcode_format);
+        barcodeFormatSpinner.setTag("BARCODE_FORMAT");
         ArrayAdapter<BarcodeFormat> adapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,BarcodeFormat.values());
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         barcodeFormatSpinner.setAdapter(adapter);
+        barcodeFormatSpinner.setSelection(sharedPref.getInt((String) barcodeFormatSpinner.getTag(), 0));
+
         barcodeFormatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 barcodeFormat=BarcodeFormat.values()[position];
+
+                editor.putInt((String)parent.getTag(),position);
+                editor.apply();
             }
 
             @Override

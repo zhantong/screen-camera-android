@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by zhantong on 16/4/30.
  */
-public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class CameraSettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String KEY_PREF_PREV_SIZE = "preview_size";
     public static final String KEY_PREF_PIC_SIZE = "picture_size";
     public static final String KEY_PREF_VIDEO_SIZE = "video_size";
@@ -30,7 +30,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
+        addPreferencesFromResource(R.xml.camera_preferences);
         getActivity().setTheme(R.style.PreferenceTheme);
 
         loadSupportedPreviewSize();
