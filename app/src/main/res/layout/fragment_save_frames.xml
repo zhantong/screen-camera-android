@@ -13,7 +13,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:text="视频文件路径:"/>
+            android:text="@string/video_file_path"/>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
             android:id="@+id/button_file_path_input"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="选择视频文件"
+            android:text="@string/choose_video_file"
             android:layout_alignParentRight="true"
             />
     </RelativeLayout>
@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:text="生成文件夹名:"/>
+            android:text="@string/folder_name_created"/>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
-            android:text="生成图片格式:"/>
+            android:text="@string/image_type_created"/>
         <Spinner
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -65,7 +65,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="开始"
+            android:text="@string/start"
             android:id="@+id/button_start"
             android:layout_weight="1"/>
     </LinearLayout>

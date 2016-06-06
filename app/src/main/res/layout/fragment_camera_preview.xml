@@ -20,12 +20,12 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:id="@+id/button_settings"
-            android:text="设置"/>
+            android:text="@string/settings"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:id="@+id/button_start"
-            android:text="开始识别"/>
+            android:text="@string/start_process"/>
     </RelativeLayout>
 </LinearLayout>

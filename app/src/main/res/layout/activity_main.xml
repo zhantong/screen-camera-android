@@ -22,7 +22,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:text="类型:"/>
+                    android:text="@string/barcode_type"/>
                 <Spinner
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                android:text="生成文件名:"/>
+                android:text="@string/file_name_created"/>
             <EditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
                 android:id="@+id/button_file_name_created"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="打开文件"
+                android:text="@string/open_file"
                 android:onClick="openFile"
                 android:layout_alignParentRight="true"
                 />
@@ -61,7 +61,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:text="图片/视频文件路径:"/>
+                    android:text="@string/image_or_video_file_path"/>
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -72,7 +72,7 @@
                     android:id="@+id/button_file_path_input"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="选择图片/视频文件"
+                    android:text="@string/choose_image_or_video_file"
                     android:layout_alignParentRight="true"
                     />
             </RelativeLayout>
@@ -84,19 +84,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:text="真实文件路径:"/>
+                    android:text="@string/file_path_truth"/>
                 <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/text_file_path_truth"
                     android:layout_toLeftOf="@+id/button_file_path_truth"
                     android:id="@+id/file_path_truth"
-                    android:hint="（比特错误调试用）"/>
+                    android:hint="@string/file_path_truth_hint"/>
                 <Button
                     android:id="@+id/button_file_path_truth"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="选择文件"
+                    android:text="@string/choose_file"
                     android:layout_alignParentRight="true"
                     />
             </RelativeLayout>
@@ -107,31 +107,31 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="识别视频"
+                    android:text="@string/process_video"
                     android:onClick="processVideo"
                     android:layout_weight="1"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="打开相机"
+                    android:text="@string/open_camera"
                     android:onClick="processCamera"
                     android:layout_weight="1"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="识别图片"
+                    android:text="@string/process_image"
                     android:onClick="processImg"
                     android:layout_weight="1"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="停止"
+                    android:text="@string/stop"
                     android:onClick="stop"
                     android:layout_weight="1"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="保存视频帧"
+                    android:text="@string/save_frames"
                     android:id="@+id/save_frames"
                     android:layout_weight="1"/>
             </LinearLayout>

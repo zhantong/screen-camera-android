@@ -18,7 +18,7 @@
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:background="@drawable/sort_option_background"
-            android:text="按文件名" />
+            android:text="@string/by_file_name" />
         <RadioButton
             android:id="@+id/by_date"
             android:layout_width="match_parent"
@@ -27,7 +27,7 @@
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:background="@drawable/sort_option_background"
-            android:text="按时间顺序" />
+            android:text="@string/by_time_asc" />
         <RadioButton
             android:id="@+id/by_date_reverse"
             android:layout_width="match_parent"
@@ -36,7 +36,7 @@
             android:layout_weight="1"
             android:button="@android:color/transparent"
             android:background="@drawable/sort_option_background"
-            android:text="按时间逆序" />
+            android:text="@string/by_time_desc" />
     </RadioGroup>
 
     <ListView
@@ -53,5 +53,5 @@
         android:gravity="center"
         android:textColor="@android:color/white"
         android:textSize="32sp"
-        android:text="No files here."/>
+        android:text="@string/no_files"/>
 </RelativeLayout>

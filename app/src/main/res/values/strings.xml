@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">ScreenCamera</string>
+    <string name="barcode_type">类型</string>
+    <string name="file_name_created">生成文件名</string>
+    <string name="open_file">打开文件</string>
+    <string name="image_or_video_file_path">图片/视频文件路径</string>
+    <string name="choose_image_or_video_file">选择图片/视频文件</string>
+    <string name="choose_file">选择文件</string>
+    <string name="file_path_truth">真实文件路径</string>
+    <string name="file_path_truth_hint">（比特错误调试用）</string>
+    <string name="process_video">识别视频</string>
+    <string name="open_camera">打开相机</string>
+    <string name="process_image">识别图片</string>
+    <string name="stop">停止</string>
+    <string name="save_frames">保存视频帧</string>
+    <string name="settings">设置</string>
+    <string name="start_process">开始识别</string>
+    <string name="video_file_path">视频文件路径</string>
+    <string name="choose_video_file">选择视频文件</string>
+    <string name="folder_name_created">生成文件夹名</string>
+    <string name="image_type_created">生成图片格式</string>
+    <string name="start">开始</string>
+    <string name="by_file_name">按文件名</string>
+    <string name="by_time_asc">按时间顺序</string>
+    <string name="by_time_desc">按时间逆序</string>
+    <string name="no_files">无文件</string>
 </resources>
