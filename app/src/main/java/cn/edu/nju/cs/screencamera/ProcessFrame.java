@@ -34,6 +34,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  */
 public class ProcessFrame extends HandlerThread implements Handler.Callback {
     private static final String TAG="ProcessFrame";
+    private static final boolean ENABLE_INTER_FRAME_ERROR_CORRECTION=false;
     List<RawContent> list;
     Matrix matrix;
     ArrayDataDecoder dataDecoder;
@@ -280,7 +281,7 @@ public boolean handleMessage(Message msg) {
             break;
         case 3:
             RawContent content = (RawContent) msg.obj;
-            put(content,true);
+            put(content,ENABLE_INTER_FRAME_ERROR_CORRECTION);
             break;
         case 4:
             fileName = (String) msg.obj;
