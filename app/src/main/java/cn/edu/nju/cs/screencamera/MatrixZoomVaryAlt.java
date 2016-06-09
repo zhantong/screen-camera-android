@@ -13,8 +13,8 @@ public class MatrixZoomVaryAlt extends Matrix {
 
     private final int mBitsPerBlock=2;
     private final int mFrameBlackLength=1;
-    private final int mFrameVaryLength=1;
-    private final int mFrameVaryTwoLength=1;
+    private final int mFrameVaryLength=0;
+    private final int mFrameVaryTwoLength=0;
     private final int mContentLength=40;
     private final int mEcNum=40;
     private final int mEcLength=10;
@@ -108,8 +108,8 @@ public class MatrixZoomVaryAlt extends Matrix {
     private boolean isMixed(){
         int white=grayMatrix.get(0,1);
         int black=grayMatrix.get(0,2);
-        int checkPointOne=grayMatrix.get(2,1);
-        int checkPointTwo=grayMatrix.get(2,contentLength);
+        int checkPointOne=grayMatrix.get(0,3);
+        int checkPointTwo=grayMatrix.get(0,contentLength);
         if(VERBOSE){Log.d(TAG,"white:"+white+"\tblack:"+black+"\tone:"+checkPointOne+"\ttwo:"+checkPointTwo);}
         if(((checkPointOne>white-grayThreshold)&&(checkPointTwo>white-grayThreshold))||((checkPointOne<black+grayThreshold)&&(checkPointTwo<black+grayThreshold))){
             if(checkPointOne>(white+black)/2){
