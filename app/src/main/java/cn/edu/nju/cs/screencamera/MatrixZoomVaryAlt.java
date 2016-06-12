@@ -19,9 +19,12 @@ public class MatrixZoomVaryAlt extends Matrix {
     private final int mEcNum=40;
     private final int mEcLength=10;
 
+    private static final boolean OVERLAP_WHITE_TO_BLACK=false;
+    private static final boolean OVERLAP_BLACK_TO_WHITE=true;
+
     private int grayThreshold=6;
 
-    private boolean overlapCon=false;
+    private boolean overlapCon;
     private boolean isWhiteBackground;
 
     enum Overlap{
@@ -121,9 +124,9 @@ public class MatrixZoomVaryAlt extends Matrix {
         }
 
         if(checkPointOne>checkPointTwo){
-            overlapCon=false;
+            overlapCon=OVERLAP_WHITE_TO_BLACK;
         }else{
-            overlapCon=true;
+            overlapCon=OVERLAP_BLACK_TO_WHITE;
         }
         Log.d(TAG,"reverse:"+reverse);
         return true;
@@ -348,7 +351,7 @@ public class MatrixZoomVaryAlt extends Matrix {
         }
     }
     public Overlap getOverlapSituation(int x, int y){
-        boolean booIndex=(x+y)%2==0;
+        boolean isEvenBlock=(x+y)%2==0;
         int[] samples=grayMatrix.getSamples(x,y);
         int maxIndex=-1;
         int minIndex=-1;
@@ -423,84 +426,84 @@ public class MatrixZoomVaryAlt extends Matrix {
             }
         }else{
             if(minIndex==1&&maxIndex==2){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.DTOU;
                 }else{
                     return Overlap.UTOD;
                 }
             }
             if(minIndex==1&&maxIndex==3){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.LTOU;
                 }else{
                     return Overlap.UTOL;
                 }
             }
             if(minIndex==1&&maxIndex==4){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.RTOU;
                 }else{
                     return Overlap.UTOR;
                 }
             }
             if(minIndex==2&&maxIndex==1){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.UTOD;
                 }else{
                     return Overlap.DTOU;
                 }
             }
             if(minIndex==2&&maxIndex==3){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.LTOD;
                 }else{
                     return Overlap.DTOL;
                 }
             }
             if(minIndex==2&&maxIndex==4){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.RTOD;
                 }else{
                     return Overlap.DTOR;
                 }
             }
             if(minIndex==3&&maxIndex==1){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.UTOL;
                 }else{
                     return Overlap.LTOU;
                 }
             }
             if(minIndex==3&&maxIndex==2){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.DTOL;
                 }else{
                     return Overlap.LTOD;
                 }
             }
             if(minIndex==3&&maxIndex==4){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.RTOL;
                 }else{
                     return Overlap.LTOR;
                 }
             }
             if(minIndex==4&&maxIndex==1){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.UTOR;
                 }else{
                     return Overlap.RTOU;
                 }
             }
             if(minIndex==4&&maxIndex==2){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.DTOR;
                 }else{
                     return Overlap.RTOD;
                 }
             }
             if(minIndex==4&&maxIndex==3){
-                if(overlapCon==booIndex){
+                if(overlapCon==isEvenBlock){
                     return Overlap.LTOR;
                 }else{
                     return Overlap.RTOL;
