@@ -106,17 +106,17 @@ public class MatrixZoomVaryAlt extends Matrix {
             }
         }
         grayThreshold=getGrayThreshold();
-        //grayThreshold=10;
+        //grayThreshold=6;
         Log.i(TAG,"allowance in gray scale is "+grayThreshold);
         isMixed=isMixed();
         Log.i(TAG,"frame mixed:"+isMixed);
     }
     private int getGrayThreshold(){
-        int numBlock=30;
+        int numBlock=15;
         int max=0;
         int min=255;
-        for(int i=4;i<4+numBlock;i++){
-            int grayScale=grayMatrix.get(0,i);
+        for(int i=1;i<1+numBlock*2;i+=2){
+            int grayScale=grayMatrix.get(frameBlackLength+contentLength,i);
             //System.out.println(grayScale);
             if(grayScale>max){
                 max=grayScale;
@@ -125,7 +125,27 @@ public class MatrixZoomVaryAlt extends Matrix {
                 min=grayScale;
             }
         }
-        return max-min;
+        int thresholdWhite=max-min;
+        max=0;
+        min=255;
+        for(int i=2;i<1+numBlock*2;i+=2){
+            int grayScale=grayMatrix.get(frameBlackLength+contentLength,i);
+            if(grayScale>max){
+                max=grayScale;
+            }
+            if(grayScale<min){
+                min=grayScale;
+            }
+        }
+        int thresholdBlack=max-min;
+        int threshold=(thresholdBlack+thresholdWhite)/2;
+        if(threshold>100){
+            for(int i=1;i<1+numBlock*2;i+=2) {
+                Point center=grayMatrix.getPoints(frameBlackLength + contentLength, i)[0];
+                System.out.println(center.x+"\t"+center.y+"\t"+center.value);
+            }
+        }
+        return threshold;
     }
     private boolean isMixed(){
         int white=grayMatrix.get(0,1);
