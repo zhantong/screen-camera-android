@@ -22,7 +22,7 @@ public class MatrixZoomVaryAlt extends Matrix {
     private static final boolean OVERLAP_WHITE_TO_BLACK=false;
     private static final boolean OVERLAP_BLACK_TO_WHITE=true;
 
-    private int grayThreshold=6;
+    private int grayThreshold;
 
     private boolean overlapCon;
     private boolean isWhiteBackground;
@@ -105,8 +105,27 @@ public class MatrixZoomVaryAlt extends Matrix {
                 grayMatrix.set(x,y,gray);
             }
         }
+        grayThreshold=getGrayThreshold();
+        //grayThreshold=10;
+        Log.i(TAG,"allowance in gray scale is "+grayThreshold);
         isMixed=isMixed();
         Log.i(TAG,"frame mixed:"+isMixed);
+    }
+    private int getGrayThreshold(){
+        int numBlock=30;
+        int max=0;
+        int min=255;
+        for(int i=4;i<4+numBlock;i++){
+            int grayScale=grayMatrix.get(0,i);
+            //System.out.println(grayScale);
+            if(grayScale>max){
+                max=grayScale;
+            }
+            if(grayScale<min){
+                min=grayScale;
+            }
+        }
+        return max-min;
     }
     private boolean isMixed(){
         int white=grayMatrix.get(0,1);
