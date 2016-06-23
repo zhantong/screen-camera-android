@@ -45,6 +45,8 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     Map<Integer,BitSet> map;
     Map<Integer,BitSet> temp;
     int numSymbols;
+    FileToBitSet truthBitSet;
+
     public ProcessFrame(String name){
         super(name);
         list=new ArrayList<>();
@@ -108,6 +110,13 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                 }
 
                 int[] conIn10=getRawContent(bitSetContent);
+                if(truthBitSet!=null){
+                    if(!reverse){
+                        checkBitSet(bitSetContent,content.esi1);
+                    } else{
+                        checkBitSet(bitSetContent,content.esi2);
+                    }
+                }
                 decoder.decode(conIn10,matrix.ecNum);
                 int realByteNum=matrix.RSContentByteLength();
                 byte[] raw=new byte[realByteNum];
@@ -167,6 +176,17 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             }
 
         }
+    }
+    private void checkBitSet(BitSet raw,int esi){
+        BitSet truth=truthBitSet.getPacket(esi);
+        if(truth==null){
+            Log.d(TAG,"esi "+esi+" don't exist");
+            return;
+        }
+        BitSet clone = (BitSet) raw.clone();
+        clone.xor(truth);
+        int bitError=clone.cardinality();
+        Log.d(TAG, "esi " + esi + " has " + bitError + " bit errors");
     }
     private void test(){
         Log.d(TAG,"start repair");
@@ -285,6 +305,10 @@ public boolean handleMessage(Message msg) {
             break;
         case 4:
             fileName = (String) msg.obj;
+            break;
+        case 5:
+            String truthFilePath=(String)msg.obj;
+            truthBitSet=new FileToBitSet(matrix,truthFilePath);
             break;
     }
     return true;

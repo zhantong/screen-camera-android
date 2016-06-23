@@ -36,6 +36,9 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
         processFrame.start();
         processHandler=new Handler(processFrame.getLooper(), processFrame);
         processHandler.sendMessage(processHandler.obtainMessage(1,format));
+        if(!truthFilePath.equals("")) {
+            processHandler.sendMessage(processHandler.obtainMessage(5,truthFilePath));
+        }
         processFrame.setCallback(this);
     }
     public int getImgColorType(){

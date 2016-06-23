@@ -34,7 +34,10 @@ public class FileToBitSet {
         packets=RSEncode(readFile(filePath));
     }
     public BitSet getPacket(int esi){
-        return packets[esi];
+        if(esi>=0&&esi<packets.length) {
+            return packets[esi];
+        }
+        return null;
     }
     public int packetNum(){
         return packets.length;
