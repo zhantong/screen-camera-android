@@ -23,6 +23,8 @@ public class MatrixZoomVaryAlt extends Matrix {
     private static final boolean OVERLAP_BLACK_TO_WHITE=true;
 
     private int grayThreshold;
+    private int refWhite;
+    private int refBlack;
 
     private boolean overlapCon;
     private boolean isWhiteBackground;
@@ -105,11 +107,27 @@ public class MatrixZoomVaryAlt extends Matrix {
                 grayMatrix.set(x,y,gray);
             }
         }
+        refWhite=getRefWhite();
+        refBlack=getRefBlack();
         grayThreshold=getGrayThreshold();
         //grayThreshold=6;
         Log.i(TAG,"allowance in gray scale is "+grayThreshold);
         isMixed=isMixed();
         Log.i(TAG,"frame mixed:"+isMixed);
+    }
+    private int getRefWhite(){
+        int sum=0;
+        for(int i=1;i<contentLength;i+=2){
+            sum+=grayMatrix.get(frameBlackLength+contentLength,i);
+        }
+        return sum/contentLength;
+    }
+    private int getRefBlack(){
+        int sum=0;
+        for(int i=2;i<contentLength;i+=2){
+            sum+=grayMatrix.get(frameBlackLength+contentLength,i);
+        }
+        return sum/contentLength;
     }
     private int getGrayThreshold(){
         int numBlock=15;
@@ -148,13 +166,11 @@ public class MatrixZoomVaryAlt extends Matrix {
         return threshold;
     }
     private boolean isMixed(){
-        int white=grayMatrix.get(0,1);
-        int black=grayMatrix.get(0,2);
-        int checkPointOne=grayMatrix.get(0,3);
+        int checkPointOne=grayMatrix.get(0,1);
         int checkPointTwo=grayMatrix.get(0,contentLength);
-        if(VERBOSE){Log.d(TAG,"white:"+white+"\tblack:"+black+"\tone:"+checkPointOne+"\ttwo:"+checkPointTwo);}
-        if(((checkPointOne>white-grayThreshold)&&(checkPointTwo>white-grayThreshold))||((checkPointOne<black+grayThreshold)&&(checkPointTwo<black+grayThreshold))){
-            if(checkPointOne>(white+black)/2){
+        if(VERBOSE){Log.d(TAG,"white:"+refWhite+"\tblack:"+refBlack+"\tone:"+checkPointOne+"\ttwo:"+checkPointTwo);}
+        if(((checkPointOne>refWhite-grayThreshold)&&(checkPointTwo>refWhite-grayThreshold))||((checkPointOne<refBlack+grayThreshold)&&(checkPointTwo<refBlack+grayThreshold))){
+            if(checkPointOne>(refWhite+refBlack)/2){
                 isWhiteBackground=true;
             }else{
                 isWhiteBackground=false;
