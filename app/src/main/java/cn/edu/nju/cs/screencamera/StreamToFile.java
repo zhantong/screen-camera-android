@@ -113,7 +113,8 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
             byte[] current;
             matrix.sampleContent();
             processHandler.sendMessage(processHandler.obtainMessage(3,matrix.getRaw()));
-            border=null;
+            //border=null;
+            border=smallBorder(matrix.border);
             /*
             for(int i=1;i<3;i++) {
                 if(i==2){
