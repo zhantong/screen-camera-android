@@ -164,12 +164,6 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                 if(doRepair) {
                     test();
                 }
-                /*
-                BitSet clone = (BitSet) bitSet.clone();
-                clone.xor(bitSetContent);
-                int bitError=clone.cardinality();
-                System.out.println("bit error:"+bitError);
-                */
 
             }catch (ReedSolomonException e){
                 Log.d(TAG,"RS decode failed");
