@@ -35,6 +35,12 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 public class ProcessFrame extends HandlerThread implements Handler.Callback {
     private static final String TAG="ProcessFrame";
     private static final boolean ENABLE_INTER_FRAME_ERROR_CORRECTION=false;
+
+    public static final int WHAT_BARCODE_FORMAT=1;
+    public static final int WHAT_FEC_PARAMETERS=2;
+    public static final int WHAT_RAW_CONTENT=3;
+    public static final int WHAT_FILE_NAME=4;
+    public static final int WHAT_TRUTH_FILE_PATH=5;
     List<RawContent> list;
     Matrix matrix;
     ArrayDataDecoder dataDecoder;
@@ -283,24 +289,24 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
 @Override
 public boolean handleMessage(Message msg) {
     switch (msg.what) {
-        case 1:
+        case WHAT_BARCODE_FORMAT:
             BarcodeFormat format = (BarcodeFormat) msg.obj;
             matrix = MatrixFactory.createMatrix(format);
             break;
-        case 2:
+        case WHAT_FEC_PARAMETERS:
             FECParameters parameters = (FECParameters) msg.obj;
             dataDecoder = OpenRQ.newDecoder(parameters, 0);
             sourceBlock = dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks() - 1);
             numSymbols=(int)(sourceBlock.numberOfSourceSymbols()*1.5);
             break;
-        case 3:
+        case WHAT_RAW_CONTENT:
             RawContent content = (RawContent) msg.obj;
             put(content,ENABLE_INTER_FRAME_ERROR_CORRECTION);
             break;
-        case 4:
+        case WHAT_FILE_NAME:
             fileName = (String) msg.obj;
             break;
-        case 5:
+        case WHAT_TRUTH_FILE_PATH:
             String truthFilePath=(String)msg.obj;
             truthBitSet=new FileToBitSet(matrix,truthFilePath);
             break;

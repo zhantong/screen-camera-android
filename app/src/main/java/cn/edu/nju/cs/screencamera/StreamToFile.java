@@ -28,9 +28,9 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
         ProcessFrame processFrame=new ProcessFrame("process");
         processFrame.start();
         processHandler=new Handler(processFrame.getLooper(), processFrame);
-        processHandler.sendMessage(processHandler.obtainMessage(1,format));
+        processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_BARCODE_FORMAT,format));
         if(!truthFilePath.equals("")) {
-            processHandler.sendMessage(processHandler.obtainMessage(5,truthFilePath));
+            processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_TRUTH_FILE_PATH,truthFilePath));
         }
         processFrame.setCallback(this);
     }
@@ -41,7 +41,7 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
     public void crcCheckFailed(){}
     public void beforeDataDecoded(){}
     protected void streamToFile(LinkedBlockingQueue<byte[]> imgs,int frameWidth,int frameHeight,String fileName) {
-        processHandler.sendMessage(processHandler.obtainMessage(4,fileName));
+        processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_FILE_NAME,fileName));
         final int NUMBER_OF_SOURCE_BLOCKS=1;
         int fileByteNum=-1;
         int count = -1;
@@ -92,10 +92,10 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
                 Log.i(TAG,"file is "+fileByteNum+" bytes");
                 int length=matrix.realContentByteLength();
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, NUMBER_OF_SOURCE_BLOCKS);
-                processHandler.sendMessage(processHandler.obtainMessage(2,parameters));
+                processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_FEC_PARAMETERS,parameters));
             }
             matrix.sampleContent();
-            processHandler.sendMessage(processHandler.obtainMessage(3,matrix.getRaw()));
+            processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_RAW_CONTENT,matrix.getRaw()));
             border=smallBorder(matrix.border);
         }
     }
