@@ -22,9 +22,6 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
     public StreamToFile(Handler handler,BarcodeFormat format,String truthFilePath) {
         super(handler);
         barcodeFormat=format;
-        if(!truthFilePath.equals("")) {
-            setDebug(MatrixFactory.createMatrix(format), truthFilePath);
-        }
         ProcessFrame processFrame=new ProcessFrame("process");
         processFrame.start();
         processHandler=new Handler(processFrame.getLooper(), processFrame);

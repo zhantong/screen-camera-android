@@ -1,25 +1,10 @@
 package cn.edu.nju.cs.screencamera;
 
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
-import cn.edu.nju.cs.screencamera.ReedSolomon.GenericGF;
-import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonDecoder;
-import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * 从相机,视频,图片识别二维码的基础类
@@ -29,10 +14,7 @@ public class MediaToFile{
     private static final String TAG = "MediaToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     protected Handler handler;//与UI进程通信
-    ReedSolomonDecoder decoder;
     protected CRC8 crcCheck;
-    private boolean debugCheck=false;
-    private FileToBitSet truthBitSet;
     protected BitErrorCount bitErrorCount;
     /**
      * 构造函数,获取必须的参数
@@ -43,12 +25,6 @@ public class MediaToFile{
         this.handler = handler;
         crcCheck=new CRC8();
         bitErrorCount=new BitErrorCount();
-    }
-    public void setDebug(Matrix matrix,String filePath){
-        debugCheck=true;
-        updateInfo("正在加载调试文件");
-        truthBitSet=new FileToBitSet(matrix,filePath);
-        updateInfo("调试文件加载成功！");
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI
@@ -103,163 +79,7 @@ public class MediaToFile{
         }
         return index;
     }
-    public int[] getRawContent(Matrix matrix){
-        BitSet content=matrix.getContent();
-        if(debugCheck){
-            checkBitSet(content,matrix);
-        }
-        int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
-        for(int i=0;i<con.length*matrix.ecLength;i++){
-            if(content.get(i)){
-                con[i/matrix.ecLength]|=1<<(i%matrix.ecLength);
-            }
-        }
-        return con;
-    }
-    public int[] decode(int[] raw,int ecNum) throws ReedSolomonException {
-        boolean USE_JNI=false;
-        if(USE_JNI){
-            raw=AndroidJni.RSDecode(raw,raw.length);
-            if(raw==null){
-                throw new ReedSolomonException("decode failed");
-            }
-        }else {
-            if (decoder == null) {
-                decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
-                //decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
-            }
-            decoder.decode(raw, ecNum);
-        }
-        return raw;
-    }
-    public byte[] getContent(Matrix matrix) throws ReedSolomonException{
-        int[] rawContent=getRawContent(matrix);
-        int[] decodedContent=decode(rawContent,matrix.ecNum);
-        int realByteNum=matrix.RSContentByteLength();
-        byte[] res=new byte[realByteNum];
-        for(int i=0;i<res.length*8;i++){
-            if((decodedContent[i/matrix.ecLength]&(1<<(i%matrix.ecLength)))>0){
-                res[i/8]|=1<<(i%8);
-            }
-        }
-        return res;
-    }
-    public void checkBitSet(BitSet con,Matrix matrix){
-        int esi=extractEncodingSymbolID(getFecPayloadID(con));
-        if(esi>=0&&esi<truthBitSet.packetNum()){
-            BitSet truth=truthBitSet.getPacket(esi);
-            if(truth==null){
-                Log.d(TAG,"esi "+esi+" don't exist");
-            }else {
-                BitSet clone = (BitSet) con.clone();
-                clone.xor(truth);
-                int bitError=clone.cardinality();
-                Log.d(TAG, "esi " + esi + " has " + bitError + " bit errors");
-                bitErrorCount.put(esi,bitError);
-                if (clone.cardinality() != 0) {
-                    printContentBitSet(clone,matrix.bitsPerBlock,matrix.contentLength,matrix,truth,con);
-                }
-            }
-        }
-    }
-    public void printContentBitSet(BitSet content,int bitsPerBlock,int contentLength,Matrix matrix,BitSet right,BitSet wrong){
-        BitSet overlapSituation=matrix.getOverlapSituation();
-        class Pair{
-            int x;
-            int y;
-            public Pair(int x, int y){
-                this.x=x;
-                this.y=y;
-            }
-        }
-        int index=0;
-        System.out.println("the wrong bits graph:");
-        LinkedList<Pair> pairs=new LinkedList<>();
-        for(int y=0;y<contentLength;y++){
-            for(int x=0;x<contentLength;x++){
-                boolean flag=false;
-                for(int i=0;i<bitsPerBlock;i++){
-                    if(content.get(index+i)){
-                        flag=true;
-                        break;
-                    }
-                }
-                if(flag){
-                    pairs.add(new Pair(x,y));
-                    System.out.print("x");
-                }
-                else{
-                    System.out.print(" ");
-                }
-                index+=bitsPerBlock;
-            }
-            System.out.println();
-        }
-        int offsetX=3;
-        int offsetY=1;
-        for(Pair pair:pairs){
-            int bitsetPos=(pair.y*contentLength+pair.x)*bitsPerBlock;
-            System.out.print("get:");
-            for(int i=0;i<bitsPerBlock;i++){
-                System.out.print(wrong.get(bitsetPos+i)?1:0);
-            }
-            System.out.print("\treal:");
-            for(int i=0;i<bitsPerBlock;i++){
-                System.out.print(right.get(bitsetPos+i)?1:0);
-            }
-            System.out.print("\toverlap:");
-            boolean flag=false;
-            for(int i=0;i<bitsPerBlock;i++){
-                if(overlapSituation.get(bitsetPos+i)){
-                    flag=true;
-                    break;
-                }
-            }
-            System.out.print(flag?1:0);
-            System.out.print("\t");
-            matrix.grayMatrix.print(offsetX+pair.x,offsetY+pair.y);
-        }
-    }
 
-    public Object readCheckFile(String filePath){
-        ObjectInputStream inputStream;
-        Object d=null;
-        try {
-            inputStream = new ObjectInputStream(new FileInputStream(filePath));
-            d = inputStream.readObject();
-        }catch (ClassNotFoundException ec){
-            ec.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-
-
-
-        return d;
-    }
-    public boolean bytesToFile(byte[] bytes,String fileName){
-        if(fileName.isEmpty()){
-            Log.i(TAG, "file name is empty");
-            updateInfo("文件名为空！ ");
-            return false;
-        }
-        File file = new File(Environment.getExternalStorageDirectory() + "/Download/" + fileName);
-        OutputStream os;
-        try {
-            os = new FileOutputStream(file);
-            os.write(bytes);
-            os.close();
-        } catch (FileNotFoundException e) {
-            Log.i(TAG, "file path error, cannot create file:" + e.toString());
-            return false;
-        }catch (IOException e){
-            Log.i(TAG, "IOException:" + e.toString());
-            return false;
-        }
-        Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
-        updateInfo("文件写入成功！");
-        return true;
-    }
     public int[] smallBorder(int[] origBorder){
         int[] border=new int[origBorder.length];
         int horizonSub=origBorder[2]-origBorder[0];
@@ -269,18 +89,5 @@ public class MediaToFile{
         border[2]=origBorder[2]-horizonSub/10;
         border[3]=origBorder[3]-verticalSub/10;
         return border;
-    }
-    public int getFecPayloadID(BitSet bitSet){
-        int value=0;
-        for (int i = bitSet.nextSetBit(0); i <32; i = bitSet.nextSetBit(i + 1)) {
-            value|=(1<<(i%8))<<(3-i/8)*8;
-        }
-        return value;
-    }
-    public int extractSourceBlockNumber(int fecPayloadID){
-        return fecPayloadID>>24;
-    }
-    public int extractEncodingSymbolID(int fecPayloadID){
-        return fecPayloadID&0x0FFF;
     }
 }
