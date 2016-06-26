@@ -63,7 +63,7 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
                 break;
             }
             updateDebug(index, lastSuccessIndex, frameAmount, count);
-            Log.i(TAG, "--------------- "+"current frame:" + count+" ---------------");
+            Log.i(TAG,"processing frame: "+count);
             try {
                 matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
                 matrix.perspectiveTransform();
@@ -92,7 +92,9 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
                 processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_FEC_PARAMETERS,parameters));
             }
             matrix.sampleContent();
-            processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_RAW_CONTENT,matrix.getRaw()));
+            RawContent rawContent=matrix.getRaw();
+            rawContent.frameIndex=count;
+            processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_RAW_CONTENT,rawContent));
             border=smallBorder(matrix.border);
         }
     }

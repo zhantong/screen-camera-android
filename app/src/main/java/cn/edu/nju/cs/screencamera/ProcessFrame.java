@@ -34,7 +34,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  */
 public class ProcessFrame extends HandlerThread implements Handler.Callback {
     private static final String TAG="ProcessFrame";
-    private static final boolean ENABLE_INTER_FRAME_ERROR_CORRECTION=false;
+    private static final boolean IS_INTER_FRAME_ERROR_CORRECTION=false;
 
     public static final int WHAT_BARCODE_FORMAT=1;
     public static final int WHAT_FEC_PARAMETERS=2;
@@ -68,29 +68,15 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public void setCallback(FrameCallback callback){
         mFrameCallback=callback;
     }
-    public void put(RawContent content,boolean doRepair){
+    public void put(RawContent content){
         EncodingPacket encodingPacket;
         boolean reverse=false;
         for(int j=1;j<3;j++){
             if(j==2){
                 if(content.isMixed){
                     reverse=true;
-                    if(!content.alreayPut) {
-                        content.alreayPut=true;
-                        list.add(content);
-                        Log.d(TAG,"put into list:"+content.esi1 + " " + content.isEsi1Done + "\t" + content.esi2 + " " + content.isEsi2Done);
-                    }
                 }else{
                     break;
-                }
-            }
-            if(!reverse){
-                if(content.isEsi1Done){
-                    continue;
-                }
-            }else{
-                if(content.isEsi2Done){
-                    continue;
                 }
             }
             try {
@@ -110,9 +96,9 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     }
                 }
                 if(content.isMixed){
-                    Log.d(TAG,"current mixed frame contains: esi1:"+content.esi1+" esi2:"+content.esi2);
+                    Log.d(TAG,"mixed frame "+content.frameIndex+": esi1:"+content.esi1+" esi2:"+content.esi2);
                 }else{
-                    Log.d(TAG,"current clear frame contains: esi:"+content.esi1);
+                    Log.d(TAG,"clear frame "+content.frameIndex+": esi:"+content.esi1);
                 }
 
                 int[] conIn10=getRawContent(bitSetContent);
@@ -132,7 +118,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     }
                 }
                 encodingPacket = dataDecoder.parsePacket(raw, true).value();
-                Log.i(TAG, "got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
+                Log.i(TAG, "frame "+content.frameIndex+" got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if(isLastEncodingPacket(sourceBlock,encodingPacket)){
                     Log.d(TAG,"the last esi is "+encodingPacket.encodingSymbolID());
                     if(mFrameCallback!=null) {
@@ -144,33 +130,6 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     writeRaptorQDataFile(dataDecoder,fileName);
                     break;
                 }
-                if(!doRepair) {
-                    if (!reverse) {
-                        content.isEsi1Done = true;
-                    } else {
-                        content.isEsi2Done = true;
-                    }
-                }
-                BitSet bitSet=toBitSet(conIn10,matrix.ecLength);
-                int esi=extractEncodingSymbolID(getFecPayloadID(bitSet));
-                if(!reverse){
-                    content.esi1=esi;
-                    content.esi2=esi+1;
-                }else{
-                    content.esi1=esi-1;
-                    content.esi2=esi;
-                }
-                if(!map.containsKey(esi)){
-                    if(!doRepair) {
-                        temp.put(esi, bitSet);
-                    }else{
-                        map.put(esi, bitSet);
-                    }
-                }
-                if(doRepair) {
-                    test();
-                }
-
             }catch (ReedSolomonException e){
                 Log.d(TAG,"RS decode failed");
             }
@@ -209,7 +168,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     for (int i = clearTag.nextSetBit(0); i >= 0; i = clearTag.nextSetBit(i + 1)) {
                         content.clear.set(i, bitSet.get(i));
                     }
-                    put(content,false);
+                    put(content);
                 }
             }
         }
@@ -301,7 +260,7 @@ public boolean handleMessage(Message msg) {
             break;
         case WHAT_RAW_CONTENT:
             RawContent content = (RawContent) msg.obj;
-            put(content,ENABLE_INTER_FRAME_ERROR_CORRECTION);
+            put(content);
             break;
         case WHAT_FILE_NAME:
             fileName = (String) msg.obj;

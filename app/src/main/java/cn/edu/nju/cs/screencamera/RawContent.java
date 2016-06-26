@@ -14,9 +14,10 @@ public class RawContent {
     boolean isMixed=false;
     int esi1=-1;
     int esi2=-1;
+    int frameIndex=-1;
     boolean isEsi1Done=false;
     boolean isEsi2Done=false;
-    boolean alreayPut=false;
+    boolean alreadyPut =false;
     public RawContent(int length){
         this.length=length;
         clear=new BitSet();
