@@ -4,14 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Spinner;
 
-import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
-
-import net.fec.openrq.ArrayDataDecoder;
-import net.fec.openrq.EncodingPacket;
-import net.fec.openrq.OpenRQ;
-import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
 import java.nio.ByteBuffer;
@@ -24,6 +17,8 @@ public class SingleImgToFile extends MediaToFile {
     private static final boolean VERBOSE = false;//是否记录详细log
     private static BarcodeFormat barcodeFormat;
 
+    private Handler processHandler;
+
     /**
      * 构造函数,获取必须的参数
      *
@@ -35,6 +30,14 @@ public class SingleImgToFile extends MediaToFile {
         if(!truthFilePath.equals("")) {
             setDebug(MatrixFactory.createMatrix(format), truthFilePath);
         }
+
+        ProcessFrame processFrame=new ProcessFrame("process");
+        processFrame.start();
+        processHandler=new Handler(processFrame.getLooper(), processFrame);
+        processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_BARCODE_FORMAT,format));
+        if(!truthFilePath.equals("")) {
+            processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_TRUTH_FILE_PATH,truthFilePath));
+        }
     }
 
     /**
@@ -44,6 +47,7 @@ public class SingleImgToFile extends MediaToFile {
      * @param filePath 图片路径
      */
     public void singleImg(String filePath) {
+        final int NUMBER_OF_SOURCE_BLOCKS=1;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
@@ -51,59 +55,30 @@ public class SingleImgToFile extends MediaToFile {
         bitmap.copyPixelsToBuffer(byteBuffer);
         bitmap.recycle();
         updateInfo("正在识别...");
-        Matrix matrix=null;
-        ArrayDataDecoder dataDecoder=null;
-        int fileByteNum=-1;
-        int[] border=null;
-        long startTime;
-        long endTime;
-        startTime= System.currentTimeMillis();
+        Matrix matrix;
+        int fileByteNum;
         try {
-            matrix=MatrixFactory.createMatrix(barcodeFormat,byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),border);
+            matrix=MatrixFactory.createMatrix(barcodeFormat,byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),null);
             matrix.perspectiveTransform();
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());
             return;
         }
-        for(int i=1;i<3;i++) {
-            if(i==2){
-                if(!matrix.isMixed){
-                    break;
-                }
-                matrix.reverse=true;
-            }
-            Log.i(TAG,"try reverse "+matrix.reverse+" :");
-            if(fileByteNum==-1){
-                try {
-                    fileByteNum = getFileByteNum(matrix);
-                }catch (CRCCheckException e){
-                    Log.d(TAG, "head CRC check failed");
-                    continue;
-                }
-                if(fileByteNum==0){
-                    Log.d(TAG,"wrong file byte number");
-                    fileByteNum=-1;
-                    continue;
-                }
-                Log.i(TAG,"file is "+fileByteNum+" bytes");
-                int length=matrix.realContentByteLength();
-                FECParameters parameters = FECParameters.newParameters(fileByteNum, length, 1);
-                Log.d(TAG, "RaptorQ parameters:" + parameters.toString());
-                dataDecoder = OpenRQ.newDecoder(parameters, 0);
-            }
-            byte[] current;
-            try {
-                current = getContent(matrix);
-            }catch (ReedSolomonException e){
-                Log.d(TAG, "content error correction failed");
-                continue;
-            }
-            EncodingPacket encodingPacket = dataDecoder.parsePacket(current, true).value();
-            Log.i(TAG, "got 1 source block: source block number:" + encodingPacket.sourceBlockNumber() + "\tencoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-            dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+        try {
+            fileByteNum = getFileByteNum(matrix);
+        }catch (CRCCheckException e){
+            Log.d(TAG, "head CRC check failed");
+            return;
         }
-        matrix = null;
-        endTime= System.currentTimeMillis();
-        Log.d(TAG,"process frame takes "+(endTime-startTime)+"ms");
+        if(fileByteNum==0){
+            Log.d(TAG,"wrong file byte number");
+            return;
+        }
+        Log.i(TAG,"file is "+fileByteNum+" bytes");
+        int length=matrix.realContentByteLength();
+        FECParameters parameters = FECParameters.newParameters(fileByteNum, length, NUMBER_OF_SOURCE_BLOCKS);
+        processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_FEC_PARAMETERS,parameters));
+        matrix.sampleContent();
+        processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_RAW_CONTENT,matrix.getRaw()));
     }
 }
