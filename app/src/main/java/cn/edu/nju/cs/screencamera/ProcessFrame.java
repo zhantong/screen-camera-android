@@ -34,7 +34,6 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  */
 public class ProcessFrame extends HandlerThread implements Handler.Callback {
     private static final String TAG="ProcessFrame";
-    private static final boolean IS_INTER_FRAME_ERROR_CORRECTION=false;
 
     public static final int WHAT_BARCODE_FORMAT=1;
     public static final int WHAT_FEC_PARAMETERS=2;
@@ -48,16 +47,12 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
     String fileName;
     FrameCallback mFrameCallback;
-    Map<Integer,BitSet> map;
-    Map<Integer,BitSet> temp;
     int numSymbols;
     FileToBitSet truthBitSet;
 
     public ProcessFrame(String name){
         super(name);
         list=new ArrayList<>();
-        map=new HashMap<>();
-        temp=new HashMap<>();
     }
 
 
@@ -146,34 +141,6 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         clone.xor(truth);
         int bitError=clone.cardinality();
         Log.d(TAG, "esi " + esi + " has " + bitError + " bit errors");
-    }
-    private void test(){
-        Log.d(TAG,"start repair");
-        Log.d(TAG,"the list:");
-        for(RawContent con:list){
-            Log.d(TAG,con.esi1 + " " + con.isEsi1Done + "\t" + con.esi2 + " " + con.isEsi2Done);
-        }
-        for(Map.Entry<Integer, BitSet> entry : map.entrySet()){
-            int esi=entry.getKey();
-            BitSet bitSet=entry.getValue();
-            for (Iterator<RawContent> it=list.iterator();it.hasNext();) {
-                RawContent content=it.next();
-                if(map.containsKey(content.esi1)&&map.containsKey(content.esi2)){
-                    it.remove();
-                    continue;
-                }
-                if ((esi==content.esi1||esi==content.esi2)&&!content.isEsi1Done&&!content.isEsi2Done) {
-                    Log.d(TAG,"esi "+esi+" processing "+content.esi1 + " " + content.isEsi1Done + "\t" + content.esi2 + " " + content.isEsi2Done);
-                    BitSet clearTag = content.clearTag;
-                    for (int i = clearTag.nextSetBit(0); i >= 0; i = clearTag.nextSetBit(i + 1)) {
-                        content.clear.set(i, bitSet.get(i));
-                    }
-                    put(content);
-                }
-            }
-        }
-        map.putAll(temp);
-        Log.d(TAG,"stop repair");
     }
     public int[] getRawContent(BitSet content){
         int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
