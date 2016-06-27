@@ -20,10 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import cn.edu.nju.cs.screencamera.ReedSolomon.GenericGF;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonDecoder;
@@ -40,7 +37,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public static final int WHAT_RAW_CONTENT=3;
     public static final int WHAT_FILE_NAME=4;
     public static final int WHAT_TRUTH_FILE_PATH=5;
-    List<RawContent> list;
+    List<RawContent> rawContentList;
     Matrix matrix;
     ArrayDataDecoder dataDecoder;
     SourceBlockDecoder sourceBlock;
@@ -50,9 +47,14 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     int numSymbols;
     FileToBitSet truthBitSet;
 
+    BarcodeFormat barcodeFormat;
+
+    Statistics statistics;
+
     public ProcessFrame(String name){
         super(name);
-        list=new ArrayList<>();
+        rawContentList=new ArrayList<>();
+        statistics=new Statistics();
     }
 
 
@@ -76,34 +78,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             }
             try {
                 BitSet bitSetContent=content.getRawContent(reverse);
-                if(!reverse){
-                    if(content.esi1==-1) {
-                        content.esi1 = extractEncodingSymbolID(getFecPayloadID(bitSetContent));
-                    }
-                }else{
-                    if(content.esi2==-1) {
-                        content.esi2 = extractEncodingSymbolID(getFecPayloadID(bitSetContent));
-                        if (content.esi1 > numSymbols && content.esi2 < numSymbols) {
-                            content.esi1 = content.esi2 - 1;
-                        } else if (content.esi2 > numSymbols && content.esi1 < numSymbols) {
-                            content.esi2 = content.esi1 + 1;
-                        }
-                    }
-                }
-                if(content.isMixed){
-                    Log.d(TAG,"mixed frame "+content.frameIndex+": esi1:"+content.esi1+" esi2:"+content.esi2);
-                }else{
-                    Log.d(TAG,"clear frame "+content.frameIndex+": esi:"+content.esi1);
-                }
-
                 int[] conIn10=getRawContent(bitSetContent);
-                if(truthBitSet!=null){
-                    if(!reverse){
-                        checkBitSet(bitSetContent,content.esi1);
-                    } else{
-                        checkBitSet(bitSetContent,content.esi2);
-                    }
-                }
                 decoder.decode(conIn10,matrix.ecNum);
                 int realByteNum=matrix.RSContentByteLength();
                 byte[] raw=new byte[realByteNum];
@@ -113,22 +88,32 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     }
                 }
                 encodingPacket = dataDecoder.parsePacket(raw, true).value();
+                if(!reverse){
+                    content.esi1=encodingPacket.encodingSymbolID();
+                    content.isEsi1Done=true;
+                }else{
+                    content.esi2=encodingPacket.encodingSymbolID();
+                    content.isEsi2Done=true;
+                }
                 Log.i(TAG, "frame "+content.frameIndex+" got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if(isLastEncodingPacket(sourceBlock,encodingPacket)){
                     Log.d(TAG,"the last esi is "+encodingPacket.encodingSymbolID());
+                    statistics.setLastFrameIndex(content.frameIndex);
+                    statistics.setLastEsi(encodingPacket.encodingSymbolID());
                     if(mFrameCallback!=null) {
                         mFrameCallback.onLastPacket();
                     }
                 }
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-                if(dataDecoder.isDataDecoded()){
-                    writeRaptorQDataFile(dataDecoder,fileName);
-                    break;
-                }
             }catch (ReedSolomonException e){
                 Log.d(TAG,"RS decode failed");
             }
-
+        }
+        rawContentList.add(content);
+        if(dataDecoder.isDataDecoded()){
+            statistics.loadRawContentList(rawContentList);
+            statistics.doStat();
+            writeRaptorQDataFile(dataDecoder,fileName);
         }
     }
     private void checkBitSet(BitSet raw,int esi){
@@ -216,11 +201,13 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
 public boolean handleMessage(Message msg) {
     switch (msg.what) {
         case WHAT_BARCODE_FORMAT:
-            BarcodeFormat format = (BarcodeFormat) msg.obj;
-            matrix = MatrixFactory.createMatrix(format);
+            barcodeFormat = (BarcodeFormat) msg.obj;
+            matrix = MatrixFactory.createMatrix(barcodeFormat);
+            statistics.setBarcodeFormat(barcodeFormat);
             break;
         case WHAT_FEC_PARAMETERS:
             FECParameters parameters = (FECParameters) msg.obj;
+            statistics.loadFECParameters(parameters);
             dataDecoder = OpenRQ.newDecoder(parameters, 0);
             sourceBlock = dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks() - 1);
             numSymbols=(int)(sourceBlock.numberOfSourceSymbols()*1.5);
@@ -234,7 +221,8 @@ public boolean handleMessage(Message msg) {
             break;
         case WHAT_TRUTH_FILE_PATH:
             String truthFilePath=(String)msg.obj;
-            truthBitSet=new FileToBitSet(matrix,truthFilePath);
+            statistics.loadTruthFile(truthFilePath,barcodeFormat);
+            //truthBitSet=new FileToBitSet(barcodeFormat,truthFilePath);
             break;
     }
     return true;

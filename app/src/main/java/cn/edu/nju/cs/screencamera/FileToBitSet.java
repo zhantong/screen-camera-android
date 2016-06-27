@@ -26,7 +26,8 @@ public class FileToBitSet {
     private int ecSymbolBitLength;
     private int lastESI;
     private BitSet[] packets;
-    public FileToBitSet(Matrix matrix,String filePath){
+    public FileToBitSet(BarcodeFormat barcodeFormat,String filePath){
+        Matrix matrix = MatrixFactory.createMatrix(barcodeFormat);
         bitsPerBlock=matrix.bitsPerBlock;
         contentBlock=matrix.contentLength;
         ecSymbol=matrix.ecNum;
