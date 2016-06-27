@@ -112,7 +112,8 @@ public class MatrixZoomVaryAlt extends Matrix {
         grayThreshold=getGrayThreshold();
         //grayThreshold=6;
         Log.i(TAG,"allowance in gray scale is "+grayThreshold);
-        isMixed=isMixed();
+        //isMixed=isMixed();
+        isMixed=true;
     }
     private int getRefWhite(){
         int sum=0;
