@@ -73,8 +73,11 @@ public class Statistics {
                 if(!mixed){
                     countBitError+=esi1BitError;
                 }else{
-                    int minBitError=(esi1BitError<esi2BitError)?esi1BitError:esi2BitError;
-                    countBitError+=minBitError;
+                    if(esi1BitError==-1||esi2BitError==-1){
+                        countBitError+=(esi1BitError==-1)?esi2BitError:esi1BitError;
+                    }else{
+                        countBitError+=(esi1BitError<esi2BitError)?esi1BitError:esi2BitError;
+                    }
                 }
             }
         }
@@ -137,19 +140,25 @@ public class Statistics {
                 }else if(!rawContent.isEsi1Done&&rawContent.isEsi2Done){
                     rawContent.esi1=rawContent.esi2-1;
                 }else if(!rawContent.isEsi1Done&&!rawContent.isEsi2Done){
-                    int esi1=extractEncodingSymbolID(getFecPayloadID(rawContent.getRawContent(false)));
-                    int esi2=extractEncodingSymbolID(getFecPayloadID(rawContent.getRawContent(true)));
-                    int max=parameters.numberOfSourceBlocks()*2;
-                    if(esi1>=0&&esi1<max){
-                        rawContent.esi1=esi1;
-                        rawContent.esi2=esi2;
-                    }else if(esi2>=0&&esi2<max){
-                        rawContent.esi1=esi2-1;
-                        rawContent.esi2=esi2;
-                    }
+                    int startEsi=rawContentList.get(index-1).esi1;
+                    rawContent.esi1=findBestEsi(rawContent.getRawContent(false),startEsi);
+                    rawContent.esi2=findBestEsi(rawContent.getRawContent(true),startEsi);
                 }
             }
         }
+    }
+    private int findBestEsi(BitSet content,int startEsi){
+        int numNext=4;
+        int minBitError=Integer.MAX_VALUE;
+        int esi=-1;
+        for(int i=startEsi;i<startEsi+numNext;i++){
+            int bitError=getBitError(content,i);
+            if(bitError<minBitError){
+                minBitError=bitError;
+                esi=i;
+            }
+        }
+        return esi;
     }
     private int getBitError(BitSet raw, int esi){
         BitSet truth=truthBitSet.getPacket(esi);
