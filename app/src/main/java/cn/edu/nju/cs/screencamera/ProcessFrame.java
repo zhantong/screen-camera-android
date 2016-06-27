@@ -41,7 +41,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     Matrix matrix;
     ArrayDataDecoder dataDecoder;
     SourceBlockDecoder sourceBlock;
-    ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_10);
+    ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_12);
     String fileName;
     FrameCallback mFrameCallback;
     int numSymbols;
@@ -50,6 +50,8 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     BarcodeFormat barcodeFormat;
 
     Statistics statistics;
+
+    boolean decodingFinish=false;
 
     public ProcessFrame(String name){
         super(name);
@@ -97,6 +99,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                 }
                 Log.i(TAG, "frame "+content.frameIndex+" got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if(isLastEncodingPacket(sourceBlock,encodingPacket)){
+                    decodingFinish=true;
                     Log.d(TAG,"the last esi is "+encodingPacket.encodingSymbolID());
                     statistics.setLastFrameIndex(content.frameIndex);
                     statistics.setLastEsi(encodingPacket.encodingSymbolID());
@@ -128,10 +131,20 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         Log.d(TAG, "esi " + esi + " has " + bitError + " bit errors");
     }
     public int[] getRawContent(BitSet content){
-        int[] con=new int[matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength];
-        for(int i=0;i<con.length*matrix.ecLength;i++){
+        int numRealBits=matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength-matrix.ecLength*matrix.ecNum;
+        int[] con=new int[(int)Math.ceil((double)matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength)];
+        for(int i=0;i<numRealBits;i++){
             if(content.get(i)){
                 con[i/matrix.ecLength]|=1<<(i%matrix.ecLength);
+            }
+        }
+        int offset=0;
+        if(numRealBits%matrix.ecLength!=0){
+            offset=matrix.ecLength-numRealBits%matrix.ecLength;
+        }
+        for(int i=numRealBits;i<con.length*matrix.ecLength;i++){
+            if(content.get(i)){
+                con[(i+offset)/matrix.ecLength]|=1<<((i+offset)%matrix.ecLength);
             }
         }
         return con;
@@ -214,7 +227,9 @@ public boolean handleMessage(Message msg) {
             break;
         case WHAT_RAW_CONTENT:
             RawContent content = (RawContent) msg.obj;
-            put(content);
+            if(!decodingFinish) {
+                put(content);
+            }
             break;
         case WHAT_FILE_NAME:
             fileName = (String) msg.obj;

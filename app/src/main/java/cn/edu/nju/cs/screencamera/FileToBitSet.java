@@ -86,31 +86,42 @@ public class FileToBitSet {
         return buffer;
     }
     private BitSet[] RSEncode(List<byte[]> byteBuffer) {
-        ReedSolomonEncoder encoder = new ReedSolomonEncoder(GenericGF.AZTEC_DATA_10);
+        ReedSolomonEncoder encoder = new ReedSolomonEncoder(GenericGF.AZTEC_DATA_12);
         BitSet[] bitSets=new BitSet[lastESI+1];
         for (byte[] b : byteBuffer) {
-            int[] ordered = new int[bitsPerBlock*contentBlock * contentBlock / ecSymbolBitLength];
+            int[] ordered = new int[(int)Math.ceil((double)bitsPerBlock*contentBlock * contentBlock / ecSymbolBitLength)];
             for (int i = 0; i < b.length * 8; i++) {
                 if ((b[i / 8] & (1 << (i % 8))) > 0) {
                     ordered[i / ecSymbolBitLength] |= 1 << (i % ecSymbolBitLength);
                 }
             }
             encoder.encode(ordered, ecSymbol);
-            BitSet current=toBitSet(ordered, ecSymbolBitLength);
+            BitSet current=toBitSet(ordered, ecSymbolBitLength,bitsPerBlock*contentBlock*contentBlock-ecSymbol*ecSymbolBitLength);
             int esi=extractEncodingSymbolID(getFecPayloadID(current));
             bitSets[esi]=current;
         }
         return bitSets;
     }
-    private static BitSet toBitSet(int data[],int bitNum){
+    private static BitSet toBitSet(int data[],int bitNum,int numRealBits){
+        int cut=(numRealBits-1)/bitNum;
         int index=0;
         BitSet bitSet=new BitSet();
-        for(int current:data){
-            for(int i=0;i<bitNum;i++){
-                if((current&(1<<i))>0){
-                    bitSet.set(index);
+        for(int j=0;j<data.length;j++){
+            int current=data[j];
+            if(j==cut){
+                for(int i=0;i<=(numRealBits-1)%bitNum;i++){
+                    if((current&(1<<i))>0){
+                        bitSet.set(index);
+                    }
+                    index++;
                 }
-                index++;
+            }else{
+                for(int i=0;i<bitNum;i++){
+                    if((current&(1<<i))>0){
+                        bitSet.set(index);
+                    }
+                    index++;
+                }
             }
         }
         return bitSet;
