@@ -17,7 +17,7 @@ public class MatrixZoomVaryAlt extends Matrix {
     private final int mFrameVaryTwoLength=0;
     private final int mContentLength=40;
     private final int mEcNum=40;
-    private final int mEcLength=10;
+    private final int mEcLength=12;
 
     private static final boolean OVERLAP_WHITE_TO_BLACK=false;
     private static final boolean OVERLAP_BLACK_TO_WHITE=true;

@@ -25,9 +25,10 @@ public class FileToBitSet {
     private int ecSymbol;
     private int ecSymbolBitLength;
     private int lastESI;
+    private Matrix matrix;
     private BitSet[] packets;
     public FileToBitSet(BarcodeFormat barcodeFormat,String filePath){
-        Matrix matrix = MatrixFactory.createMatrix(barcodeFormat);
+        matrix = MatrixFactory.createMatrix(barcodeFormat);
         bitsPerBlock=matrix.bitsPerBlock;
         contentBlock=matrix.contentLength;
         ecSymbol=matrix.ecNum;
@@ -86,7 +87,7 @@ public class FileToBitSet {
         return buffer;
     }
     private BitSet[] RSEncode(List<byte[]> byteBuffer) {
-        ReedSolomonEncoder encoder = new ReedSolomonEncoder(GenericGF.AZTEC_DATA_12);
+        ReedSolomonEncoder encoder = new ReedSolomonEncoder(selectRSLengthParam(matrix.ecLength));
         BitSet[] bitSets=new BitSet[lastESI+1];
         for (byte[] b : byteBuffer) {
             int[] ordered = new int[(int)Math.ceil((double)bitsPerBlock*contentBlock * contentBlock / ecSymbolBitLength)];
@@ -101,6 +102,17 @@ public class FileToBitSet {
             bitSets[esi]=current;
         }
         return bitSets;
+    }
+    private GenericGF selectRSLengthParam(int ecLength){
+        switch (ecLength){
+            case 8:
+                return GenericGF.QR_CODE_FIELD_256;
+            case 10:
+                return GenericGF.AZTEC_DATA_10;
+            case 12:
+                return GenericGF.AZTEC_DATA_12;
+        }
+        return null;
     }
     private static BitSet toBitSet(int data[],int bitNum,int numRealBits){
         int cut=(numRealBits-1)/bitNum;

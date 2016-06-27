@@ -41,7 +41,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     Matrix matrix;
     ArrayDataDecoder dataDecoder;
     SourceBlockDecoder sourceBlock;
-    ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.AZTEC_DATA_12);
+    ReedSolomonDecoder decoder;
     String fileName;
     FrameCallback mFrameCallback;
     int numSymbols;
@@ -118,6 +118,17 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             statistics.doStat();
             writeRaptorQDataFile(dataDecoder,fileName);
         }
+    }
+    private GenericGF selectRSLengthParam(int ecLength){
+        switch (ecLength){
+            case 8:
+                return GenericGF.QR_CODE_FIELD_256;
+            case 10:
+                return GenericGF.AZTEC_DATA_10;
+            case 12:
+                return GenericGF.AZTEC_DATA_12;
+        }
+        return null;
     }
     private void checkBitSet(BitSet raw,int esi){
         BitSet truth=truthBitSet.getPacket(esi);
@@ -216,6 +227,7 @@ public boolean handleMessage(Message msg) {
         case WHAT_BARCODE_FORMAT:
             barcodeFormat = (BarcodeFormat) msg.obj;
             matrix = MatrixFactory.createMatrix(barcodeFormat);
+            decoder = new ReedSolomonDecoder(selectRSLengthParam(matrix.ecLength));
             statistics.setBarcodeFormat(barcodeFormat);
             break;
         case WHAT_FEC_PARAMETERS:
