@@ -1,5 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
+import android.os.Environment;
+
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
 import net.fec.openrq.encoder.DataEncoder;
@@ -8,7 +10,10 @@ import net.fec.openrq.parameters.FECParameters;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.BitSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,20 +25,20 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonEncoder;
  * Created by zhantong on 16/4/29.
  */
 public class FileToBitSet {
-    private int bitsPerBlock;
-    private int contentBlock;
-    private int ecSymbol;
-    private int ecSymbolBitLength;
     private int lastESI;
-    private Matrix matrix;
+    private int bitsPerBlock;
+    private int contentLength;
+    private int ecNum;
+    private int ecLength;
     private BitSet[] packets;
+    final double REPAIR_PERCENT=1;
     public FileToBitSet(BarcodeFormat barcodeFormat,String filePath){
-        matrix = MatrixFactory.createMatrix(barcodeFormat);
+        Matrix matrix = MatrixFactory.createMatrix(barcodeFormat);
         bitsPerBlock=matrix.bitsPerBlock;
-        contentBlock=matrix.contentLength;
-        ecSymbol=matrix.ecNum;
-        ecSymbolBitLength=matrix.ecLength;
-        packets=RSEncode(readFile(filePath));
+        contentLength=matrix.contentLength;
+        ecNum=matrix.ecNum;
+        ecLength=matrix.ecLength;
+        packets=RSEncode(filePath);
     }
     public BitSet getPacket(int esi){
         if(esi>=0&&esi<packets.length) {
@@ -44,24 +49,22 @@ public class FileToBitSet {
     public int packetNum(){
         return packets.length;
     }
-    private List<byte[]> readFile(String filePath) {
+    private List<byte[]> readFile(byte[] byteData) {
+
+
         //一个二维码实际存储的文件信息,最后的8byte为RaptorQ头部
-        final int realByteLength = bitsPerBlock*contentBlock * contentBlock / 8 - ecSymbol * ecSymbolBitLength / 8 - 8;
+        final int realByteLength = bitsPerBlock* contentLength * contentLength / 8 - ecNum * ecLength / 8 - 8;
+        final int NUMBER_OF_SOURCE_BLOCKS=1;
+
         List<byte[]> buffer = new LinkedList<>();
-        File file=new File(filePath);
-        byte[] byteData = null;
-        try{
-            byteData=fullyReadFileToBytes(file);
-        }catch (IOException e){
-            e.printStackTrace();
-        }
+
+
         int fileByteNum=byteData.length;
         System.out.println(String.format("file is %d bytes", fileByteNum));
-        FECParameters parameters = FECParameters.newParameters(fileByteNum, realByteLength, 1);//只有1个source block
+        FECParameters parameters = FECParameters.newParameters(fileByteNum, realByteLength, NUMBER_OF_SOURCE_BLOCKS);
         assert byteData != null;
         DataEncoder dataEncoder = OpenRQ.newEncoder(byteData, parameters);
-        System.out.println(String.format("RaptorQ: total %d bytes; %d source blocks; %d bytes per frame",
-                parameters.dataLength(), dataEncoder.numberOfSourceBlocks(), parameters.symbolSize()));
+        System.out.println("RaptorQ parameters: "+parameters.toString());
         for (SourceBlockEncoder sourceBlockEncoder : dataEncoder.sourceBlockIterable()) {
             System.out.println(String.format("source block %d: contains %d source symbols",
                     sourceBlockEncoder.sourceBlockNumber(), sourceBlockEncoder.numberOfSourceSymbols()));
@@ -74,7 +77,7 @@ public class FileToBitSet {
         buffer.remove(buffer.size() - 1);
         SourceBlockEncoder lastSourceBlock = dataEncoder.sourceBlock(dataEncoder.numberOfSourceBlocks() - 1);
         buffer.add(lastSourceBlock.repairPacket(lastSourceBlock.numberOfSourceSymbols()).asArray());
-        int repairNum = buffer.size() / 2;
+        int repairNum = (int)(buffer.size()*REPAIR_PERCENT);
         for (int i = 1; i <= repairNum; i++) {
             for (SourceBlockEncoder sourceBlockEncoder : dataEncoder.sourceBlockIterable()) {
                 EncodingPacket encodingPacket=sourceBlockEncoder.repairPacket(sourceBlockEncoder.numberOfSourceSymbols() + i);
@@ -86,21 +89,63 @@ public class FileToBitSet {
         System.out.println(String.format("generated %d symbols (the last 1 source symbol is dropped)", buffer.size()));
         return buffer;
     }
-    private BitSet[] RSEncode(List<byte[]> byteBuffer) {
-        ReedSolomonEncoder encoder = new ReedSolomonEncoder(selectRSLengthParam(matrix.ecLength));
+    private Object loadObjectFromFile(String filePath){
+        ObjectInputStream inputStream;
+        Object d=null;
+        try {
+            inputStream = new ObjectInputStream(new FileInputStream(filePath));
+            d = inputStream.readObject();
+        }catch (ClassNotFoundException ec){
+            ec.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        return d;
+    }
+    private BitSet[] RSEncode(String filePath) {
+
+        File file=new File(filePath);
+        byte[] byteData = null;
+        try{
+            byteData=fullyReadFileToBytes(file);
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+        File cacheFolder=new File(Environment.getExternalStorageDirectory()+"/ScreenCameraCache");
+        if(!cacheFolder.exists()){
+            cacheFolder.mkdir();
+        }
+        String fileSha1=FileVerification.bytesToSHA1(byteData);
+        String cacheFileName=fileSha1+"_"+REPAIR_PERCENT;
+        File cacheFile=new File(cacheFolder,cacheFileName);
+        if(cacheFile.exists()){
+            return (BitSet[])loadObjectFromFile(cacheFile.getPath());
+        }
+
+        List<byte[]> byteBuffer=readFile(byteData);
+        ReedSolomonEncoder encoder = new ReedSolomonEncoder(selectRSLengthParam(ecLength));
         BitSet[] bitSets=new BitSet[lastESI+1];
         for (byte[] b : byteBuffer) {
-            int[] ordered = new int[(int)Math.ceil((double)bitsPerBlock*contentBlock * contentBlock / ecSymbolBitLength)];
+            int[] ordered = new int[(int)Math.ceil((double)bitsPerBlock* contentLength * contentLength / ecLength)];
             for (int i = 0; i < b.length * 8; i++) {
                 if ((b[i / 8] & (1 << (i % 8))) > 0) {
-                    ordered[i / ecSymbolBitLength] |= 1 << (i % ecSymbolBitLength);
+                    ordered[i / ecLength] |= 1 << (i % ecLength);
                 }
             }
-            encoder.encode(ordered, ecSymbol);
-            BitSet current=toBitSet(ordered, ecSymbolBitLength,bitsPerBlock*contentBlock*contentBlock-ecSymbol*ecSymbolBitLength);
+            encoder.encode(ordered, ecNum);
+            BitSet current=toBitSet(ordered, ecLength,bitsPerBlock*contentLength*contentLength-ecLength*ecNum);
             int esi=extractEncodingSymbolID(getFecPayloadID(current));
             bitSets[esi]=current;
         }
+
+        ObjectOutputStream outputStream;
+        try {
+            outputStream = new ObjectOutputStream(new FileOutputStream(cacheFile.getPath()));
+            outputStream.writeObject(bitSets);
+        }catch (IOException e){
+            throw new RuntimeException();
+        }
+
         return bitSets;
     }
     private GenericGF selectRSLengthParam(int ecLength){
