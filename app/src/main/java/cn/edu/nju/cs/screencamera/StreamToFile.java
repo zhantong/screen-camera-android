@@ -89,6 +89,7 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
                 Log.i(TAG,"file is "+fileByteNum+" bytes");
                 int length=matrix.realContentByteLength();
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, NUMBER_OF_SOURCE_BLOCKS);
+                System.out.println(parameters.toString());
                 processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_FEC_PARAMETERS,parameters));
             }
             matrix.sampleContent();

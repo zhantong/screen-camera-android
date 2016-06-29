@@ -51,7 +51,7 @@ public class Statistics {
         recoverEsi(rawContentList);
         setFirstFrameIndex(locateFirstFrameIndex(rawContentList));
         for(RawContent rawContent:rawContentList){
-            Log.d(TAG,"frame "+rawContent.frameIndex+": mixed: "+rawContent.isMixed+" status: "+rawContent.isEsi1Done+" "+rawContent.isEsi2Done+" esi1: "+rawContent.esi1+" esi2: "+rawContent.esi2);
+            Log.d(TAG,"frame "+rawContent.frameIndex+": "+(rawContent.isMixed?"mixed":"clear")+" status: "+rawContent.isEsi1Done+" "+rawContent.isEsi2Done+" esi1: "+rawContent.esi1+" esi2: "+rawContent.esi2);
             boolean mixed=rawContent.isMixed;
 
             int esi1BitError=10000;
@@ -110,6 +110,8 @@ public class Statistics {
         Log.d(TAG,"lastEsi: "+lastEsi);
         Log.d(TAG,"numExtraSymbols: "+numExtraSymbols);
         Log.d(TAG,"percentExtraSymbols: "+percentExtraSymbols);
+
+        Log.d(TAG,"matrix: contentLength: "+matrix.contentLength+" ecLength: "+matrix.ecLength+" ecNum: "+matrix.ecNum);
     }
     private int locateFirstFrameIndex(List<RawContent> rawContentList){
         int firstFrameIndex=-1;
@@ -140,7 +142,12 @@ public class Statistics {
                 }else if(!rawContent.isEsi1Done&&rawContent.isEsi2Done){
                     rawContent.esi1=rawContent.esi2-1;
                 }else if(!rawContent.isEsi1Done&&!rawContent.isEsi2Done){
-                    int startEsi=rawContentList.get(index-1).esi1;
+                    int startEsi;
+                    if (index == 0) {
+                        startEsi=rawContentList.get(0).esi1;
+                    }else {
+                        startEsi = rawContentList.get(index - 1).esi1;
+                    }
                     rawContent.esi1=findBestEsi(rawContent.getRawContent(false),startEsi);
                     rawContent.esi2=findBestEsi(rawContent.getRawContent(true),startEsi);
                 }

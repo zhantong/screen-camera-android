@@ -70,6 +70,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public void put(RawContent content){
         EncodingPacket encodingPacket;
         boolean reverse=false;
+        Log.i(TAG,"frame "+content.frameIndex);
         for(int j=1;j<3;j++){
             if(j==2){
                 if(content.isMixed){
@@ -97,7 +98,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     content.esi2=encodingPacket.encodingSymbolID();
                     content.isEsi2Done=true;
                 }
-                Log.i(TAG, "frame "+content.frameIndex+" got 1 encoding packet: encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
+                Log.i(TAG, "encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
                 if(isLastEncodingPacket(sourceBlock,encodingPacket)){
                     decodingFinish=true;
                     Log.d(TAG,"the last esi is "+encodingPacket.encodingSymbolID());
