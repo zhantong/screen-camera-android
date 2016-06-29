@@ -116,7 +116,7 @@ public class FileToBitSet {
             cacheFolder.mkdir();
         }
         String fileSha1=FileVerification.bytesToSHA1(byteData);
-        String cacheFileName=fileSha1+"_"+REPAIR_PERCENT;
+        String cacheFileName=fileSha1+"_"+REPAIR_PERCENT+"_"+ecNum;
         File cacheFile=new File(cacheFolder,cacheFileName);
         if(cacheFile.exists()){
             return (BitSet[])loadObjectFromFile(cacheFile.getPath());
