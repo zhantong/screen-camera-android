@@ -37,6 +37,11 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public static final int WHAT_RAW_CONTENT=3;
     public static final int WHAT_FILE_NAME=4;
     public static final int WHAT_TRUTH_FILE_PATH=5;
+
+    public static final boolean IS_RAPTORQ_ENABLE=true;
+
+    public static final boolean IS_STATISTIC_ENABLE=false;
+
     List<RawContent> rawContentList;
     Matrix matrix;
     ArrayDataDecoder dataDecoder;
@@ -44,19 +49,23 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     ReedSolomonDecoder decoder;
     String fileName;
     FrameCallback mFrameCallback;
-    int numSymbols;
     FileToBitSet truthBitSet;
 
     BarcodeFormat barcodeFormat;
 
     Statistics statistics;
 
+    BitSet withoutRaptorQ;
+    int maxSourceEsi;
+
     boolean decodingFinish=false;
 
     public ProcessFrame(String name){
         super(name);
         rawContentList=new ArrayList<>();
-        statistics=new Statistics();
+        if(IS_STATISTIC_ENABLE) {
+            statistics = new Statistics();
+        }
     }
 
 
@@ -99,26 +108,59 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     content.isEsi2Done=true;
                 }
                 Log.i(TAG, "encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-                if(isLastEncodingPacket(sourceBlock,encodingPacket)){
-                    decodingFinish=true;
-                    Log.d(TAG,"the last esi is "+encodingPacket.encodingSymbolID());
-                    statistics.setLastFrameIndex(content.frameIndex);
-                    statistics.setLastEsi(encodingPacket.encodingSymbolID());
-                    if(mFrameCallback!=null) {
-                        mFrameCallback.onLastPacket();
+                if(IS_RAPTORQ_ENABLE) {
+                    if (isLastEncodingPacket(sourceBlock, encodingPacket)) {
+                        decodingFinish = true;
+                        Log.d(TAG, "the last esi is " + encodingPacket.encodingSymbolID());
+                        if(IS_STATISTIC_ENABLE) {
+                            statistics.setLastFrameIndex(content.frameIndex);
+                            statistics.setLastEsi(encodingPacket.encodingSymbolID());
+                        }
+                        if (mFrameCallback != null) {
+                            mFrameCallback.onLastPacket();
+                        }
+                    }
+                    dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+                }else{
+                    int esi=encodingPacket.encodingSymbolID();
+                    esi%=maxSourceEsi;
+                    withoutRaptorQ.set(esi);
+                    System.out.println(withoutRaptorQ);
+                    if(isAllSet(withoutRaptorQ,maxSourceEsi)){
+                        decodingFinish=true;
+                        if(IS_STATISTIC_ENABLE) {
+                            statistics.setLastFrameIndex(content.frameIndex);
+                            statistics.setLastEsi(encodingPacket.encodingSymbolID());
+                        }
+                        if (mFrameCallback != null) {
+                            mFrameCallback.onLastPacket();
+                        }
                     }
                 }
-                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }catch (ReedSolomonException e){
                 Log.d(TAG,"RS decode failed");
             }
         }
         rawContentList.add(content);
-        if(dataDecoder.isDataDecoded()){
-            statistics.loadRawContentList(rawContentList);
-            statistics.doStat();
-            writeRaptorQDataFile(dataDecoder,fileName);
+        if(IS_RAPTORQ_ENABLE) {
+            if (dataDecoder.isDataDecoded()) {
+                if(IS_STATISTIC_ENABLE) {
+                    statistics.loadRawContentList(rawContentList);
+                    statistics.doStat();
+                }
+                writeRaptorQDataFile(dataDecoder, fileName);
+            }
+        }else{
+            if(decodingFinish){
+                if(IS_STATISTIC_ENABLE) {
+                    statistics.loadRawContentList(rawContentList);
+                    statistics.doStat();
+                }
+            }
         }
+    }
+    private boolean isAllSet(BitSet bitSet,int size){
+        return bitSet.get(0)&&bitSet.nextClearBit(0)>=size;
     }
     private GenericGF selectRSLengthParam(int ecLength){
         switch (ecLength){
@@ -229,14 +271,21 @@ public boolean handleMessage(Message msg) {
             barcodeFormat = (BarcodeFormat) msg.obj;
             matrix = MatrixFactory.createMatrix(barcodeFormat);
             decoder = new ReedSolomonDecoder(selectRSLengthParam(matrix.ecLength));
-            statistics.setBarcodeFormat(barcodeFormat);
+            if(IS_STATISTIC_ENABLE) {
+                statistics.setBarcodeFormat(barcodeFormat);
+            }
             break;
         case WHAT_FEC_PARAMETERS:
             FECParameters parameters = (FECParameters) msg.obj;
-            statistics.loadFECParameters(parameters);
+            if(IS_STATISTIC_ENABLE) {
+                statistics.loadFECParameters(parameters);
+            }
             dataDecoder = OpenRQ.newDecoder(parameters, 0);
             sourceBlock = dataDecoder.sourceBlock(dataDecoder.numberOfSourceBlocks() - 1);
-            numSymbols=(int)(sourceBlock.numberOfSourceSymbols()*1.5);
+            if(!IS_RAPTORQ_ENABLE){
+                withoutRaptorQ=new BitSet();
+                maxSourceEsi=sourceBlock.numberOfSourceSymbols()-1;
+            }
             break;
         case WHAT_RAW_CONTENT:
             RawContent content = (RawContent) msg.obj;
@@ -249,7 +298,9 @@ public boolean handleMessage(Message msg) {
             break;
         case WHAT_TRUTH_FILE_PATH:
             String truthFilePath=(String)msg.obj;
-            statistics.loadTruthFile(truthFilePath,barcodeFormat);
+            if(IS_STATISTIC_ENABLE) {
+                statistics.loadTruthFile(truthFilePath, barcodeFormat);
+            }
             //truthBitSet=new FileToBitSet(barcodeFormat,truthFilePath);
             break;
     }
