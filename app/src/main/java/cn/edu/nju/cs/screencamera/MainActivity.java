@@ -32,6 +32,8 @@ import java.net.URLEncoder;
  * 也是控制二维码识别的主要入口
  */
 public class MainActivity extends Activity implements CameraPreviewFragment.OnStartListener,View.OnFocusChangeListener{
+    private static Context mContext;
+
     private CameraPreview mPreview;//相机
     private BarcodeFormat barcodeFormat;
     CameraPreviewFragment fragment;
@@ -74,6 +76,8 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mContext=this;
+
         TextView debugView = (TextView) findViewById(R.id.debug_view);
         TextView infoView = (TextView) findViewById(R.id.info_view);
         debugView.setGravity(Gravity.BOTTOM);
@@ -121,6 +125,9 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         editTextFilePathTruth.setTag("FILE_PATH_TRUTH");
         editTextFilePathTruth.setText(sharedPref.getString((String)editTextFilePathTruth.getTag(),""));
         editTextFilePathTruth.setOnFocusChangeListener(this);
+    }
+    public static Context getContext(){
+        return mContext;
     }
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
