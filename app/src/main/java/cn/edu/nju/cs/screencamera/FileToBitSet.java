@@ -1,6 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
 import android.os.Environment;
+import android.util.Log;
 
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
@@ -25,6 +26,8 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonEncoder;
  * Created by zhantong on 16/4/29.
  */
 public class FileToBitSet {
+    private static final String TAG = "FileToBitSet";
+
     private int lastESI;
     private int bitsPerBlock;
     private int contentLength;
@@ -63,13 +66,13 @@ public class FileToBitSet {
 
 
         int fileByteNum=byteData.length;
-        System.out.println(String.format("file is %d bytes", fileByteNum));
+        Log.i(TAG,String.format("file is %d bytes", fileByteNum));
         FECParameters parameters = FECParameters.newParameters(fileByteNum, realByteLength, NUMBER_OF_SOURCE_BLOCKS);
         assert byteData != null;
         DataEncoder dataEncoder = OpenRQ.newEncoder(byteData, parameters);
-        System.out.println("RaptorQ parameters: "+parameters.toString());
+        Log.i(TAG,"RaptorQ parameters: "+parameters.toString());
         for (SourceBlockEncoder sourceBlockEncoder : dataEncoder.sourceBlockIterable()) {
-            System.out.println(String.format("source block %d: contains %d source symbols",
+            Log.i(TAG,String.format("source block %d: contains %d source symbols",
                     sourceBlockEncoder.sourceBlockNumber(), sourceBlockEncoder.numberOfSourceSymbols()));
             for (EncodingPacket encodingPacket : sourceBlockEncoder.sourcePacketsIterable()) {
                 byte[] encode = encodingPacket.asArray();
@@ -89,7 +92,7 @@ public class FileToBitSet {
                 buffer.add(encode);
             }
         }
-        System.out.println(String.format("generated %d symbols (the last 1 source symbol is dropped)", buffer.size()));
+        Log.i(TAG,String.format("generated %d symbols (the last 1 source symbol is dropped)", buffer.size()));
         return buffer;
     }
     private Object loadObjectFromFile(String filePath){

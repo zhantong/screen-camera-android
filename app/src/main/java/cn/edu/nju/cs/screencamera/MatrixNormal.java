@@ -9,6 +9,9 @@ import java.util.HashMap;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixNormal extends Matrix {
+    private static final boolean VERBOSE = false;
+    private static final String TAG = "MatrixNormal";
+
     public HashMap<Integer,Integer>[] bars;
     protected boolean ordered=true;
     private RawContent rawContent;
@@ -74,7 +77,7 @@ public class MatrixNormal extends Matrix {
         int white=grayMatrix.get(0,1);
         grayMatrix.get(0,1);
         int threshold=(black+white)/2;
-        System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
+        if(VERBOSE){Log.i(TAG,"black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);}
         int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
         BitSet bitSet=new BitSet();
         for(int i=0;i<length;i++){

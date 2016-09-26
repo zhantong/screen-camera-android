@@ -9,6 +9,7 @@ import java.util.List;
  * Created by zhantong on 16/4/22.
  */
 public class MatrixZoom extends Matrix{
+    private static final String TAG = "MatrixZoom";
 
     private final int mBitsPerBlock=2;
     private final int mFrameBlackLength=1;
@@ -85,7 +86,7 @@ public class MatrixZoom extends Matrix{
         int white=grayMatrix.get(0,1);
         grayMatrix.get(0,1);
         int threshold=(black+white)/2;
-        System.out.println("black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);
+        if(VERBOSE){Log.i(TAG,"black:"+black+"\twhite:"+white+"\tthreshold:"+threshold);}
         int length=(frameBlackLength+frameVaryLength+frameVaryTwoLength)*2+contentLength;
         BitSet bitSet=new BitSet();
         for(int i=0;i<length;i++){
@@ -263,7 +264,7 @@ public class MatrixZoom extends Matrix{
             int x=point%contentLength;
             int y=point/contentLength;
             Point[] samples=grayMatrix.getPoints(baseX+x,baseY+y);
-            System.out.println("("+x+","+y+") ("+samples[1].x+","+samples[1].y+" "+samples[1].value+") ("+samples[2].x+","+samples[2].y+" "+samples[2].value+") ("+samples[3].x+","+samples[3].y+" "+samples[3].value+") ("+samples[4].x+","+samples[4].y+" "+samples[4].value+")");
+            Log.i(TAG,"("+x+","+y+") ("+samples[1].x+","+samples[1].y+" "+samples[1].value+") ("+samples[2].x+","+samples[2].y+" "+samples[2].value+") ("+samples[3].x+","+samples[3].y+" "+samples[3].value+") ("+samples[4].x+","+samples[4].y+" "+samples[4].value+")");
         }
     }
 }

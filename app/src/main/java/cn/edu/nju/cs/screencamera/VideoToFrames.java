@@ -124,11 +124,13 @@ public class VideoToFrames implements Runnable {
     }
 
     private void showSupportedColorFormat(MediaCodecInfo.CodecCapabilities caps) {
-        System.out.print("supported color format: ");
+        StringBuilder builder=new StringBuilder();
+        builder.append("supported color format: ");
         for (int c : caps.colorFormats) {
-            System.out.print(c + "\t");
+            builder.append(c);
+            builder.append("\t");
         }
-        System.out.println();
+        Log.i(TAG,builder.toString());
     }
 
     private boolean isColorFormatSupported(int colorFormat, MediaCodecInfo.CodecCapabilities caps) {

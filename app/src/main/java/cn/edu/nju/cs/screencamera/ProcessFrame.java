@@ -31,6 +31,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  */
 public class ProcessFrame extends HandlerThread implements Handler.Callback {
     private static final String TAG="ProcessFrame";
+    private static final boolean VERBOSE = false;
 
     public static final int WHAT_BARCODE_FORMAT=1;
     public static final int WHAT_FEC_PARAMETERS=2;
@@ -128,7 +129,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     int esi=encodingPacket.encodingSymbolID();
                     esi%=maxSourceEsi;
                     withoutRaptorQ.set(esi);
-                    System.out.println(withoutRaptorQ);
+                    if(VERBOSE){Log.i(TAG,"already get: "+withoutRaptorQ);}
                     if(isAllSet(withoutRaptorQ,maxSourceEsi)){
                         decodingFinish=true;
                         if(IS_STATISTIC_ENABLE) {

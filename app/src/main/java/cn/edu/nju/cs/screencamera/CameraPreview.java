@@ -125,7 +125,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (changed) {
-            System.out.println(left+"\t"+top+"\t"+right+"\t"+bottom);
+            //System.out.println(left+"\t"+top+"\t"+right+"\t"+bottom);
             ViewGroup parent=((ViewGroup)getParent());
             Rect rect=new Rect();
             parent.getLocalVisibleRect(rect);

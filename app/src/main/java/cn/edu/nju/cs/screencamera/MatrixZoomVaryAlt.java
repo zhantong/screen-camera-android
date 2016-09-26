@@ -161,12 +161,14 @@ public class MatrixZoomVaryAlt extends Matrix {
         }
         int thresholdBlack=max-min;
         int threshold=(thresholdBlack+thresholdWhite)/2;
+        /*
         if(threshold>100){
             for(int i=1;i<1+numBlock*2;i+=2) {
                 Point center=grayMatrix.getPoints(frameBlackLength + contentLength, i)[0];
                 System.out.println(center.x+"\t"+center.y+"\t"+center.value);
             }
         }
+        */
         return threshold;
     }
     private boolean isMixed(){
