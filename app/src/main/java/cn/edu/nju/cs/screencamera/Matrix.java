@@ -30,6 +30,8 @@ public class Matrix{
     int ecNum;
     int ecLength;
 
+    boolean findBorderUseJni;
+
     public Matrix(){
     }
     /**
@@ -57,6 +59,9 @@ public class Matrix{
             }
         }
         Log.d(TAG,"倾斜角度："+calcAngle());
+
+        PropertiesReader propertiesReader=new PropertiesReader();
+        findBorderUseJni=Boolean.parseBoolean(propertiesReader.getProperty("findBorder.useJNI"));
     }
     public double calcAngle(){
         return Math.toDegrees(1.0*(borders[1]-borders[3])/(borders[2]-borders[0]));
@@ -304,7 +309,6 @@ public class Matrix{
      * @throws NotFoundException 能够确定不可能发现二维码时,则抛出未找到二维码异常
      */
     public int[] findBorder(int[] initBorder) throws NotFoundException {
-        boolean USE_JNI=true;
         int left=initBorder[0];
         int up=initBorder[1];
         int right=initBorder[2];
@@ -319,7 +323,7 @@ public class Matrix{
         if (left < 0 || right >= imgWidth || up < 0 || down >= imgHeight) {
             throw new NotFoundException("frame size too small");
         }
-        if(USE_JNI) {
+        if(findBorderUseJni) {
             int[] res = AndroidJni.findBorder(pixels, imgColorType, threshold, imgWidth, imgHeight, initBorder);
             left = res[0];
             up = res[1];

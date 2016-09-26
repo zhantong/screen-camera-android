@@ -38,9 +38,9 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public static final int WHAT_FILE_NAME=4;
     public static final int WHAT_TRUTH_FILE_PATH=5;
 
-    public static final boolean IS_RAPTORQ_ENABLE=true;
+    public static boolean IS_RAPTORQ_ENABLE;
 
-    public static final boolean IS_STATISTIC_ENABLE=false;
+    public static boolean IS_STATISTIC_ENABLE;
 
     List<RawContent> rawContentList;
     Matrix matrix;
@@ -63,6 +63,9 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public ProcessFrame(String name){
         super(name);
         rawContentList=new ArrayList<>();
+        PropertiesReader propertiesReader=new PropertiesReader();
+        IS_RAPTORQ_ENABLE=Boolean.parseBoolean(propertiesReader.getProperty("RaptorQ.enable"));
+        IS_STATISTIC_ENABLE=Boolean.parseBoolean(propertiesReader.getProperty("statistic.enable"));
         if(IS_STATISTIC_ENABLE) {
             statistics = new Statistics();
         }

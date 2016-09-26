@@ -31,7 +31,7 @@ public class FileToBitSet {
     private int ecNum;
     private int ecLength;
     private BitSet[] packets;
-    final double REPAIR_PERCENT=1;
+    final double REPAIR_PERCENT;
     public FileToBitSet(BarcodeFormat barcodeFormat,String filePath){
         Matrix matrix = MatrixFactory.createMatrix(barcodeFormat);
         bitsPerBlock=matrix.bitsPerBlock;
@@ -39,6 +39,9 @@ public class FileToBitSet {
         ecNum=matrix.ecNum;
         ecLength=matrix.ecLength;
         packets=RSEncode(filePath);
+
+        PropertiesReader propertiesReader=new PropertiesReader();
+        REPAIR_PERCENT=Double.parseDouble(propertiesReader.getProperty("RaptorQ.repair.percent"));
     }
     public BitSet getPacket(int esi){
         if(esi>=0&&esi<packets.length) {
