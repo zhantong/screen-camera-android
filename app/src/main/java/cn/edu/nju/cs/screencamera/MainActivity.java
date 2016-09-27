@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -31,7 +33,7 @@ import java.net.URLEncoder;
  * UI主要操作
  * 也是控制二维码识别的主要入口
  */
-public class MainActivity extends Activity implements CameraPreviewFragment.OnStartListener,View.OnFocusChangeListener{
+public class MainActivity extends Activity implements CameraPreviewFragment.OnStartListener{
     private static Context mContext;
 
     private CameraPreview mPreview;//相机
@@ -114,26 +116,38 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         final EditText editTextFileNameCreated=(EditText)findViewById(R.id.file_name_created);
         editTextFileNameCreated.setTag("FILE_NAME_CREATED");
         editTextFileNameCreated.setText(sharedPref.getString((String)editTextFileNameCreated.getTag(),""));
-        editTextFileNameCreated.setOnFocusChangeListener(this);
+        editTextFileNameCreated.addTextChangedListener(new EditTextTextWatcher(editTextFileNameCreated));
 
         final EditText editTextFilePathInput=(EditText)findViewById(R.id.file_path_input);
         editTextFilePathInput.setTag("FILE_PATH_INPUT");
         editTextFilePathInput.setText(sharedPref.getString((String)editTextFilePathInput.getTag(),""));
-        editTextFilePathInput.setOnFocusChangeListener(this);
+        editTextFilePathInput.addTextChangedListener(new EditTextTextWatcher(editTextFilePathInput));
 
         final EditText editTextFilePathTruth=(EditText)findViewById(R.id.file_path_truth);
         editTextFilePathTruth.setTag("FILE_PATH_TRUTH");
         editTextFilePathTruth.setText(sharedPref.getString((String)editTextFilePathTruth.getTag(),""));
-        editTextFilePathTruth.setOnFocusChangeListener(this);
+        editTextFilePathTruth.addTextChangedListener(new EditTextTextWatcher(editTextFilePathTruth));
     }
     public static Context getContext(){
         return mContext;
     }
-    @Override
-    public void onFocusChange(View v, boolean hasFocus) {
-        EditText editText=(EditText)v;
-        if(!hasFocus){
-            editor.putString((String)editText.getTag(),editText.getText().toString());
+
+    private class EditTextTextWatcher implements TextWatcher{
+        private EditText mEditText;
+
+        public EditTextTextWatcher(EditText editText){
+            mEditText=editText;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            editor.putString((String)mEditText.getTag(),mEditText.getText().toString());
             editor.apply();
         }
     }
