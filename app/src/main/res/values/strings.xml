@@ -24,4 +24,6 @@
     <string name="by_time_asc">按时间顺序</string>
     <string name="by_time_desc">按时间逆序</string>
     <string name="no_files">无文件</string>
+    <string name="auto">自动</string>
+    <string name="manual">手动</string>
 </resources>

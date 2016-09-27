@@ -18,16 +18,21 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
+
+import com.j256.simplemagic.ContentInfo;
+import com.j256.simplemagic.ContentInfoUtil;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URLConnection;
-import java.net.URLEncoder;
+import java.util.UUID;
 
 /**
  * UI主要操作
@@ -112,6 +117,25 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         sharedPref=getSharedPreferences("main", Context.MODE_PRIVATE);
         editor=sharedPref.edit();
 
+        ToggleButton toggleButtonFileNameCreated=(ToggleButton)findViewById(R.id.toggle_file_name_created);
+        toggleButtonFileNameCreated.setTag("AUTO_GENERATE_FILE_NAME_CREATED");
+        toggleButtonFileNameCreated.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                EditText editTextFileNameCreated=(EditText)findViewById(R.id.file_name_created);
+                if(isChecked){
+                    String randomFileName= UUID.randomUUID().toString();
+                    editTextFileNameCreated.setText(randomFileName);
+                    editTextFileNameCreated.setEnabled(false);
+                }else{
+                    editTextFileNameCreated.setEnabled(true);
+                }
+                editor.putBoolean((String)buttonView.getTag(),isChecked);
+                editor.apply();
+            }
+        });
+
+
         initBarcodeFormatSpinner();
         final EditText editTextFileNameCreated=(EditText)findViewById(R.id.file_name_created);
         editTextFileNameCreated.setTag("FILE_NAME_CREATED");
@@ -127,6 +151,8 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         editTextFilePathTruth.setTag("FILE_PATH_TRUTH");
         editTextFilePathTruth.setText(sharedPref.getString((String)editTextFilePathTruth.getTag(),""));
         editTextFilePathTruth.addTextChangedListener(new EditTextTextWatcher(editTextFilePathTruth));
+
+        toggleButtonFileNameCreated.setChecked(sharedPref.getBoolean((String)toggleButtonFileNameCreated.getTag(),false));
     }
     public static Context getContext(){
         return mContext;
@@ -267,20 +293,18 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
      */
     public void openFile(View view) {
         EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
-        String newFileName = editTextFileName.getText().toString();
-        String filePath = Environment.getExternalStorageDirectory() + "/Download/" + newFileName;
-        Intent newIntent=new Intent(Intent.ACTION_VIEW);
-        String mimeType="";
-        File file = new File(filePath);
-        try {
-            mimeType = URLConnection.guessContentTypeFromName(URLEncoder.encode(file.getAbsolutePath(), "UTF-8"));
-            if(mimeType==null){
-                mimeType=URLConnection.guessContentTypeFromStream(new FileInputStream(file));
-            }
-        }catch (Exception e){
-            e.printStackTrace();
+        String originFileName = editTextFileName.getText().toString();
+        String filePath = Environment.getExternalStorageDirectory() + "/Download/" + originFileName;
+        File file=new File(filePath);
+        file=correctFileExtension(file);
+        String correctedFileName=file.getName();
+        if(!correctedFileName.equals(originFileName)){
+            editTextFileName.setText(correctedFileName);
         }
+
+        String mimeType=URLConnection.guessContentTypeFromName(correctedFileName);
         if(mimeType!=null) {
+            Intent newIntent=new Intent(Intent.ACTION_VIEW);
             newIntent.setDataAndType(Uri.fromFile(file), mimeType);
             newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(newIntent);
@@ -290,6 +314,40 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
                     .setPositiveButton("确定",null)
                     .show();
         }
+    }
+    private File correctFileExtension(File file){
+        String originFileName = file.getName();
+        int lastSeparatorIndex=originFileName.lastIndexOf('.');
+        String fileNameWithoutExtension=originFileName;
+        String originExtension="";
+        if(lastSeparatorIndex!=-1){
+            fileNameWithoutExtension=originFileName.substring(0,lastSeparatorIndex);
+            originExtension=originFileName.substring(lastSeparatorIndex+1);
+        }
+        String correctedExtension=getFileExtension(file);
+        if(!correctedExtension.equals(originExtension)){
+            String correctedFileName=fileNameWithoutExtension+"."+correctedExtension;
+            File newFile=new File(file.getParent(),correctedFileName);
+            file.renameTo(newFile);
+            file=newFile;
+        }
+        return file;
+    }
+    private String getFileExtension(File file){
+        if(!file.isFile()){
+            throw new RuntimeException("file not exists");
+        }
+        ContentInfoUtil util=new ContentInfoUtil();
+        ContentInfo info;
+        try {
+            info = util.findMatch(file);
+        }catch (IOException e){
+            throw new RuntimeException("file not exists");
+        }
+        if(info==null){
+            return "txt";
+        }
+        return info.getFileExtensions()[0];
     }
     public void processCamera(View view){
         fragment=new CameraPreviewFragment();

@@ -44,6 +44,13 @@
                 android:layout_below="@+id/text_file_name_created"
                 android:layout_toLeftOf="@+id/button_file_name_created"
                 android:id="@+id/file_name_created"/>
+            <ToggleButton
+                android:id="@+id/toggle_file_name_created"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textOn="@string/auto"
+                android:textOff="@string/manual"
+                android:layout_toLeftOf="@id/button_file_name_created"/>
             <Button
                 android:id="@+id/button_file_name_created"
                 android:layout_width="wrap_content"
