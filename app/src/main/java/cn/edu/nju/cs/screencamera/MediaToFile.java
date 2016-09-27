@@ -15,7 +15,6 @@ public class MediaToFile{
     private static final boolean VERBOSE = false;//是否记录详细log
     protected Handler handler;//与UI进程通信
     protected CRC8 crcCheck;
-    protected BitErrorCount bitErrorCount;
     /**
      * 构造函数,获取必须的参数
      *
@@ -24,7 +23,6 @@ public class MediaToFile{
     public MediaToFile(Handler handler) {
         this.handler = handler;
         crcCheck=new CRC8();
-        bitErrorCount=new BitErrorCount();
     }
     /**
      * 更新处理信息,即将此线程的信息输出到UI
