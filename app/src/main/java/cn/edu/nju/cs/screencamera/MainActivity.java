@@ -38,12 +38,10 @@ import java.util.UUID;
  * UI主要操作
  * 也是控制二维码识别的主要入口
  */
-public class MainActivity extends Activity implements CameraPreviewFragment.OnStartListener{
+public class MainActivity extends Activity{
     private static Context mContext;
 
-    private CameraPreview mPreview;//相机
     private BarcodeFormat barcodeFormat;
-    CameraPreviewFragment fragment;
 
     public static final int MESSAGE_UI_DEBUG_VIEW=1;
     public static final int MESSAGE_UI_INFO_VIEW=2;
@@ -200,15 +198,6 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
             }
         });
     }
-
-    /**
-     * 释放相机
-     *
-     * @param view 默认参数
-     */
-    public void stop(View view) {
-        mPreview.stop();
-    }
     public void saveFrames(View view){
         SaveFramesFragment fragment=new SaveFramesFragment();
         getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
@@ -350,22 +339,26 @@ public class MainActivity extends Activity implements CameraPreviewFragment.OnSt
         return info.getFileExtensions()[0];
     }
     public void processCamera(View view){
-        fragment=new CameraPreviewFragment();
+        final CameraPreviewFragment fragment=new CameraPreviewFragment();
+        fragment.addCallback(new CameraPreviewFragment.OnStartListener() {
+            @Override
+            public void onStartRecognize() {
+                EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
+                final String newFileName = editTextFileName.getText().toString();
+                EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
+                final String truthFilePath = editTextTruthFilePath.getText().toString();
+                Thread worker = new Thread() {
+                    @Override
+                    public void run() {
+                        CameraToFile cameraToFile=new CameraToFile(mHandler,barcodeFormat,truthFilePath);
+                        cameraToFile.toFile(newFileName, fragment.mPreview);
+                    }
+                };
+                worker.start();
+            }
+        });
+
         getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
         getFragmentManager().executePendingTransactions();
-    }
-    public void onStartReco(){
-        EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
-        final String newFileName = editTextFileName.getText().toString();
-        EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
-        final String truthFilePath = editTextTruthFilePath.getText().toString();
-        Thread worker = new Thread() {
-            @Override
-            public void run() {
-                CameraToFile cameraToFile=new CameraToFile(mHandler,barcodeFormat,truthFilePath);
-                cameraToFile.toFile(newFileName, fragment.mPreview);
-            }
-        };
-        worker.start();
     }
 }

@@ -1,6 +1,5 @@
 package cn.edu.nju.cs.screencamera;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -19,7 +18,7 @@ public class CameraPreviewFragment extends Fragment {
     OnStartListener mCallback;
     boolean onWorking=false;
     public interface OnStartListener{
-        public void onStartReco();
+        public void onStartRecognize();
     }
     public CameraPreview mPreview;
     public void onCreate(Bundle savedInstanceState) {
@@ -50,7 +49,7 @@ public class CameraPreviewFragment extends Fragment {
                     getActivity().getFragmentManager().popBackStack();
                 }else{
                     buttonStart.setText("停止");
-                    mCallback.onStartReco();
+                    mCallback.onStartRecognize();
                     onWorking=true;
                 }
             }
@@ -66,12 +65,7 @@ public class CameraPreviewFragment extends Fragment {
         CameraSettingsFragment.init(PreferenceManager.getDefaultSharedPreferences(this.getActivity()));
         return rootView;
     }
-    public void onAttach(Activity activity){
-        super.onAttach(activity);
-        try{
-            mCallback=(OnStartListener)activity;
-        }catch (ClassCastException e){
-            throw new ClassCastException(activity.toString() + " must implement OnHeadlineSelectedListener");
-        }
+    public void addCallback(OnStartListener listener){
+        mCallback=listener;
     }
 }
