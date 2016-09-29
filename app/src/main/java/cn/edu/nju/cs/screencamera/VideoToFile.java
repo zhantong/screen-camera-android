@@ -14,20 +14,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class VideoToFile extends StreamToFile {
     private static final String TAG = "VideoToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+    private static final int COLOR_TYPE=Matrix.COLOR_TYPE_YUV;
     private VideoToFrames videoToFrames;
     public VideoToFile(Handler handler, BarcodeFormat format,String truthFilePath) {
         super(handler,format,truthFilePath);
     }
     public int getImgColorType(){
-        return 1;
+        return COLOR_TYPE;
     }
     public void beforeDataDecoded(){
         videoToFrames.stopDecode();
     }
     public void toFile(String fileName,final String videoFilePath){
-        Log.i(TAG,"process video file");
+        if(VERBOSE){Log.i(TAG,"process video file");}
         final LinkedBlockingQueue<byte[]> frameQueue = new LinkedBlockingQueue<>();
-        int[] widthAndHeight=frameWidthAndHeight(videoFilePath);
+        int[] widthAndHeight= getVideoWidthAndHeight(videoFilePath);
         int frameWidth=widthAndHeight[0];
         int frameHeight=widthAndHeight[1];
         videoToFrames = new VideoToFrames();
@@ -40,7 +41,7 @@ public class VideoToFile extends StreamToFile {
 
         streamToFile(frameQueue, frameWidth, frameHeight, fileName);
     }
-    private int[] frameWidthAndHeight(String videoFilePath){
+    private int[] getVideoWidthAndHeight(String videoFilePath){
         File inputFile = new File(videoFilePath);
         MediaExtractor extractor = new MediaExtractor();
         try {

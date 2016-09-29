@@ -20,9 +20,9 @@ public class Statistics {
 
     private static final int FRAME_RATE=30;
 
-    int firstFrameIndex;
-    int lastFrameIndex;
-    int lastEsi;
+    private int firstFrameIndex;
+    private int lastFrameIndex;
+    private int lastEsi;
     public void loadRawContentList(List<RawContent> rawContentList){
         this.rawContentList=rawContentList;
     }

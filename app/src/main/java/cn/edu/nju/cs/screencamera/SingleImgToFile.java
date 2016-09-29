@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 public class SingleImgToFile extends MediaToFile {
     private static final String TAG = "SingleImgToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+    private static final int COLOR_TYPE=Matrix.COLOR_TYPE_RGB;
     private static BarcodeFormat barcodeFormat;
 
     private Handler processHandler;
@@ -54,7 +55,7 @@ public class SingleImgToFile extends MediaToFile {
         Matrix matrix;
         int fileByteNum;
         try {
-            matrix=MatrixFactory.createMatrix(barcodeFormat,byteBuffer.array(),0, bitmap.getWidth(), bitmap.getHeight(),null);
+            matrix=MatrixFactory.createMatrix(barcodeFormat,byteBuffer.array(),COLOR_TYPE, bitmap.getWidth(), bitmap.getHeight(),null);
             matrix.perspectiveTransform();
         } catch (NotFoundException e) {
             Log.d(TAG, e.getMessage());

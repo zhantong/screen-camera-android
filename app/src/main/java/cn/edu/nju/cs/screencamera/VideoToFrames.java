@@ -28,7 +28,7 @@ public class VideoToFrames implements Runnable {
     private static final int COLOR_FormatNV21 = 2;
 
 
-    private final int decodeColorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
+    private static final int decodeColorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
 
     private LinkedBlockingQueue<byte[]> mQueue;
     private OutputImageFormat outputImageFormat;
@@ -60,7 +60,7 @@ public class VideoToFrames implements Runnable {
         } else if (!theDir.isDirectory()) {
             throw new IOException("Not a directory");
         }
-        OUTPUT_DIR = theDir.getAbsolutePath() + "/";
+        OUTPUT_DIR = theDir.getAbsolutePath();
     }
 
     public void stopDecode() {
@@ -196,15 +196,15 @@ public class VideoToFrames implements Runnable {
                         String fileName;
                         switch (outputImageFormat) {
                             case I420:
-                                fileName = OUTPUT_DIR + String.format("frame_%05d_I420_%dx%d.yuv", outputFrameCount, width, height);
+                                fileName=Utils.combinePaths(OUTPUT_DIR,String.format("frame_%05d_I420_%dx%d.yuv", outputFrameCount, width, height));
                                 dumpFile(fileName, getDataFromImage(image, COLOR_FormatI420));
                                 break;
                             case NV21:
-                                fileName = OUTPUT_DIR + String.format("frame_%05d_NV21_%dx%d.yuv", outputFrameCount, width, height);
+                                fileName=Utils.combinePaths(OUTPUT_DIR,String.format("frame_%05d_NV21_%dx%d.yuv", outputFrameCount, width, height));
                                 dumpFile(fileName, getDataFromImage(image, COLOR_FormatNV21));
                                 break;
                             case JPEG:
-                                fileName = OUTPUT_DIR + String.format("frame_%05d.jpg", outputFrameCount);
+                                fileName=Utils.combinePaths(OUTPUT_DIR,String.format("frame_%05d.jpg", outputFrameCount));
                                 compressToJpeg(fileName, image);
                                 break;
                         }
@@ -218,7 +218,6 @@ public class VideoToFrames implements Runnable {
             callback.onFinishDecode();
         }
     }
-
     private static int selectTrack(MediaExtractor extractor) {
         int numTracks = extractor.getTrackCount();
         for (int i = 0; i < numTracks; i++) {

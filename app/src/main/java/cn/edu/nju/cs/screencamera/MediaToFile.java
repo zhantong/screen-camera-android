@@ -14,7 +14,7 @@ public class MediaToFile{
     private static final String TAG = "MediaToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
     protected Handler handler;//与UI进程通信
-    protected CRC8 crcCheck;
+    private CRC8 crcCheck;
     /**
      * 构造函数,获取必须的参数
      *
@@ -27,12 +27,11 @@ public class MediaToFile{
     /**
      * 更新处理信息,即将此线程的信息输出到UI
      *
-     * @param index            帧编号
      * @param lastSuccessIndex 最后识别成功的帧编号
      * @param frameAmount      二维码帧总数
      * @param count            已处理的帧个数
      */
-    protected void updateDebug(int index, int lastSuccessIndex, int frameAmount, int count) {
+    protected void updateDebug(int lastSuccessIndex, int frameAmount, int count) {
         //final String text = "当前:" + index + "已识别:" + lastSuccessIndex + "帧总数:" + frameAmount + "已处理:" + count;
         String text = "已处理:" + count;
         Message msg=handler.obtainMessage();

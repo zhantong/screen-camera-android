@@ -8,14 +8,6 @@
 #define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-JNIEXPORT jintArray JNICALL
-Java_cn_edu_nju_cs_screencamera_ReedSolomonEncode_test(JNIEnv *env, jobject instance,
-                                                       jobject buffer) {
-
-    // TODO
-
-}
-
 extern "C" {
 
 std::vector<int> findBorder(jbyte *pixels, int threshold, int imgWidth, int imgHeight);

@@ -283,8 +283,7 @@ public class MainActivity extends Activity{
     public void openFile(View view) {
         EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
         String originFileName = editTextFileName.getText().toString();
-        String filePath = Environment.getExternalStorageDirectory() + "/Download/" + originFileName;
-        File file=new File(filePath);
+        File file=new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),originFileName);
         file=correctFileExtension(file);
         String correctedFileName=file.getName();
         if(!correctedFileName.equals(originFileName)){

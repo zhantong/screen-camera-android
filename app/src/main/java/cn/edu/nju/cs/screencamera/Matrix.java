@@ -9,16 +9,18 @@ import java.util.BitSet;
  * 以及一些对原始图像操作的方法
  */
 public class Matrix{
+    public static final int COLOR_TYPE_YUV=1;
+    public static final int COLOR_TYPE_RGB=2;
     protected static final boolean VERBOSE = false;//是否记录详细log
     protected static final String TAG = "Matrix";//log tag
     protected int imgWidth;//图像宽度
     protected int imgHeight;//图像高度
     protected byte[] pixels;//图像每个像素点原始值
     private int threshold = 0;//二值化阈值
-    private int[] borders;//图像中二维码的四个顶点坐标值
+    private int[] vertexes;//图像中二维码的四个顶点坐标值
     protected PerspectiveTransform transform;//透视变换参数
     public GrayMatrix grayMatrix;
-    int[] border;
+    int[] borders;
     boolean isMixed=true;
     public boolean reverse=false;
     public int imgColorType;
@@ -30,7 +32,7 @@ public class Matrix{
     int ecNum;
     int ecLength;
 
-    boolean findBorderUseJni;
+    private boolean findBorderUseJni;
 
     public Matrix(){
     }
@@ -49,24 +51,24 @@ public class Matrix{
         this.imgColorType=imgColorType;
         this.threshold = getThreshold();
         if(initBorder==null){
-            this.borders = findBorder(genInitBorder());
+            this.vertexes = findBorder(genInitBorder());
         }
         else {
             try {
-                this.borders = findBorder(initBorder);
+                this.vertexes = findBorder(initBorder);
             } catch (NotFoundException e) {
-                this.borders = findBorder(genInitBorder());
+                this.vertexes = findBorder(genInitBorder());
             }
         }
-        Log.d(TAG,"倾斜角度："+calcAngle());
+        if(VERBOSE){Log.d(TAG,"倾斜角度："+calcAngle());}
 
         PropertiesReader propertiesReader=new PropertiesReader();
         findBorderUseJni=Boolean.parseBoolean(propertiesReader.getProperty("findBorder.useJNI"));
     }
-    public double calcAngle(){
-        return Math.toDegrees(1.0*(borders[1]-borders[3])/(borders[2]-borders[0]));
+    private double calcAngle(){
+        return Math.toDegrees(1.0*(vertexes[1]- vertexes[3])/(vertexes[2]- vertexes[0]));
     }
-    public int[] genInitBorder(){
+    private int[] genInitBorder(){
         int init = 60;
         int left = imgWidth / 2 - init;
         int right = imgWidth / 2 + init;
@@ -74,7 +76,7 @@ public class Matrix{
         int down = imgHeight / 2 + init;
         return new int[] {left,up,right,down};
     }
-    public void perspectiveTransform(){
+    protected void perspectiveTransform(){
         perspectiveTransform(0, 0,getBarCodeWidth(), 0, getBarCodeWidth(), getBarCodeHeight(), 0, getBarCodeHeight());
     }
     /**
@@ -91,7 +93,7 @@ public class Matrix{
      * @param p4ToX 左下角顶点x值
      * @param p4ToY 左下角顶点y值
      */
-    public void perspectiveTransform(float p1ToX, float p1ToY,
+    protected void perspectiveTransform(float p1ToX, float p1ToY,
                                      float p2ToX, float p2ToY,
                                      float p3ToX, float p3ToY,
                                      float p4ToX, float p4ToY) {
@@ -99,10 +101,10 @@ public class Matrix{
                 p2ToX, p2ToY,
                 p3ToX, p3ToY,
                 p4ToX, p4ToY,
-                borders[0], borders[1],
-                borders[2], borders[3],
-                borders[4], borders[5],
-                borders[6], borders[7]);
+                vertexes[0], vertexes[1],
+                vertexes[2], vertexes[3],
+                vertexes[4], vertexes[5],
+                vertexes[6], vertexes[7]);
     }
 
     /**
@@ -112,18 +114,18 @@ public class Matrix{
      * @param y y轴,即行
      * @return 返回灰度值
      */
-    public int getGray(int x, int y) {
-        if(imgColorType==0){
-            return getRGBGray(x,y);
-        }
-        else{
+    protected int getGray(int x, int y) {
+        if(imgColorType==COLOR_TYPE_YUV){
             return getYUVGray(x,y);
         }
+        else{
+            return getRGBGray(x,y);
+        }
     }
-    public int getYUVGray(int x, int y) {
+    private int getYUVGray(int x, int y) {
         return pixels[y * imgWidth + x] & 0xff;
     }
-    public int getRGBGray(int x, int y) {
+    private int getRGBGray(int x, int y) {
         int offset = (y * imgWidth + x) * 4;
         int r = pixels[offset] & 0xFF;
         int g = pixels[offset + 1] & 0xFF;
@@ -138,17 +140,17 @@ public class Matrix{
      * @param y y轴,即行
      * @return 返回二值化值, 即0或1
      */
-    public int getBinary(int x, int y) {
+    private int getBinary(int x, int y) {
         if (getGray(x, y) <= threshold) {
             return 0;
         } else {
             return 1;
         }
     }
-    public int realContentByteLength(){
+    protected int realContentByteLength(){
         return bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8-8;
     }
-    public int RSContentByteLength(){
+    protected int RSContentByteLength(){
         return bitsPerBlock*contentLength*contentLength/8-ecNum*ecLength/8;
     }
     /**
@@ -159,34 +161,17 @@ public class Matrix{
      * @param pixel 指定值
      * @return 与指定值相同返回true, 否则返回false
      */
-    public boolean pixelEquals(int x, int y, int pixel) {
+    private boolean pixelEquals(int x, int y, int pixel) {
         return getBinary(x, y) == pixel;
     }
-    public boolean pixelIsBlack(int x, int y){
+    private boolean pixelIsBlack(int x, int y){
         return pixelEquals(x,y,0);
     }
 
-    /**
-     * 获取图像宽度
-     *
-     * @return 图像宽度
-     */
-    public int width() {
-        return imgWidth;
-    }
-
-    /**
-     * 获取图像高度
-     *
-     * @return 图像高度
-     */
-    public int height() {
-        return imgHeight;
-    }
-    public int getBarCodeWidth(){
+    protected int getBarCodeWidth(){
         return (frameBlackLength + frameVaryLength+frameVaryTwoLength) * 2 + contentLength;
     }
-    public int getBarCodeHeight(){
+    protected int getBarCodeHeight(){
         return 2*frameBlackLength + contentLength;
     }
     public BitSet getHead(){return null;}
@@ -280,7 +265,7 @@ public class Matrix{
      * @param horizontal 线段是否为水平
      * @return 若线段包含有黑点, 则返回true, 否则返回false
      */
-    public boolean containsBlack(int start, int end, int fixed, boolean horizontal) {
+    private boolean containsBlack(int start, int end, int fixed, boolean horizontal) {
         if (horizontal) {
             for (int x = start; x <= end; x++) {
                 if (pixelIsBlack(x, fixed)) {
@@ -308,7 +293,7 @@ public class Matrix{
      * @return 长度为8的数组, 分别存储每个顶点的x和y坐标
      * @throws NotFoundException 能够确定不可能发现二维码时,则抛出未找到二维码异常
      */
-    public int[] findBorder(int[] initBorder) throws NotFoundException {
+    private int[] findBorder(int[] initBorder) throws NotFoundException {
         int left=initBorder[0];
         int up=initBorder[1];
         int right=initBorder[2];
@@ -361,35 +346,35 @@ public class Matrix{
         if ((left == 0 || up == 0 || right == imgWidth || down == imgHeight) || (left == leftOrig && right == rightOrig && up == upOrig && down == downOrig)) {
             throw new NotFoundException("didn't find any possible bar code");
         }
-        int[] vertexs = new int[8];
-        left = findVertex(up, down, left, vertexs, 0, 3, false, false);
+        int[] vertexes = new int[8];
+        left = findVertexes(up, down, left, vertexes, 0, 3, false, false);
         if (VERBOSE) {
             Log.d(TAG, "found 1 vertex,left border now is:" + left);
-            Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
+            Log.d(TAG, "vertexes: (" + vertexes[0] + "," + vertexes[1] + ")\t(" + vertexes[2] + "," + vertexes[3] + ")\t(" + vertexes[4] + "," + vertexes[5] + ")\t(" + vertexes[6] + "," + vertexes[7] + ")");
         }
-        up = findVertex(left, right, up, vertexs, 0, 1, true, false);
+        up = findVertexes(left, right, up, vertexes, 0, 1, true, false);
 
         if (VERBOSE) {
             Log.d(TAG, "found 2 vertex,up border now is:" + up);
-            Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
+            Log.d(TAG, "vertexes: (" + vertexes[0] + "," + vertexes[1] + ")\t(" + vertexes[2] + "," + vertexes[3] + ")\t(" + vertexes[4] + "," + vertexes[5] + ")\t(" + vertexes[6] + "," + vertexes[7] + ")");
         }
-        right = findVertex(up, down, right, vertexs, 1, 2, false, true);
+        right = findVertexes(up, down, right, vertexes, 1, 2, false, true);
         if (VERBOSE) {
             Log.d(TAG, "found 3 vertex,right border now is:" + right);
-            Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
+            Log.d(TAG, "vertexes: (" + vertexes[0] + "," + vertexes[1] + ")\t(" + vertexes[2] + "," + vertexes[3] + ")\t(" + vertexes[4] + "," + vertexes[5] + ")\t(" + vertexes[6] + "," + vertexes[7] + ")");
         }
-        down = findVertex(left, right, down, vertexs, 3, 2, true, true);
+        down = findVertexes(left, right, down, vertexes, 3, 2, true, true);
         if (VERBOSE) {
             Log.d(TAG, "found 4 vertex,down border now is:" + down);
         }
         if (VERBOSE) {
-            Log.d(TAG, "vertexes: (" + vertexs[0] + "," + vertexs[1] + ")\t(" + vertexs[2] + "," + vertexs[3] + ")\t(" + vertexs[4] + "," + vertexs[5] + ")\t(" + vertexs[6] + "," + vertexs[7] + ")");
+            Log.d(TAG, "vertexes: (" + vertexes[0] + "," + vertexes[1] + ")\t(" + vertexes[2] + "," + vertexes[3] + ")\t(" + vertexes[4] + "," + vertexes[5] + ")\t(" + vertexes[6] + "," + vertexes[7] + ")");
         }
-        if (vertexs[0] == 0 || vertexs[2] == 0 || vertexs[4] == 0 || vertexs[6] == 0) {
-            throw new NotFoundException("vertexs error");
+        if (vertexes[0] == 0 || vertexes[2] == 0 || vertexes[4] == 0 || vertexes[6] == 0) {
+            throw new NotFoundException("vertexes error");
         }
-        border=new int[]{left,up,right,down};
-        return vertexs;
+        borders=new int[]{left,up,right,down};
+        return vertexes;
     }
 
     /**
@@ -407,7 +392,7 @@ public class Matrix{
      * @return 返回收缩后的矩形边界fixed值
      * @throws NotFoundException 能够确定不可能发现二维码时,则抛出未找到二维码异常
      */
-    public int findVertex(int b1, int b2, int fixed, int[] vertexs, int p1, int p2, boolean horizontal, boolean sub) throws NotFoundException {
+    private int findVertexes(int b1, int b2, int fixed, int[] vertexs, int p1, int p2, boolean horizontal, boolean sub) throws NotFoundException {
         int mid = (b2 - b1) / 2;
         boolean checkP1 = vertexs[p1 * 2] == 0;
         boolean checkP2 = vertexs[p2 * 2] == 0;
@@ -488,7 +473,7 @@ public class Matrix{
      * @param y y轴,即行
      * @return 为噪点则返回true, 否则返回false
      */
-    public boolean isSinglePoint(int x, int y) {
+    private boolean isSinglePoint(int x, int y) {
         int sum = getBinary(x - 1, y - 1) + getBinary(x, y - 1) + getBinary(x + 1, y - 1) + getBinary(x - 1, y) + getBinary(x + 1, y) + getBinary(x - 1, y + 1) + getBinary(x, y + 1) + getBinary(x + 1, y + 1);
         return sum >= 6;
     }

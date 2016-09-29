@@ -13,12 +13,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class CameraToFile extends StreamToFile {
     private static final String TAG = "StreamToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
+    private static final int COLOR_TYPE=Matrix.COLOR_TYPE_YUV;
     private CameraPreview mPreview;
     public CameraToFile(Handler handler, BarcodeFormat format,String truthFilePath) {
         super(handler,format,truthFilePath);
     }
     public void toFile(String fileName,CameraPreview mPreview){
-        Log.i(TAG,"process camera");
+        if(VERBOSE){Log.i(TAG,"process camera");}
         LinkedBlockingQueue<byte[]> rev = new LinkedBlockingQueue<>();
         Camera.Size previewSize=mPreview.getPreviewSize();
         int frameWidth=previewSize.width;
@@ -28,16 +29,16 @@ public class CameraToFile extends StreamToFile {
         streamToFile(rev,frameWidth,frameHeight,fileName);
     }
     public int getImgColorType(){
-        return 1;
+        return COLOR_TYPE;
     }
     public void notFound(int fileByteNum){
         if(fileByteNum==-1){
-            Log.d(TAG,"camera focusing");
+            if(VERBOSE){Log.d(TAG,"camera focusing");}
             mPreview.focus();
         }
     }
     public void crcCheckFailed(){
-        Log.d(TAG, "camera focusing");
+        if(VERBOSE){Log.d(TAG, "camera focusing");}
         mPreview.focus();
     }
     public void beforeDataDecoded(){
@@ -47,6 +48,6 @@ public class CameraToFile extends StreamToFile {
                 mPreview.stop();
             }
         });
-        Log.d(TAG,"stopped camera preview");
+        if(VERBOSE){Log.d(TAG,"stopped camera preview");}
     }
 }

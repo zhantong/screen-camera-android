@@ -242,13 +242,6 @@ public class MatrixZoomVaryAlt extends Matrix {
             getRawContentSimple();
         }
     }
-    public int mean(int[] array,int low,int high){
-        int sum=0;
-        for(int i=low;i<=high;i++){
-            sum+=array[i];
-        }
-        return sum/(high-low+1);
-    }
     private Overlap maxIndex(int x,int y){
         int[] samples=grayMatrix.getSamples(x,y);
         int index;
@@ -419,7 +412,7 @@ public class MatrixZoomVaryAlt extends Matrix {
         int max=-1;
         int min=256;
         int countGreat=0;
-        int mean=mean(samples,1,4);
+        int mean=Utils.calculateMean(samples,1,4);
         for(int i=1;i<5;i++){
             int current=samples[i];
             if(current>max){
@@ -571,7 +564,6 @@ public class MatrixZoomVaryAlt extends Matrix {
                 }
             }
         }
-        Log.i(TAG,"unrecognized overlap situation: minIndex "+minIndex+"\tmaxIndex "+maxIndex+"\tsamples "+ Arrays.toString(samples));
-        return Overlap.UTOD;
+        throw new RuntimeException("unrecognized overlap situation: minIndex "+minIndex+"\tmaxIndex "+maxIndex+"\tsamples "+ Arrays.toString(samples));
     }
 }

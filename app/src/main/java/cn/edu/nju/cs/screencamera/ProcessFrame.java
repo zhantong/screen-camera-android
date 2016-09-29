@@ -39,27 +39,27 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public static final int WHAT_FILE_NAME=4;
     public static final int WHAT_TRUTH_FILE_PATH=5;
 
-    public static boolean IS_RAPTORQ_ENABLE;
+    private static boolean IS_RAPTORQ_ENABLE;
 
-    public static boolean IS_STATISTIC_ENABLE;
+    private static boolean IS_STATISTIC_ENABLE;
 
-    List<RawContent> rawContentList;
-    Matrix matrix;
-    ArrayDataDecoder dataDecoder;
-    SourceBlockDecoder sourceBlock;
-    ReedSolomonDecoder decoder;
-    String fileName;
-    FrameCallback mFrameCallback;
-    FileToBitSet truthBitSet;
+    private List<RawContent> rawContentList;
+    private Matrix matrix;
+    private ArrayDataDecoder dataDecoder;
+    private SourceBlockDecoder sourceBlock;
+    private ReedSolomonDecoder decoder;
+    private String fileName;
+    private FrameCallback mFrameCallback;
+    private FileToBitSet truthBitSet;
 
-    BarcodeFormat barcodeFormat;
+    private BarcodeFormat barcodeFormat;
 
-    Statistics statistics;
+    private Statistics statistics;
 
-    BitSet withoutRaptorQ;
-    int maxSourceEsi;
+    private BitSet withoutRaptorQ;
+    private int maxSourceEsi;
 
-    boolean decodingFinish=false;
+    private boolean decodingFinish=false;
 
     public ProcessFrame(String name){
         super(name);
@@ -80,7 +80,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
     public void setCallback(FrameCallback callback){
         mFrameCallback=callback;
     }
-    public void put(RawContent content){
+    private void put(RawContent content){
         EncodingPacket encodingPacket;
         boolean reverse=false;
         Log.i(TAG,"frame "+content.frameIndex);
@@ -188,7 +188,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         int bitError=clone.cardinality();
         Log.d(TAG, "esi " + esi + " has " + bitError + " bit errors");
     }
-    public int[] getRawContent(BitSet content){
+    private int[] getRawContent(BitSet content){
         int numRealBits=matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength-matrix.ecLength*matrix.ecNum;
         int[] con=new int[(int)Math.ceil((double)matrix.bitsPerBlock*matrix.contentLength*matrix.contentLength/matrix.ecLength)];
         for(int i=0;i<numRealBits;i++){
@@ -207,7 +207,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         }
         return con;
     }
-    public byte[] getContent(BitSet content) throws ReedSolomonException {
+    private byte[] getContent(BitSet content) throws ReedSolomonException {
         int[] rawContent=getRawContent(content);
         int[] decodedContent=decode(rawContent,matrix.ecNum);
         int realByteNum=matrix.RSContentByteLength();
@@ -219,7 +219,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         }
         return res;
     }
-    public int[] decode(int[] raw,int ecNum) throws ReedSolomonException {
+    private int[] decode(int[] raw,int ecNum) throws ReedSolomonException {
         decoder.decode(raw, ecNum);
         return raw;
     }
@@ -234,12 +234,12 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         Log.d(TAG, "file SHA-1 verification: " + sha1);
         bytesToFile(out, fileName);
     }
-    public boolean bytesToFile(byte[] bytes,String fileName){
+    private boolean bytesToFile(byte[] bytes,String fileName){
         if(fileName.isEmpty()){
             Log.i(TAG, "file name is empty");
             return false;
         }
-        File file = new File(Environment.getExternalStorageDirectory() + "/Download/" + fileName);
+        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),fileName);
         OutputStream os;
         try {
             os = new FileOutputStream(file);

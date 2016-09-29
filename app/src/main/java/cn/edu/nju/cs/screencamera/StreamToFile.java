@@ -15,9 +15,8 @@ import java.util.concurrent.TimeUnit;
 public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallback{
     private static final String TAG = "StreamToFile";//log tag
     private static final boolean VERBOSE = false;//是否记录详细log
-    private static final long queueWaitSeconds=4;
+    private static final long QUEUE_WAIT_SECONDS=4;
     private static BarcodeFormat barcodeFormat;
-    private HandlerThread handlerThread;
     private Handler processHandler;
     public StreamToFile(Handler handler,BarcodeFormat format,String truthFilePath) {
         super(handler);
@@ -41,36 +40,35 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
         processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_FILE_NAME,fileName));
         final int NUMBER_OF_SOURCE_BLOCKS=1;
         int fileByteNum=-1;
-        int count = -1;
+        int frameCount = -1;
         int lastSuccessIndex = 0;
         int frameAmount = 0;
         byte[] img = {};
         Matrix matrix;
-        int[] border=null;
-        int index = 0;
+        int[] borders=null;
         int imgColorType=getImgColorType();
         while (true) {
-            count++;
+            frameCount++;
             updateInfo("正在识别...");
             try {
                 if(VERBOSE){Log.d(TAG,"is queue empty:"+imgs.isEmpty());}
-                img = imgs.poll(queueWaitSeconds, TimeUnit.SECONDS);
+                img = imgs.poll(QUEUE_WAIT_SECONDS, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
-                Log.d(TAG, e.getMessage());
+                throw new RuntimeException(e.getMessage());
             }
             if(img==null){
                 updateInfo("识别失败！");
                 break;
             }
-            updateDebug(index, lastSuccessIndex, frameAmount, count);
-            Log.i(TAG,"processing frame: "+count);
+            updateDebug(lastSuccessIndex, frameAmount, frameCount);
+            Log.i(TAG,"processing frame: "+frameCount);
             try {
-                matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,border);
+                matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,borders);
                 matrix.perspectiveTransform();
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 notFound(fileByteNum);
-                border=null;
+                borders=null;
                 continue;
             }
             if(fileByteNum==-1){
@@ -94,16 +92,13 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
             }
             matrix.sampleContent();
             RawContent rawContent=matrix.getRaw();
-            rawContent.frameIndex=count;
+            rawContent.frameIndex=frameCount;
             processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_RAW_CONTENT,rawContent));
-            border=smallBorder(matrix.border);
+            borders=smallBorder(matrix.borders);
         }
     }
-
-
     @Override
     public void onLastPacket() {
         beforeDataDecoded();
     }
-
 }

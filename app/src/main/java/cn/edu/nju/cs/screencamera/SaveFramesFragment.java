@@ -50,7 +50,7 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
             @Override
             public void onClick(View v) {
                 EditText editTextOutputFolder=(EditText)thisView.findViewById(R.id.folder_created);
-                String outputDir= Environment.getExternalStorageDirectory()+"/"+editTextOutputFolder.getText().toString();
+                String outputDir= Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(),editTextOutputFolder.getText().toString());
                 EditText editTextInputFilePath=(EditText)thisView.findViewById(R.id.file_path_input);
                 String inputFilePath= editTextInputFilePath.getText().toString();
                 VideoToFrames videoToFrames = new VideoToFrames();
