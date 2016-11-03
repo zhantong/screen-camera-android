@@ -15,10 +15,10 @@ import android.widget.FrameLayout;
  * Created by zhantong on 16/5/2.
  */
 public class CameraPreviewFragment extends Fragment {
-    OnStartListener mCallback;
-    boolean onWorking=false;
+    private OnStartListener mCallback;
+    private boolean onWorking=false;
     public interface OnStartListener{
-        public void onStartRecognize();
+        void onStartRecognize();
     }
     public CameraPreview mPreview;
     public void onCreate(Bundle savedInstanceState) {

@@ -351,6 +351,7 @@ public class MainActivity extends Activity{
                     public void run() {
                         CameraToFile cameraToFile=new CameraToFile(mHandler,barcodeFormat,truthFilePath);
                         cameraToFile.toFile(newFileName, fragment.mPreview);
+                        getFragmentManager().popBackStack();
                     }
                 };
                 worker.start();

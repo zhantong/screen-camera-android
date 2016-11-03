@@ -20,7 +20,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private static final String TAG = "CameraPreview";//log tag
     private SurfaceHolder mHolder;
     private Camera mCamera;
-    private LinkedBlockingQueue<byte[]> frames;
+    private LinkedBlockingQueue<byte[]> frameQueue;
     private boolean pause;
 
     public CameraPreview(Context context) {
@@ -30,7 +30,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.addCallback(this);
     }
     public void start(LinkedBlockingQueue<byte[]> frames){
-        this.frames=frames;
+        this.frameQueue =frames;
         pause=false;
     }
     public Camera.Size getPreviewSize(){
@@ -109,7 +109,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (!pause) {
             try {
-                frames.put(data);
+                frameQueue.put(data);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -125,15 +125,14 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (changed) {
-            //System.out.println(left+"\t"+top+"\t"+right+"\t"+bottom);
             ViewGroup parent=((ViewGroup)getParent());
             Rect rect=new Rect();
+
             parent.getLocalVisibleRect(rect);
-            //parent.getDrawingRect(rect);
             int width=rect.width();
             int height=rect.height();
+
             Camera.Size previewSize=mCamera.getParameters().getPreviewSize();
-            ViewGroup.LayoutParams params=getLayoutParams();
             int previewWidth=previewSize.width;
             int previewHeight=previewSize.height;
 
