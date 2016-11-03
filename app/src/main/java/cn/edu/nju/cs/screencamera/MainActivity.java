@@ -22,16 +22,24 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 
 import com.j256.simplemagic.ContentInfo;
 import com.j256.simplemagic.ContentInfoUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -151,6 +159,40 @@ public class MainActivity extends Activity{
         editTextFilePathTruth.addTextChangedListener(new EditTextTextWatcher(editTextFilePathTruth));
 
         toggleButtonFileNameCreated.setChecked(sharedPref.getBoolean((String)toggleButtonFileNameCreated.getTag(),false));
+
+        ToggleButton toggleButtonFileNameLoggingAuto=(ToggleButton)findViewById(R.id.toggle_file_name_logging_auto);
+        toggleButtonFileNameLoggingAuto.setTag("AUTO_GENERATE_FILE_NAME_LOGGING");
+        toggleButtonFileNameLoggingAuto.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                EditText editTextFileNameLogging=(EditText)findViewById(R.id.file_name_logging);
+                if(isChecked){
+                    String randomFileName=(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date()))+".txt";
+                    editTextFileNameLogging.setText(randomFileName);
+                    editTextFileNameLogging.setEnabled(false);
+                }else{
+                    editTextFileNameLogging.setEnabled(true);
+                }
+                Switch switchEnableLogging=(Switch)findViewById(R.id.switch_enable_logging);
+                switchEnableLogging.setChecked(false);
+                editor.putBoolean((String)buttonView.getTag(),isChecked);
+                editor.apply();
+            }
+        });
+        Switch switchEnableLogging=(Switch)findViewById(R.id.switch_enable_logging);
+        switchEnableLogging.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    EditText editTextFileNameLogging=(EditText)findViewById(R.id.file_name_logging);
+                    ConfigureLogback.configureLogbackDirectly(Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(),editTextFileNameLogging.getText().toString()));
+                    Toast.makeText(getApplicationContext(),"logging",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        toggleButtonFileNameLoggingAuto.setChecked(sharedPref.getBoolean((String)toggleButtonFileNameLoggingAuto.getTag(),false));
+        switchEnableLogging.setChecked(false);
     }
     public static Context getContext(){
         return mContext;
@@ -360,5 +402,10 @@ public class MainActivity extends Activity{
 
         getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
         getFragmentManager().executePendingTransactions();
+    }
+    private void click_test(){
+
+        Logger LOG= LoggerFactory.getLogger(MainActivity.class);
+        LOG.info("hello world");
     }
 }
