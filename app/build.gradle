@@ -29,6 +29,12 @@ model {
             stl = "gnustl_shared"
         }
     }
+    android.packagingOptions {
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+    }
 }
 
 dependencies {
@@ -45,4 +51,6 @@ dependencies {
     compile('com.github.tony19:logback-android-classic:1.1.1-6'){
         exclude group: 'com.google.android', module: 'android'
     }
+
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.4'
 }

@@ -190,6 +190,9 @@ public class Matrix{
     public RawContent getRaw(){return null;}
     public void sampleContent(){
     }
+    public String getSampleData(){
+        return grayMatrix.toString();
+    }
     /**
      * 获取图像的阈值
      * 阈值由灰度值确定,获得阈值的方法为双峰法

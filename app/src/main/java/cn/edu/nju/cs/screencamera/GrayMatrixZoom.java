@@ -1,5 +1,11 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 /**
  * Created by zhantong on 16/4/22.
  */
@@ -57,5 +63,29 @@ public class GrayMatrixZoom extends GrayMatrix {
                 points[2].x+","+points[2].y+","+points[2].value+")\t("+
                 points[3].x+","+points[3].y+","+points[3].value+")\t("+
                 points[4].x+","+points[4].y+","+points[4].value+")");
+    }
+    public String toString(){
+        ObjectMapper mapper=new ObjectMapper();
+        JsonNode root=mapper.createObjectNode();
+        ((ObjectNode)root).set("width", IntNode.valueOf(width));
+        ((ObjectNode)root).set("height", IntNode.valueOf(height));
+        ArrayNode samplePointsNode=mapper.createArrayNode();
+        for(Point[] samplePoint:pixels){
+            ArrayNode pointsNode=mapper.createArrayNode();
+            for(Point point:samplePoint){
+                /*
+                ObjectNode pointNode=mapper.createObjectNode();
+                pointNode.set("x",IntNode.valueOf(point.x));
+                pointNode.set("y",IntNode.valueOf(point.y));
+                pointNode.set("value",IntNode.valueOf(point.value));
+                pointsNode.add(pointNode);
+                */
+
+                pointsNode.add(IntNode.valueOf(point.value));
+            }
+            samplePointsNode.add(pointsNode);
+        }
+        ((ObjectNode)root).set("data",samplePointsNode);
+        return root.toString();
     }
 }
