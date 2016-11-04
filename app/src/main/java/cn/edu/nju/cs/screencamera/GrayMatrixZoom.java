@@ -64,7 +64,7 @@ public class GrayMatrixZoom extends GrayMatrix {
                 points[3].x+","+points[3].y+","+points[3].value+")\t("+
                 points[4].x+","+points[4].y+","+points[4].value+")");
     }
-    public String toString(){
+    public JsonNode toJSON(){
         ObjectMapper mapper=new ObjectMapper();
         JsonNode root=mapper.createObjectNode();
         ((ObjectNode)root).set("width", IntNode.valueOf(width));
@@ -86,6 +86,9 @@ public class GrayMatrixZoom extends GrayMatrix {
             samplePointsNode.add(pointsNode);
         }
         ((ObjectNode)root).set("data",samplePointsNode);
-        return root.toString();
+        return root;
+    }
+    public String toString(){
+        return toJSON().toString();
     }
 }

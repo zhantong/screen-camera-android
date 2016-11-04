@@ -1,5 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 /**
  * Created by zhantong on 15/12/27.
  */
@@ -41,5 +43,8 @@ public class GrayMatrixNormal extends GrayMatrix {
             System.out.println();
         }
     }
-    public void print(int x,int y){};
+    public void print(int x,int y){}
+    public JsonNode toJSON(){
+        return null;
+    }
 }

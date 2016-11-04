@@ -6,6 +6,9 @@ import android.util.Log;
 
 import net.fec.openrq.parameters.FECParameters;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -47,6 +50,10 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
         Matrix matrix;
         int[] borders=null;
         int imgColorType=getImgColorType();
+
+        Logger LOG= LoggerFactory.getLogger(MainActivity.class);
+
+
         while (true) {
             frameCount++;
             updateInfo("正在识别...");
@@ -57,7 +64,7 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
                 throw new RuntimeException(e.getMessage());
             }
             if(img==null){
-                updateInfo("识别失败！");
+                updateInfo("识别成功！");
                 break;
             }
             updateDebug(lastSuccessIndex, frameAmount, frameCount);
@@ -65,12 +72,17 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
             try {
                 matrix=MatrixFactory.createMatrix(barcodeFormat,img,imgColorType, frameWidth, frameHeight,borders);
                 matrix.perspectiveTransform();
+                matrix.frameIndex=frameCount;
             } catch (NotFoundException e) {
                 Log.d(TAG, e.getMessage());
                 notFound(fileByteNum);
                 borders=null;
                 continue;
             }
+
+            matrix.sampleContent();
+            LOG.info(matrix.getSampleDataInString());
+
             if(fileByteNum==-1){
                 try {
                     fileByteNum = getFileByteNum(matrix);

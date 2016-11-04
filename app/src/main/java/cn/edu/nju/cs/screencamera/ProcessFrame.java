@@ -6,6 +6,14 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+
 import net.fec.openrq.ArrayDataDecoder;
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
@@ -13,12 +21,16 @@ import net.fec.openrq.SymbolType;
 import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -61,6 +73,8 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
 
     private boolean decodingFinish=false;
 
+    private static final Logger LOG= LoggerFactory.getLogger(MainActivity.class);
+
     public ProcessFrame(String name){
         super(name);
         rawContentList=new ArrayList<>();
@@ -81,10 +95,16 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
         mFrameCallback=callback;
     }
     private void put(RawContent content){
+        ObjectMapper mapper=new ObjectMapper();
+        JsonNode root=mapper.createObjectNode();
+        ((ObjectNode)root).set("frameIndex", IntNode.valueOf(content.frameIndex));
+        ((ObjectNode)root).set("isMixed", BooleanNode.valueOf(content.isMixed));
         EncodingPacket encodingPacket;
         boolean reverse=false;
         Log.i(TAG,"frame "+content.frameIndex);
+        ArrayNode samplePointsNode=mapper.createArrayNode();
         for(int j=1;j<3;j++){
+            ObjectNode frameNode=mapper.createObjectNode();
             if(j==2){
                 if(content.isMixed){
                     reverse=true;
@@ -92,58 +112,66 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                     break;
                 }
             }
+            BitSet bitSetContent=content.getRawContent(reverse);
+            frameNode.set("reverse",BooleanNode.valueOf(reverse));
+            frameNode.set("rawData", TextNode.valueOf(Arrays.toString(bitSetContent.toByteArray())));
+            int[] conIn10=getRawContent(bitSetContent);
             try {
-                BitSet bitSetContent=content.getRawContent(reverse);
-                int[] conIn10=getRawContent(bitSetContent);
                 decoder.decode(conIn10,matrix.ecNum);
-                int realByteNum=matrix.RSContentByteLength();
-                byte[] raw=new byte[realByteNum];
-                for(int i=0;i<raw.length*8;i++){
-                    if((conIn10[i/matrix.ecLength]&(1<<(i%matrix.ecLength)))>0){
-                        raw[i/8]|=1<<(i%8);
-                    }
-                }
-                encodingPacket = dataDecoder.parsePacket(raw, true).value();
-                if(!reverse){
-                    content.esi1=encodingPacket.encodingSymbolID();
-                    content.isEsi1Done=true;
-                }else{
-                    content.esi2=encodingPacket.encodingSymbolID();
-                    content.isEsi2Done=true;
-                }
-                Log.i(TAG, "encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
-                if(IS_RAPTORQ_ENABLE) {
-                    if (isLastEncodingPacket(sourceBlock, encodingPacket)) {
-                        decodingFinish = true;
-                        Log.d(TAG, "the last esi is " + encodingPacket.encodingSymbolID());
-                        if(IS_STATISTIC_ENABLE) {
-                            statistics.setLastFrameIndex(content.frameIndex);
-                            statistics.setLastEsi(encodingPacket.encodingSymbolID());
-                        }
-                        if (mFrameCallback != null) {
-                            mFrameCallback.onLastPacket();
-                        }
-                    }
-                    dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-                }else{
-                    int esi=encodingPacket.encodingSymbolID();
-                    esi%=maxSourceEsi;
-                    withoutRaptorQ.set(esi);
-                    if(VERBOSE){Log.i(TAG,"already get: "+withoutRaptorQ);}
-                    if(isAllSet(withoutRaptorQ,maxSourceEsi)){
-                        decodingFinish=true;
-                        if(IS_STATISTIC_ENABLE) {
-                            statistics.setLastFrameIndex(content.frameIndex);
-                            statistics.setLastEsi(encodingPacket.encodingSymbolID());
-                        }
-                        if (mFrameCallback != null) {
-                            mFrameCallback.onLastPacket();
-                        }
-                    }
-                }
-            }catch (ReedSolomonException e){
+                frameNode.set("RSDecode",BooleanNode.valueOf(true));
+            } catch (ReedSolomonException e) {
                 Log.d(TAG,"RS decode failed");
+                frameNode.set("RSDecode",BooleanNode.valueOf(false));
+                continue;
             }
+            int realByteNum=matrix.RSContentByteLength();
+            byte[] raw=new byte[realByteNum];
+            for(int i=0;i<raw.length*8;i++){
+                if((conIn10[i/matrix.ecLength]&(1<<(i%matrix.ecLength)))>0){
+                    raw[i/8]|=1<<(i%8);
+                }
+            }
+            encodingPacket = dataDecoder.parsePacket(raw, true).value();
+            if(!reverse){
+                content.esi1=encodingPacket.encodingSymbolID();
+                content.isEsi1Done=true;
+            }else{
+                content.esi2=encodingPacket.encodingSymbolID();
+                content.isEsi2Done=true;
+            }
+            frameNode.set("RaptorQESI",IntNode.valueOf(encodingPacket.encodingSymbolID()));
+            frameNode.set("RaptorQType",TextNode.valueOf(encodingPacket.symbolType().toString()));
+            Log.i(TAG, "encoding symbol ID:" + encodingPacket.encodingSymbolID() + "\t" + encodingPacket.symbolType());
+            if(IS_RAPTORQ_ENABLE) {
+                if (isLastEncodingPacket(sourceBlock, encodingPacket)) {
+                    decodingFinish = true;
+                    Log.d(TAG, "the last esi is " + encodingPacket.encodingSymbolID());
+                    if(IS_STATISTIC_ENABLE) {
+                        statistics.setLastFrameIndex(content.frameIndex);
+                        statistics.setLastEsi(encodingPacket.encodingSymbolID());
+                    }
+                    if (mFrameCallback != null) {
+                        mFrameCallback.onLastPacket();
+                    }
+                }
+                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+            }else{
+                int esi=encodingPacket.encodingSymbolID();
+                esi%=maxSourceEsi;
+                withoutRaptorQ.set(esi);
+                if(VERBOSE){Log.i(TAG,"already get: "+withoutRaptorQ);}
+                if(isAllSet(withoutRaptorQ,maxSourceEsi)){
+                    decodingFinish=true;
+                    if(IS_STATISTIC_ENABLE) {
+                        statistics.setLastFrameIndex(content.frameIndex);
+                        statistics.setLastEsi(encodingPacket.encodingSymbolID());
+                    }
+                    if (mFrameCallback != null) {
+                        mFrameCallback.onLastPacket();
+                    }
+                }
+            }
+            samplePointsNode.add(frameNode);
         }
         rawContentList.add(content);
         if(IS_RAPTORQ_ENABLE) {
@@ -162,6 +190,8 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
                 }
             }
         }
+        ((ObjectNode)root).set("data",samplePointsNode);
+        LOG.info(root.toString());
     }
     private boolean isAllSet(BitSet bitSet,int size){
         return bitSet.get(0)&&bitSet.nextClearBit(0)>=size;

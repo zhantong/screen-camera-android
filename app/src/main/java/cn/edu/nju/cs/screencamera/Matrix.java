@@ -2,6 +2,11 @@ package cn.edu.nju.cs.screencamera;
 
 import android.util.Log;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.util.BitSet;
 
 /**
@@ -31,6 +36,7 @@ public class Matrix{
     int contentLength;
     int ecNum;
     int ecLength;
+    int frameIndex=-1;
 
     private boolean findBorderUseJni;
 
@@ -190,8 +196,15 @@ public class Matrix{
     public RawContent getRaw(){return null;}
     public void sampleContent(){
     }
-    public String getSampleData(){
-        return grayMatrix.toString();
+    public JsonNode getSampleDataInJSON(){
+        ObjectMapper mapper=new ObjectMapper();
+        JsonNode root=mapper.createObjectNode();
+        ((ObjectNode)root).set("frameIndex", IntNode.valueOf(frameIndex));
+        ((ObjectNode)root).set("matrix", grayMatrix.toJSON());
+        return root;
+    }
+    public String getSampleDataInString(){
+        return getSampleDataInJSON().toString();
     }
     /**
      * 获取图像的阈值
