@@ -4,6 +4,11 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import net.fec.openrq.parameters.FECParameters;
 
 import org.slf4j.Logger;
@@ -53,6 +58,8 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
 
         Logger LOG= LoggerFactory.getLogger(MainActivity.class);
 
+        matrix=MatrixFactory.createMatrix(barcodeFormat);
+        LOG.info(CustomMarker.barcodeMeta,matrix.getMetaInString());
 
         while (true) {
             frameCount++;
@@ -81,7 +88,7 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
             }
 
             matrix.sampleContent();
-            LOG.info(matrix.getSampleDataInString());
+            LOG.info(CustomMarker.raw,matrix.getSampleDataInString());
 
             if(fileByteNum==-1){
                 try {
@@ -99,6 +106,13 @@ public class StreamToFile extends MediaToFile implements ProcessFrame.FrameCallb
                 Log.i(TAG,"file is "+fileByteNum+" bytes");
                 int length=matrix.realContentByteLength();
                 FECParameters parameters = FECParameters.newParameters(fileByteNum, length, NUMBER_OF_SOURCE_BLOCKS);
+                ObjectMapper mapper=new ObjectMapper();
+                JsonNode root=mapper.createObjectNode();
+                ((ObjectNode)root).set("dataLength", IntNode.valueOf(parameters.dataLengthAsInt()));
+                ((ObjectNode)root).set("numberOfSourceBlocks", IntNode.valueOf(parameters.numberOfSourceBlocks()));
+                ((ObjectNode)root).set("symbolSize", IntNode.valueOf(parameters.symbolSize()));
+                ((ObjectNode)root).set("totalSymbols", IntNode.valueOf(parameters.totalSymbols()));
+                LOG.info(CustomMarker.raptorQMeta,root.toString());
                 Log.i(TAG,"FEC parameters: "+parameters.toString());
                 processHandler.sendMessage(processHandler.obtainMessage(ProcessFrame.WHAT_FEC_PARAMETERS,parameters));
             }

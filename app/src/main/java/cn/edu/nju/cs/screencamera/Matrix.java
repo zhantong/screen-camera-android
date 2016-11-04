@@ -71,6 +71,21 @@ public class Matrix{
         PropertiesReader propertiesReader=new PropertiesReader();
         findBorderUseJni=Boolean.parseBoolean(propertiesReader.getProperty("findBorder.useJNI"));
     }
+    public JsonNode getMetaInJSON(){
+        ObjectMapper mapper=new ObjectMapper();
+        JsonNode root=mapper.createObjectNode();
+        ((ObjectNode)root).set("bitsPerBlock",IntNode.valueOf(bitsPerBlock));
+        ((ObjectNode)root).set("frameBlackLength",IntNode.valueOf(frameBlackLength));
+        ((ObjectNode)root).set("frameVaryLength",IntNode.valueOf(frameVaryLength));
+        ((ObjectNode)root).set("frameVaryTwoLength",IntNode.valueOf(frameVaryTwoLength));
+        ((ObjectNode)root).set("contentLength",IntNode.valueOf(contentLength));
+        ((ObjectNode)root).set("ecNum",IntNode.valueOf(ecNum));
+        ((ObjectNode)root).set("ecLength",IntNode.valueOf(ecLength));
+        return root;
+    }
+    public String getMetaInString(){
+        return getMetaInJSON().toString();
+    }
     private double calcAngle(){
         return Math.toDegrees(1.0*(vertexes[1]- vertexes[3])/(vertexes[2]- vertexes[0]));
     }

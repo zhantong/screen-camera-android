@@ -119,6 +119,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             try {
                 decoder.decode(conIn10,matrix.ecNum);
                 frameNode.set("RSDecode",BooleanNode.valueOf(true));
+                frameNode.set("RSDecodeData",TextNode.valueOf(Arrays.toString(conIn10)));
             } catch (ReedSolomonException e) {
                 Log.d(TAG,"RS decode failed");
                 frameNode.set("RSDecode",BooleanNode.valueOf(false));
@@ -191,7 +192,7 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             }
         }
         ((ObjectNode)root).set("data",samplePointsNode);
-        LOG.info(root.toString());
+        LOG.info(CustomMarker.processed,root.toString());
     }
     private boolean isAllSet(BitSet bitSet,int size){
         return bitSet.get(0)&&bitSet.nextClearBit(0)>=size;
