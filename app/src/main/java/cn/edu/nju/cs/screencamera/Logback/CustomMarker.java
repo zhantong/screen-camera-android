@@ -1,4 +1,4 @@
-package cn.edu.nju.cs.screencamera;
+package cn.edu.nju.cs.screencamera.Logback;
 
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;

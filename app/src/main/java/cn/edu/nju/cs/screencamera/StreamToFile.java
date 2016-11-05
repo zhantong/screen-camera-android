@@ -1,7 +1,6 @@
 package cn.edu.nju.cs.screencamera;
 
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 
 /**
  * Created by zhantong on 16/2/29.
