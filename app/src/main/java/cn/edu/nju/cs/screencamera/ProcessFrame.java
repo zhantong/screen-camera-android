@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
+import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 import cn.edu.nju.cs.screencamera.ReedSolomon.GenericGF;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonDecoder;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
@@ -114,15 +115,26 @@ public class ProcessFrame extends HandlerThread implements Handler.Callback {
             }
             BitSet bitSetContent=content.getRawContent(reverse);
             frameNode.set("reverse",BooleanNode.valueOf(reverse));
-            frameNode.set("rawData", TextNode.valueOf(Arrays.toString(bitSetContent.toByteArray())));
+            try {
+                frameNode.set("rawData", mapper.readTree(Arrays.toString(bitSetContent.toByteArray())));
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException();
+            }
             int[] conIn10=getRawContent(bitSetContent);
             try {
                 decoder.decode(conIn10,matrix.ecNum);
                 frameNode.set("RSDecode",BooleanNode.valueOf(true));
-                frameNode.set("RSDecodeData",TextNode.valueOf(Arrays.toString(conIn10)));
+                try {
+                    frameNode.set("RSDecodeData",mapper.readTree(Arrays.toString(conIn10)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException();
+                }
             } catch (ReedSolomonException e) {
                 Log.d(TAG,"RS decode failed");
                 frameNode.set("RSDecode",BooleanNode.valueOf(false));
+                samplePointsNode.add(frameNode);
                 continue;
             }
             int realByteNum=matrix.RSContentByteLength();
