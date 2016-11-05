@@ -23,7 +23,7 @@ public class ConfigureLogback {
         // setup FileAppender
         PatternLayoutEncoder encoder1 = new PatternLayoutEncoder();
         encoder1.setContext(lc);
-        encoder1.setPattern("%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n");
+        encoder1.setPattern("%d [%thread] %level %logger [%marker] - %msg%n");
         encoder1.start();
 
         FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();

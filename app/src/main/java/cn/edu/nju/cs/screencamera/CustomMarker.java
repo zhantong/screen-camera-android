@@ -12,4 +12,5 @@ public class CustomMarker {
     public static final Marker raptorQMeta= MarkerFactory.getMarker("raptorQMeta");
     public static final Marker raw= MarkerFactory.getMarker("raw");
     public static final Marker processed= MarkerFactory.getMarker("processed");
+    public static final Marker source= MarkerFactory.getMarker("source");
 }

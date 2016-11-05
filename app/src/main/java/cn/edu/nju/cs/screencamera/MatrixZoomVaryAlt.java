@@ -232,6 +232,9 @@ public class MatrixZoomVaryAlt extends Matrix {
         if (grayMatrix == null) {
             initGrayMatrix(getBarCodeWidth(),getBarCodeHeight());
         }
+        if(rawContent!=null){
+            return;
+        }
         rawContent=new RawContent(bitsPerBlock*contentLength*contentLength);
         if(VERBOSE){Log.d(TAG,"color reversed:"+reverse);}
         if(isMixed){

@@ -60,6 +60,8 @@ public class MainActivity extends Activity{
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
 
+    Logger LOG= LoggerFactory.getLogger(MainActivity.class);
+
     final Handler mHandler=new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -287,6 +289,9 @@ public class MainActivity extends Activity{
         final String newFileName = editTextFileName.getText().toString();
         EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
         final String truthFilePath = editTextTruthFilePath.getText().toString();
+
+        LOG.info(CustomMarker.source,videoFilePath);
+
         Thread worker = new Thread() {
             @Override
             public void run() {
@@ -402,10 +407,5 @@ public class MainActivity extends Activity{
 
         getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
         getFragmentManager().executePendingTransactions();
-    }
-    private void click_test(){
-
-        Logger LOG= LoggerFactory.getLogger(MainActivity.class);
-        LOG.info("hello world");
     }
 }
