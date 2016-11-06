@@ -121,15 +121,17 @@ public class MatrixZoomVaryAlt extends Matrix {
     }
     private int getRefWhite(){
         int sum=0;
+        int column=frameBlackLength+2*(frameVaryLength+frameVaryTwoLength)+contentLength;
         for(int i=1;i<contentLength;i+=2){
-            sum+=grayMatrix.get(frameBlackLength+contentLength,i);
+            sum+=grayMatrix.get(column,i);
         }
         return sum/contentLength;
     }
     private int getRefBlack(){
         int sum=0;
+        int column=frameBlackLength+2*(frameVaryLength+frameVaryTwoLength)+contentLength;
         for(int i=2;i<contentLength;i+=2){
-            sum+=grayMatrix.get(frameBlackLength+contentLength,i);
+            sum+=grayMatrix.get(column,i);
         }
         return sum/contentLength;
     }
@@ -137,8 +139,9 @@ public class MatrixZoomVaryAlt extends Matrix {
         int numBlock=15;
         int max=0;
         int min=255;
+        int column=frameBlackLength+2*(frameVaryLength+frameVaryTwoLength)+contentLength;
         for(int i=1;i<1+numBlock*2;i+=2){
-            int grayScale=grayMatrix.get(frameBlackLength+contentLength,i);
+            int grayScale=grayMatrix.get(column,i);
             //System.out.println(grayScale);
             if(grayScale>max){
                 max=grayScale;
@@ -151,7 +154,7 @@ public class MatrixZoomVaryAlt extends Matrix {
         max=0;
         min=255;
         for(int i=2;i<1+numBlock*2;i+=2){
-            int grayScale=grayMatrix.get(frameBlackLength+contentLength,i);
+            int grayScale=grayMatrix.get(column,i);
             if(grayScale>max){
                 max=grayScale;
             }
