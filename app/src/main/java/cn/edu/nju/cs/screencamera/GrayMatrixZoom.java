@@ -71,6 +71,7 @@ public class GrayMatrixZoom extends GrayMatrix {
         ((ObjectNode)root).set("height", IntNode.valueOf(height));
         ArrayNode samplePointsNode=mapper.createArrayNode();
         for(Point[] samplePoint:pixels){
+            ObjectNode node=mapper.createObjectNode();
             ArrayNode pointsNode=mapper.createArrayNode();
             for(Point point:samplePoint){
                 /*
@@ -83,7 +84,10 @@ public class GrayMatrixZoom extends GrayMatrix {
 
                 pointsNode.add(IntNode.valueOf(point.value));
             }
-            samplePointsNode.add(pointsNode);
+            node.set("values",pointsNode);
+            node.set("originX",IntNode.valueOf(samplePoint[0].x));
+            node.set("originY",IntNode.valueOf(samplePoint[0].y));
+            samplePointsNode.add(node);
         }
         ((ObjectNode)root).set("data",samplePointsNode);
         return root;
