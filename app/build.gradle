@@ -52,4 +52,6 @@ dependencies {
     }
 
     compile 'com.fasterxml.jackson.core:jackson-databind:2.8.4'
+
+    compile 'com.google.guava:guava:20.0'
 }

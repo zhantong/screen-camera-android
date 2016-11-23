@@ -1,6 +1,8 @@
 package cn.edu.nju.cs.screencamera;
 
 import java.io.File;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by zhantong on 2016/9/29.
@@ -25,5 +27,15 @@ public final class Utils {
             sum+=array[i];
         }
         return sum/(high-low+1);
+    }
+    public static int[] extractResolution(String string){
+        Pattern pattern= Pattern.compile(".*?(\\d+)x(\\d+).*");
+        Matcher matcher=pattern.matcher(string);
+        if(matcher.find()){
+            int width=Integer.parseInt(matcher.group(1));
+            int height=Integer.parseInt(matcher.group(2));
+            return new int[]{width,height};
+        }
+        return null;
     }
 }
