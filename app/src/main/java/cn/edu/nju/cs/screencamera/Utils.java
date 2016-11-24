@@ -1,6 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
 import java.io.File;
+import java.util.BitSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,5 +38,12 @@ public final class Utils {
             return new int[]{width,height};
         }
         return null;
+    }
+    public static int bitsToInt(BitSet bitSet, int length, int offset){
+        int value=0;
+        for(int i=0;i<length;i++){
+            value+=bitSet.get(offset+i)?(1<<i):0;
+        }
+        return value;
     }
 }
