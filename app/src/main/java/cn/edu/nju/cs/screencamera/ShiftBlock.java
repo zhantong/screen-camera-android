@@ -9,4 +9,7 @@ public class ShiftBlock implements Block {
     public int getBitsPerUnit() {
         return 2;
     }
+    public float[] getSamplePoints(){
+        return null;
+    }
 }

@@ -6,4 +6,5 @@ package cn.edu.nju.cs.screencamera;
 
 public interface Block {
     int getBitsPerUnit();
+    float[] getSamplePoints();
 }

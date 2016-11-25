@@ -334,7 +334,7 @@ public class RawImage {
     private boolean pixelIsBlack(int x, int y){
         return pixelEquals(x,y,0);
     }
-    private int getBinary(int x, int y) {
+    public int getBinary(int x, int y) {
         if (getGray(x, y) <= grayThreshold) {
             return 0;
         } else {

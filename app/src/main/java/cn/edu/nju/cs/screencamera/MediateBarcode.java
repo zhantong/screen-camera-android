@@ -1,5 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
+import java.util.BitSet;
+
 /**
  * Created by zhantong on 2016/11/24.
  */
@@ -26,6 +28,9 @@ public class MediateBarcode {
         int barcodeHeight=districts.get(Districts.BORDER).get(District.DOWN).endInBlockY();
         System.out.println("barcode: "+barcodeWidth+"x"+barcodeHeight);
         transform=PerspectiveTransform.quadrilateralToQuadrilateral(0,0,barcodeWidth,0,barcodeWidth,barcodeHeight,0,barcodeHeight,vertexes[0],vertexes[1],vertexes[2],vertexes[3],vertexes[4],vertexes[5],vertexes[6],vertexes[7]);
+    }
+    public BitSet getContent(Zone zone){
+        return zone.getContent(transform,rawImage);
     }
     private void loadConfig(BarcodeConfig config){
         int MARGIN=Districts.MARGIN;

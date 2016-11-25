@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.BitSet;
 
 /**
  * Created by zhantong on 2016/11/23.
@@ -23,8 +24,9 @@ public class ParseImage {
             rawImage = getRawImage(filePath);
             Log.i(TAG,rawImage.toString());
             Log.i(TAG,"threshold: "+rawImage.getGrayThreshold());
-            int[] vertexes=rawImage.getBarcodeVertexes();
-            Log.i(TAG,"vertexes: "+ Arrays.toString(vertexes));
+            MediateBarcode mediateBarcode=new MediateBarcode(rawImage,new ShiftCodeMLConfig());
+            BitSet bitSet=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP));
+            System.out.println(bitSet.toString());
         } catch (NotFoundException e) {
             e.printStackTrace();
             return;
