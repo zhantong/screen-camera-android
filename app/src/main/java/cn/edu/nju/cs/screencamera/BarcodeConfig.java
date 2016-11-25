@@ -5,9 +5,6 @@ package cn.edu.nju.cs.screencamera;
  */
 
 public class BarcodeConfig {
-    public DistrictConfig<Integer> marginLength=new DistrictConfig<>(1);
-    //public DistrictConfig<Integer> marginLength=new DistrictConfig<>(1,1,1,1);
-
     public DistrictConfig<Integer> borderLength=new DistrictConfig<>(1);
     //public DistrictConfig<Integer> borderLength=new DistrictConfig<>(1,1,1,1);
 
@@ -18,18 +15,6 @@ public class BarcodeConfig {
     public int mainHeight=8;
 
     public int blockLengthInPixel=4;
-
-    public DistrictConfig<Block> marginBlock=new DistrictConfig<Block>(new BlackWhiteBlock());
-    /*
-    public DistrictConfig<Block> marginBlock=new DistrictConfig<>(new BlackWhiteBlock(),
-            new BlackWhiteBlock(),
-            new BlackWhiteBlock(),
-            new BlackWhiteBlock(),
-            new BlackWhiteBlock(),
-            new BlackWhiteBlock(),
-            new BlackWhiteBlock(),
-            new BlackWhiteBlock());
-    */
 
     public DistrictConfig<Block> borderBlock=new DistrictConfig<Block>(new BlackWhiteBlock());
     /*
