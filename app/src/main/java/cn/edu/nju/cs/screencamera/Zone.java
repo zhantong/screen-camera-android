@@ -12,61 +12,68 @@ public class Zone {
     public int heightInBlock;
     public int baseOffsetInBlockX;
     public int baseOffsetInBlockY;
-    private BitContent content;
+    private int[] content;
     private Block block;
-    public Zone(int widthInBlock, int heightInBlock,int baseOffsetInBlockX,int baseOffsetInBlockY,Block block){
-        this(widthInBlock,heightInBlock,baseOffsetInBlockX,baseOffsetInBlockY,block,null);
-    }
-    public Zone(int widthInBlock, int heightInBlock,int baseOffsetInBlockX,int baseOffsetInBlockY,BitContent content){
-        this(widthInBlock,heightInBlock,baseOffsetInBlockX,baseOffsetInBlockY,null,content);
-    }
+    private float[] standardSamplePoints=null;
+    private float[] realSamplePoints=null;
     public Zone(int widthInBlock, int heightInBlock,int baseOffsetInBlockX,int baseOffsetInBlockY){
-        this(widthInBlock,heightInBlock,baseOffsetInBlockX,baseOffsetInBlockY,null,null);
+        this(widthInBlock,heightInBlock,baseOffsetInBlockX,baseOffsetInBlockY,null);
     }
-    public Zone(int widthInBlock, int heightInBlock,int baseOffsetInBlockX,int baseOffsetInBlockY,Block block,BitContent content){
+    public Zone(int widthInBlock, int heightInBlock,int baseOffsetInBlockX,int baseOffsetInBlockY,Block block){
         this.widthInBlock=widthInBlock;
         this.heightInBlock=heightInBlock;
         this.baseOffsetInBlockX=baseOffsetInBlockX;
         this.baseOffsetInBlockY=baseOffsetInBlockY;
         this.block=block;
-        this.content=content;
-    }
-    public void addContent(BitContent content){
-        this.content=content;
     }
     public void addBlock(Block block){
         this.block=block;
     }
-    public BitSet getContent(PerspectiveTransform transform,RawImage rawImage){
-        float[] blockSamplePoints=block.getSamplePoints();
-        int numBlockSamplePoints=blockSamplePoints.length;
-        float[] points=new float[widthInBlock*heightInBlock*numBlockSamplePoints];
-        int pos=0;
-        for(int y=0;y<heightInBlock;y++){
-            for(int x=0;x<widthInBlock;x++){
-                for(int i=0;i<numBlockSamplePoints;i+=2){
-                    float column=baseOffsetInBlockX+x+blockSamplePoints[i];
-                    float row=baseOffsetInBlockY+y+blockSamplePoints[i+1];
-                    points[pos]=column;
-                    pos++;
-                    points[pos]=row;
-                    pos++;
+    public Block getBlock(){
+        return block;
+    }
+    public float[] getStandardSamplePoints(){
+        if(standardSamplePoints==null) {
+            float[] blockSamplePoints = block.getSamplePoints();
+            int blockSamplePointsLength = blockSamplePoints.length;
+            standardSamplePoints = new float[widthInBlock * heightInBlock * blockSamplePointsLength];
+            int pos = 0;
+            for (int y = 0; y < heightInBlock; y++) {
+                for (int x = 0; x < widthInBlock; x++) {
+                    for (int i = 0; i < blockSamplePointsLength; i += 2) {
+                        float column = baseOffsetInBlockX + x + blockSamplePoints[i];
+                        float row = baseOffsetInBlockY + y + blockSamplePoints[i + 1];
+                        standardSamplePoints[pos] = column;
+                        pos++;
+                        standardSamplePoints[pos] = row;
+                        pos++;
+                    }
                 }
             }
         }
-        System.out.println("standard: "+ Arrays.toString(points));
-        transform.transformPoints(points);
-        System.out.println("transformed: "+ Arrays.toString(points));
-        BitSet bitSet=new BitSet();
-        for(int i=0,bitSetPos=0;i<points.length;i+=2,bitSetPos++){
-            int x=(int)points[i];
-            int y=(int)points[i+1];
-            int value=rawImage.getBinary(x,y);
-            if(value==1){
-                bitSet.set(bitSetPos);
+        return standardSamplePoints;
+    }
+    public float[] getRealSamplePoints(PerspectiveTransform transform){
+        if(realSamplePoints==null){
+            float[] standard=getStandardSamplePoints();
+            realSamplePoints=Arrays.copyOf(standard,standard.length);
+            transform.transformPoints(realSamplePoints);
+        }
+        return realSamplePoints;
+    }
+    public int[] getContent(PerspectiveTransform transform,RawImage rawImage){
+        if(content==null){
+            float[] real=getRealSamplePoints(transform);
+            int numBlockSamplePoints=block.getNumSamplePoints();
+            content=new int[widthInBlock*heightInBlock*numBlockSamplePoints];
+            for(int i=0,pos=0;i<real.length;i+=2,pos++){
+                int x=(int)real[i];
+                int y=(int)real[i+1];
+                int value=rawImage.getGray(x,y);
+                content[pos]=value;
             }
         }
-        return bitSet;
+        return content;
     }
     public int startInBlockX(){
         return baseOffsetInBlockX;
