@@ -29,7 +29,7 @@ public class MediateBarcode {
         System.out.println("barcode: "+barcodeWidth+"x"+barcodeHeight);
         transform=PerspectiveTransform.quadrilateralToQuadrilateral(0,0,barcodeWidth,0,barcodeWidth,barcodeHeight,0,barcodeHeight,vertexes[0],vertexes[1],vertexes[2],vertexes[3],vertexes[4],vertexes[5],vertexes[6],vertexes[7]);
     }
-    public BitSet getContent(Zone zone){
+    public int[] getContent(Zone zone){
         return zone.getContent(transform,rawImage);
     }
     private void loadConfig(BarcodeConfig config){
