@@ -46,4 +46,13 @@ public final class Utils {
         }
         return value;
     }
+    public static void crc8Check(int data,int check) throws CRCCheckException{
+        CRC8 crc8=new CRC8();
+        crc8.reset();
+        crc8.update(data);
+        int real=(int)crc8.getValue();
+        if(check!=real||data<0){
+            throw CRCCheckException.getNotFoundInstance();
+        }
+    }
 }
