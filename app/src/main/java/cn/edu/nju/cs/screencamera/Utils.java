@@ -101,4 +101,13 @@ public final class Utils {
         ReedSolomonDecoder decoder=new ReedSolomonDecoder(field);
         decoder.decode(originData,numEc);
     }
+    public static int[] concatIntArray(int[] arrayA,int[] arrayB){
+        int lengthArrayA=arrayA.length;
+        int lengthArrayB=arrayB.length;
+        int[] concat=new int[lengthArrayA+lengthArrayB];
+        System.out.println();
+        System.arraycopy(arrayA,0,concat,0,lengthArrayA);
+        System.arraycopy(arrayB,0,concat,lengthArrayA,lengthArrayB);
+        return concat;
+    }
 }

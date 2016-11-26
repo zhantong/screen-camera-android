@@ -113,55 +113,65 @@ public class ShiftCode {
         }
         return rawData;
     }
-    public BitSet getMixedRawContent(){
+    public int[][] getMixedRawContent(){
         overlapSituation=OVERLAP_WHITE_TO_BLACK;
         Zone zone=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN);
         ShiftBlock block=(ShiftBlock) zone.getBlock();
         int[] content=mediateBarcode.getContent(zone);
+        int[] rawDataPrev=new int[zone.widthInBlock*zone.heightInBlock];
+        int[] rawDataNext=new int[zone.widthInBlock*zone.heightInBlock];
         int step=block.getNumSamplePoints();
         int offset=0;
+        int rawDataPos=0;
         for(int y=0;y<zone.heightInBlock;y++) {
             for (int x = 0; x < zone.widthInBlock; x++) {
                 boolean isFormerWhite=(overlapSituation==OVERLAP_WHITE_TO_BLACK);
                 int[] values=block.getMixed(isFormerWhite,threshold,x,y,content,offset);
                 offset+=step;
-                System.out.print(Arrays.toString(values)+" ");
+                rawDataPrev[rawDataPos]=values[0];
+                rawDataNext[rawDataPos]=values[0];
+                rawDataPos++;
             }
-            break;
         }
-        return null;
+        return new int[][]{rawDataPrev,rawDataNext};
     }
-    public byte[] rSDecode(int[] rawContent,Zone zone) throws ReedSolomonException {
-        int eCSize=-1;
-        int numEC=-1;
+    public int[] rSDecode(int[] rawContent,Zone zone) throws ReedSolomonException {
+        int ecSize=-1;
+        float ecLevel=0.1f;
         int rawBitsPerUnit=zone.getBlock().getBitsPerUnit();
         if(hints!=null){
             if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_SIZE)){
-                eCSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
+                ecSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
             }else {
                 throw new IllegalArgumentException();
             }
             if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_LEVEL)){
-                float eCLevel=Float.parseFloat(hints.get(DecodeHintType.RS_ERROR_CORRECTION_LEVEL).toString());
-                numEC=calcEcNum(zone,eCSize,eCLevel);
+                ecLevel=Float.parseFloat(hints.get(DecodeHintType.RS_ERROR_CORRECTION_LEVEL).toString());
             }else{
                 throw new IllegalArgumentException();
             }
         }
-        int rawDataLengthInUnit=zone.widthInBlock*zone.heightInBlock-eCSize*numEC/rawBitsPerUnit;
-        int[] rsEncodedDataPart=Utils.changeNumBitsPerInt(rawContent,0,rawDataLengthInUnit,rawBitsPerUnit,eCSize);
-        int[] rsEncodeDataRepair=Utils.changeNumBitsPerInt(rawContent,rawDataLengthInUnit,rawContent.length-rawDataLengthInUnit,rawBitsPerUnit,eCSize);
-        int[] rSEncodedData=new int[rsEncodedDataPart.length+rsEncodeDataRepair.length];
-        System.out.println(rawContent.length+" "+rsEncodedDataPart.length+" "+rsEncodeDataRepair.length+" "+rSEncodedData.length);
-        System.arraycopy(rsEncodedDataPart,0,rSEncodedData,0,rsEncodedDataPart.length);
-        System.arraycopy(rsEncodeDataRepair,0,rSEncodedData,rsEncodedDataPart.length,rsEncodeDataRepair.length);
-        System.out.println(Arrays.toString(rSEncodedData));
-        Utils.rSDecode(rSEncodedData,numEC,eCSize);
-
-        byte[] rSDecodedData=Utils.intArrayToByteArray(rSEncodedData,rSEncodedData.length-numEC,eCSize);
-        return rSDecodedData;
+        int numRS=calcNumRS(zone,ecSize);
+        int numRSEc=calcNumRSEc(numRS,ecLevel);
+        int numRSData=calcNumRSData(numRS,numRSEc);
+        int rSDataLengthInUnit=numRSData*ecSize/rawBitsPerUnit;
+        int rSRepairLengthInUnit=numRSEc*ecSize/rawBitsPerUnit;
+        int[] rsEncodedDataPart=Utils.changeNumBitsPerInt(rawContent,0,rSDataLengthInUnit,rawBitsPerUnit,ecSize);
+        int[] rsEncodeRepairPart=Utils.changeNumBitsPerInt(rawContent,rSDataLengthInUnit,rSRepairLengthInUnit,rawBitsPerUnit,ecSize);
+        int[] rSEncodedData=Utils.concatIntArray(rsEncodedDataPart,rsEncodeRepairPart);
+        Utils.rSDecode(rSEncodedData,numRSEc,ecSize);
+        return rSEncodedData;
     }
-    protected static int calcEcNum(Zone zone,int rSEcSize,float rSEcLevel){
-        return ((int)((zone.getBlock().getBitsPerUnit()*zone.widthInBlock*zone.heightInBlock/rSEcSize)*rSEcLevel))/2*2;
+    protected static int calcNumRSEc(int numRS,float rSEcLevel){
+        return (int)Math.floor(numRS*rSEcLevel);
+    }
+    protected static int calcNumRS(Zone zone,int rSEcSize){
+        return zone.getBlock().getBitsPerUnit()*zone.widthInBlock*zone.heightInBlock/rSEcSize;
+    }
+    protected static int calcNumRSData(int numRS,int numRSEc){
+        return numRS-numRSEc;
+    }
+    protected static int calcNumDataBytes(int numRSData,int rSEcSize){
+        return numRSData*rSEcSize/8-8;
     }
 }

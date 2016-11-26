@@ -33,8 +33,11 @@ public class ParseImage {
             ShiftCode shiftCode=new ShiftCode(mediateBarcode,hints);
             int head=shiftCode.getTransmitFileLengthInBytes();
             System.out.println("head: "+head);
-            int[] rawData=shiftCode.getClearRawContent();
-            byte[] data=shiftCode.rSDecode(rawData,shiftCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN));
+            int[][] mixedData=shiftCode.getMixedRawContent();
+            int[] rawData=mixedData[1];
+            //int[] rawData=shiftCode.getClearRawContent();
+            int[] data=shiftCode.rSDecode(rawData,shiftCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN));
+            System.out.println(Arrays.toString(data));
         } catch (Exception e) {
             e.printStackTrace();
             return;
