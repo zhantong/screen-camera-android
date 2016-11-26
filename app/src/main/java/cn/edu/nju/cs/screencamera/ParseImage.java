@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Created by zhantong on 2016/11/23.
@@ -21,13 +23,19 @@ public class ParseImage {
     public ParseImage(String filePath){
         RawImage rawImage= null;
         try {
+            Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
+            hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+            hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
             rawImage = getRawImage(filePath);
             Log.i(TAG,rawImage.toString());
             Log.i(TAG,"threshold: "+rawImage.getGrayThreshold());
-            MediateBarcode mediateBarcode=new MediateBarcode(rawImage,new ShiftCodeMLConfig());
-            BitSet bitSet=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP));
-            System.out.println(bitSet.toString());
-        } catch (NotFoundException e) {
+            MediateBarcode mediateBarcode=new MediateBarcode(rawImage,new ShiftCodeConfig());
+            ShiftCode shiftCode=new ShiftCode(mediateBarcode,hints);
+            int head=shiftCode.getTransmitFileLengthInBytes();
+            System.out.println("head: "+head);
+            int[] rawData=shiftCode.getClearRawContent();
+            byte[] data=shiftCode.rSDecode(rawData,shiftCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN));
+        } catch (Exception e) {
             e.printStackTrace();
             return;
         }
