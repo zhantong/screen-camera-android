@@ -1,41 +1,46 @@
-apply plugin: 'com.android.model.application'
+apply plugin: 'com.android.application'
 
-model {
-    android {
-        compileSdkVersion = 23
-        buildToolsVersion = "23.0.3"
 
-        defaultConfig {
-            applicationId = "cn.edu.nju.cs.screencamera"
-            minSdkVersion.apiLevel = 21
-            targetSdkVersion.apiLevel = 23
-            versionCode = 1
-            versionName = "1.0"
-        }
-        compileOptions.with {
-            sourceCompatibility = JavaVersion.VERSION_1_7
-            sourceCompatibility = JavaVersion.VERSION_1_7
-        }
-        buildTypes {
-            release {
-                minifyEnabled = false
-                proguardFiles.add(file('proguard-android.txt'))
+android {
+    compileSdkVersion = 23
+    buildToolsVersion = "23.0.3"
+
+    defaultConfig {
+        applicationId = "cn.edu.nju.cs.screencamera"
+        minSdkVersion 21
+        targetSdkVersion 23
+        versionCode = 1
+        versionName = "1.0"
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-fexceptions", "-std=c++11"
             }
         }
-        ndk {
-            moduleName = "Android-Jni"
-            cppFlags.addAll(["-std=c++11","-fexceptions"])
-            ldLibs.add("log")
-            stl = "gnustl_shared"
+    }
+    compileOptions.with {
+        sourceCompatibility = JavaVersion.VERSION_1_7
+        sourceCompatibility = JavaVersion.VERSION_1_7
+    }
+    buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    android.packagingOptions {
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/notice.txt'
-        exclude 'META-INF/license.txt'
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
     }
 }
+android.packagingOptions {
+    exclude 'META-INF/NOTICE'
+    exclude 'META-INF/LICENSE'
+    exclude 'META-INF/notice.txt'
+    exclude 'META-INF/license.txt'
+}
+
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -47,7 +52,7 @@ dependencies {
 
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'com.github.tony19:logback-android-core:1.1.1-6'
-    compile('com.github.tony19:logback-android-classic:1.1.1-6'){
+    compile('com.github.tony19:logback-android-classic:1.1.1-6') {
         exclude group: 'com.google.android', module: 'android'
     }
 
