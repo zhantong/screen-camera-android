@@ -97,6 +97,13 @@ public class ShiftCode {
         }
         System.out.println("mix indicator up: "+mixIndicatorUp+" mix indicator down: "+mixIndicatorDown+" refWhiteEx: "+refWhiteExpand+" refBlackEx: "+refBlackExpand);
     }
+    public int[][] getRawContents(){
+        if(overlapSituation==OVERLAP_CLEAR_WHITE||overlapSituation==OVERLAP_CLEAR_BLACK){
+            return new int[][]{getClearRawContent()};
+        }else{
+            return getMixedRawContent();
+        }
+    }
     public int[] getClearRawContent(){
         Zone zone=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN);
         ShiftBlock block=(ShiftBlock) zone.getBlock();
@@ -176,7 +183,8 @@ public class ShiftCode {
     protected static int calcNumDataBytes(int numRSData,int rSEcSize){
         return numRSData*rSEcSize/8-8;
     }
-    public int calcNumRaptorQBytes(){
+
+    public int calcRaptorQPacketSize(){
         int ecSize=0;
         float ecLevel=0f;
         if(hints!=null){
@@ -195,5 +203,8 @@ public class ShiftCode {
         int numRSEc=calcNumRSEc(numRS,ecLevel);
         int numRSData=calcNumRSData(numRS,numRSEc);
         return numRSData*ecSize/8;
+    }
+    public int calcRaptorQSymbolSize(int raptorQPacketSize){
+        return raptorQPacketSize-8;
     }
 }

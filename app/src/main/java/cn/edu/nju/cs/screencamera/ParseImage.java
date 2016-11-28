@@ -28,25 +28,14 @@ public class ParseImage {
             hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
             hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
-            final LinkedBlockingQueue<RawImage> frameQueue = new LinkedBlockingQueue<>();
             boolean isVideo=true;
             if(isVideo) {
-                VideoToFrames videoToFrames = new VideoToFrames();
-                videoToFrames.setEnqueue(frameQueue);
-                try {
-                    videoToFrames.decode(filePath);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
                 Log.i(TAG, "decoding video");
+                ShiftCodeVideo shiftCodeVideo=new ShiftCodeVideo(filePath,hints);
             }else {
                 RawImage image=getRawImage(filePath);
-                frameQueue.put(image);
+                //frameQueue.put(image);
             }
-
-            ShiftCodeStream shiftCodeStream=new ShiftCodeStream(hints);
-            shiftCodeStream.stream(frameQueue);
-
         } catch (Exception e) {
             e.printStackTrace();
             return;
