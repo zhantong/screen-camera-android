@@ -412,8 +412,9 @@ public class MainActivity extends Activity{
                 Thread worker = new Thread() {
                     @Override
                     public void run() {
-                        CameraToFile cameraToFile=new CameraToFile(mHandler,barcodeFormat,truthFilePath);
-                        cameraToFile.toFile(newFileName, fragment.mPreview);
+                        ParseImage parseImage=new ParseImage(fragment.mPreview);
+                        //CameraToFile cameraToFile=new CameraToFile(mHandler,barcodeFormat,truthFilePath);
+                        //cameraToFile.toFile(newFileName, fragment.mPreview);
                         getFragmentManager().popBackStack();
                     }
                 };

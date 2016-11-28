@@ -22,25 +22,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ParseImage {
     private static final String TAG="ParseImage";
     public ParseImage(String filePath){
-        try {
-            Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
-            hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
-            hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
-            hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
+        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
+        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
-            boolean isVideo=true;
-            if(isVideo) {
-                Log.i(TAG, "decoding video");
-                ShiftCodeVideo shiftCodeVideo=new ShiftCodeVideo(filePath,hints);
-            }else {
-                RawImage image=getRawImage(filePath);
-                //frameQueue.put(image);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
+        Log.i(TAG, "decoding video");
+        ShiftCodeVideo shiftCodeVideo=new ShiftCodeVideo(filePath,hints);
+    }
+    public ParseImage(CameraPreview cameraPreview){
+        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
+        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
+        Log.i(TAG,"decoding camera");
+        ShiftCodeCamera shiftCodeCamera=new ShiftCodeCamera(cameraPreview,hints);
     }
     private static RawImage getRawImage(String imageFilePath) throws NotFoundException{
         if(imageFilePath.endsWith(".yuv")){
