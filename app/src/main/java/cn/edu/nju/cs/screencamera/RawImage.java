@@ -12,13 +12,17 @@ public class RawImage {
     private int height;
     private int colorType;
     private int grayThreshold=-1;
+    private int index;
 
-    public RawImage(byte[] pixels,int width,int height,int colorType) throws NotFoundException{
+    public RawImage(byte[] pixels,int width,int height,int colorType){
+        this(pixels,width,height,colorType,0);
+    }
+    public RawImage(byte[] pixels,int width,int height,int colorType,int index){
         this.pixels=pixels;
         this.width=width;
         this.height=height;
         this.colorType=colorType;
-        getGrayThreshold();
+        this.index=index;
     }
     public int getGray(int x, int y) {
         switch (colorType){
@@ -28,6 +32,12 @@ public class RawImage {
                 return getRGBGray(x,y);
         }
         throw new IllegalArgumentException("unknown color type "+colorType);
+    }
+    public int getIndex(){
+        return index;
+    }
+    public byte[] getPixels(){
+        return pixels;
     }
     private int getYUVGray(int x, int y) {
         return pixels[y * width + x] & 0xff;
@@ -97,6 +107,7 @@ public class RawImage {
         return bestValley;
     }
     public int[] getBarcodeVertexes() throws NotFoundException{
+        getGrayThreshold();
         int[] whiteRectangle=findWhiteRectangle(null);
         //return findVertexesFromWhiteRectangle1(whiteRectangle);
         return findVertexesFromWhiteRectangle2(whiteRectangle);
