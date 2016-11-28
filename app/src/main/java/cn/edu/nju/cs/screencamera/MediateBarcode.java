@@ -12,18 +12,15 @@ public class MediateBarcode {
     RawImage rawImage;
     PerspectiveTransform transform;
 
-    public MediateBarcode(RawImage rawImage,BarcodeConfig config){
+    public MediateBarcode(RawImage rawImage,BarcodeConfig config) throws NotFoundException {
         this.config=config;
         this.rawImage=rawImage;
         districts=new Districts();
         loadConfig(config);
 
         int[] vertexes=null;
-        try {
-            vertexes=rawImage.getBarcodeVertexes();
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
+        vertexes=rawImage.getBarcodeVertexes();
+
         int barcodeWidth=districts.get(Districts.BORDER).get(District.RIGHT).endInBlockX();
         int barcodeHeight=districts.get(Districts.BORDER).get(District.DOWN).endInBlockY();
         System.out.println("barcode: "+barcodeWidth+"x"+barcodeHeight);

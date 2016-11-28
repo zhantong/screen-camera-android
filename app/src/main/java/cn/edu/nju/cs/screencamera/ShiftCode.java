@@ -35,6 +35,9 @@ public class ShiftCode {
         //getClearRawContent();
         //getMixedContent();
     }
+    public int getOverlapSituation(){
+        return overlapSituation;
+    }
     public int getTransmitFileLengthInBytes() throws CRCCheckException{
         int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP));
         BitSet data=new BitSet();
@@ -114,7 +117,6 @@ public class ShiftCode {
         return rawData;
     }
     public int[][] getMixedRawContent(){
-        overlapSituation=OVERLAP_WHITE_TO_BLACK;
         Zone zone=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN);
         ShiftBlock block=(ShiftBlock) zone.getBlock();
         int[] content=mediateBarcode.getContent(zone);
@@ -173,5 +175,25 @@ public class ShiftCode {
     }
     protected static int calcNumDataBytes(int numRSData,int rSEcSize){
         return numRSData*rSEcSize/8-8;
+    }
+    public int calcNumRaptorQBytes(){
+        int ecSize=0;
+        float ecLevel=0f;
+        if(hints!=null){
+            if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_SIZE)){
+                ecSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
+            }else {
+                throw new IllegalArgumentException();
+            }
+            if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_LEVEL)){
+                ecLevel=Float.parseFloat(hints.get(DecodeHintType.RS_ERROR_CORRECTION_LEVEL).toString());
+            }else{
+                throw new IllegalArgumentException();
+            }
+        }
+        int numRS=calcNumRS(mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),ecSize);
+        int numRSEc=calcNumRSEc(numRS,ecLevel);
+        int numRSData=calcNumRSData(numRS,numRSEc);
+        return numRSData*ecSize/8;
     }
 }

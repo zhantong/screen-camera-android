@@ -73,15 +73,19 @@ public final class Utils {
         return array;
     }
     public static byte[] intArrayToByteArray(int[] data,int bitsPerInt){
-        return intArrayToByteArray(data,data.length,bitsPerInt);
+        return intArrayToByteArray(data,data.length,bitsPerInt,-1);
     }
-    public static byte[] intArrayToByteArray(int[] data,int dataLength,int bitsPerInt){
-        int numBitsPerByte=8;
-        int numDataBits=dataLength*bitsPerInt;
-        byte[] array=new byte[(int)Math.ceil((float) numDataBits/numBitsPerByte)];
-        for(int i=0;i<numDataBits;i++){
-            if((data[i/bitsPerInt]&(1<<(i%bitsPerInt)))>0){
-                array[i/numBitsPerByte]|=1<<(i%numBitsPerByte);
+    public static byte[] intArrayToByteArray(int[] intArray,int intArrayLength,int bitsPerInt,int byteArrayLength){
+        int bitsPerByte=8;
+        int numBits=intArrayLength*bitsPerInt;
+        if(byteArrayLength!=-1){
+            int numByteArrayBits=byteArrayLength*bitsPerByte;
+            numBits=Math.min(numBits,numByteArrayBits);
+        }
+        byte[] array=new byte[(int)Math.ceil((float) numBits/bitsPerByte)];
+        for(int i=0;i<numBits;i++){
+            if((intArray[i/bitsPerInt]&(1<<(i%bitsPerInt)))>0){
+                array[i/bitsPerByte]|=1<<(i%bitsPerByte);
             }
         }
         return array;
