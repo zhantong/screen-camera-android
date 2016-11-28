@@ -30,7 +30,7 @@ public class VideoToFrames implements Runnable {
 
     private static final int decodeColorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible;
 
-    private LinkedBlockingQueue<byte[]> mQueue;
+    private LinkedBlockingQueue<RawImage> mQueue;
     private OutputImageFormat outputImageFormat;
     private String OUTPUT_DIR;
     private boolean stopDecode = false;
@@ -48,7 +48,7 @@ public class VideoToFrames implements Runnable {
     public void setCallback(Callback callback){
         this.callback=callback;
     }
-    public void setEnqueue(LinkedBlockingQueue<byte[]> queue) {
+    public void setEnqueue(LinkedBlockingQueue<RawImage> queue) {
         mQueue = queue;
     }
 
@@ -181,12 +181,9 @@ public class VideoToFrames implements Runnable {
                     Image image = decoder.getOutputImage(outputBufferId);
                     //System.out.println("image format: " + image.getFormat());
 
-                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                    byte[] arr = new byte[buffer.remaining()];
-                    buffer.get(arr);
                     if (mQueue != null) {
                         try {
-                            mQueue.put(arr);
+                            mQueue.put(new RawImage(getGrayDataFromImage(image),width,height,RawImage.COLOR_TYPE_YUV,outputFrameCount));
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -243,7 +240,41 @@ public class VideoToFrames implements Runnable {
         }
         return false;
     }
-
+    private static byte[] getGrayDataFromImage(Image image){
+        if (!isImageFormatSupported(image)) {
+            throw new RuntimeException("can't convert Image to byte array, format " + image.getFormat());
+        }
+        Rect crop = image.getCropRect();
+        int width = crop.width();
+        int height = crop.height();
+        byte[] data=new byte[width*height];
+        Image.Plane yPlanes=image.getPlanes()[0];
+        byte[] rowData = new byte[yPlanes.getRowStride()];
+        ByteBuffer buffer = yPlanes.getBuffer();
+        int rowStride = yPlanes.getRowStride();
+        int pixelStride = yPlanes.getPixelStride();
+        buffer.position(rowStride * crop.top + pixelStride * crop.left);
+        int channelOffset = 0;
+        for (int row = 0; row < height; row++) {
+            int length;
+            if (pixelStride == 1) {
+                length = width;
+                buffer.get(data, channelOffset, length);
+                channelOffset += length;
+            } else {
+                length = (width - 1) * pixelStride + 1;
+                buffer.get(rowData, 0, length);
+                for (int col = 0; col < width; col++) {
+                    data[channelOffset] = rowData[col * pixelStride];
+                    channelOffset += 1;
+                }
+            }
+            if (row < height - 1) {
+                buffer.position(buffer.position() + rowStride - length);
+            }
+        }
+        return data;
+    }
     private static byte[] getDataFromImage(Image image, int colorFormat) {
         if (colorFormat != COLOR_FormatI420 && colorFormat != COLOR_FormatNV21) {
             throw new IllegalArgumentException("only support COLOR_FormatI420 " + "and COLOR_FormatNV21");
