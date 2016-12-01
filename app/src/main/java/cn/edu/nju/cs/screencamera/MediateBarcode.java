@@ -11,7 +11,11 @@ public class MediateBarcode {
     BarcodeConfig config;
     RawImage rawImage;
     PerspectiveTransform transform;
-
+    public MediateBarcode(BarcodeConfig config){
+        this.config=config;
+        districts=new Districts();
+        loadConfig(config);
+    }
     public MediateBarcode(RawImage rawImage,BarcodeConfig config) throws NotFoundException {
         this.config=config;
         this.rawImage=rawImage;

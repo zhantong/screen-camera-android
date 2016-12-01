@@ -51,6 +51,9 @@ public class ShiftCodeStream{
             rsEcSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
         }
         for(RawImage frame;(frame=frames.poll(4, TimeUnit.SECONDS))!=null;){
+            if(frame.getPixels()==null){
+                break;
+            }
             //Utils.dumpFile(Environment.getExternalStorageDirectory().toString()+"/"+frame.getIndex()+".yuv",frame.getPixels());
             Log.i(TAG,frame.toString());
 
@@ -89,6 +92,7 @@ public class ShiftCodeStream{
             }
             int overlapSituation=shiftCode.getOverlapSituation();
             int[][] rawContents=shiftCode.getRawContents();
+            System.out.println(shiftCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson().toString());
             for(int[] rawContent:rawContents){
                 int[] rSDecodedData;
                 try {
@@ -109,7 +113,6 @@ public class ShiftCodeStream{
                     frames.clear();
                     RawImage rawImage=new RawImage(null,0,0,0,0);
                     frames.add(rawImage);
-                    rawImage=null;
                 }
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }

@@ -205,6 +205,14 @@ public class MainActivity extends Activity{
                 test(v);
             }
         });
+
+        Button buttonTest2=(Button)findViewById(R.id.button_test2);
+        buttonTest2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                test2(v);
+            }
+        });
     }
     public static Context getContext(){
         return mContext;
@@ -336,6 +344,12 @@ public class MainActivity extends Activity{
         EditText editTextInputFilePath = (EditText) findViewById(R.id.file_path_input);
         final String inputFilePath = editTextInputFilePath.getText().toString();
         ParseImage parseImage=new ParseImage(inputFilePath);
+    }
+
+    public void test2(View view){
+        EditText editTextInputFilePath = (EditText) findViewById(R.id.file_path_input);
+        final String inputFilePath = editTextInputFilePath.getText().toString();
+        ParseImage parseImage=new ParseImage(inputFilePath,true);
     }
 
     /**

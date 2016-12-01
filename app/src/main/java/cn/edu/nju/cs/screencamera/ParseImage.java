@@ -28,7 +28,7 @@ public class ParseImage {
         hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
         Log.i(TAG, "decoding video");
-        ShiftCodeVideo shiftCodeVideo=new ShiftCodeVideo(filePath,hints);
+        ShiftCodeMLVideo shiftCodeMLVideo=new ShiftCodeMLVideo(filePath,hints);
     }
     public ParseImage(CameraPreview cameraPreview){
         Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
@@ -38,6 +38,14 @@ public class ParseImage {
 
         Log.i(TAG,"decoding camera");
         ShiftCodeCamera shiftCodeCamera=new ShiftCodeCamera(cameraPreview,hints);
+    }
+    public ParseImage(String filePath,boolean isDataFile){
+        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
+        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
+
+        ShiftCodeMLFile shiftCodeMLFile=new ShiftCodeMLFile(filePath,hints);
     }
     private static RawImage getRawImage(String imageFilePath) throws NotFoundException{
         if(imageFilePath.endsWith(".yuv")){

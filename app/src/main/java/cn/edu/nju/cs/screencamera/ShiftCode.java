@@ -28,6 +28,9 @@ public class ShiftCode {
     public ShiftCode(MediateBarcode mediateBarcode, Map<DecodeHintType,?> hints){
         this.mediateBarcode=mediateBarcode;
         this.hints=hints;
+        if(mediateBarcode.rawImage==null){
+            return;
+        }
         processBorderRight();
         processBorderLeft();
         System.out.println("refWhite: "+refWhite+" refBlack: "+refBlack+" threshold: "+threshold);

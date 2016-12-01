@@ -1,7 +1,12 @@
 package cn.edu.nju.cs.screencamera;
 
+import android.util.Pair;
+
 import java.io.File;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,5 +118,74 @@ public final class Utils {
         System.arraycopy(arrayA,0,concat,0,lengthArrayA);
         System.arraycopy(arrayB,0,concat,lengthArrayA,lengthArrayB);
         return concat;
+    }
+    public static List<Pair> findLine(int x0, int y0, int x1, int y1){
+        List<Pair> line=new ArrayList<>();
+        int dx=Math.abs(x1-x0);
+        int dy=Math.abs(y1-y0);
+
+        int sx=x0<x1?1:-1;
+        int sy=y0<y1?1:-1;
+
+        int err=dx-dy;
+        int e2;
+        int currentX=x0;
+        int currentY=y0;
+
+        while(true){
+            line.add(new Pair(currentX,currentY));
+
+            if(currentX==x1&&currentY==y1){
+                break;
+            }
+            e2=2*err;
+            if(e2>-1*dy){
+                err-=dy;
+                currentX+=sx;
+            }
+            if(e2<dx){
+                err+=dx;
+                currentY+=sy;
+            }
+        }
+        return line;
+    }
+    public static List<BitSet> randomBitSetList(int bitSetLength,int listLength,int randomSeed){
+        List<BitSet> bitSets=new ArrayList<>(listLength);
+        Random random=new Random(randomSeed);
+        for(int i=0;i<listLength;i++){
+            BitSet bitSet=new BitSet(bitSetLength);
+            for(int pos=0;pos<bitSetLength;pos++){
+                if(random.nextBoolean()){
+                    bitSet.set(pos);
+                }
+            }
+            bitSets.add(bitSet);
+        }
+        return bitSets;
+    }
+    public static int diff(int[] arrayA,int[] arrayB){
+        if(arrayA.length!=arrayB.length){
+            throw new IllegalArgumentException();
+        }
+        int count=0;
+        for(int i=0;i<arrayA.length;i++){
+            if(arrayA[i]!=arrayB[i]){
+                count++;
+            }
+        }
+        return count;
+    }
+    public static Pair getMostCommon(int[] origin,List<int[]> arrayList){
+        int leastDiffCount=Integer.MAX_VALUE;
+        int[] leastDiffArray=null;
+        for(int[] array:arrayList){
+            int diffCount=diff(origin,array);
+            if(leastDiffCount>diffCount){
+                leastDiffCount=diffCount;
+                leastDiffArray=array;
+            }
+        }
+        return new Pair(leastDiffCount,leastDiffArray);
     }
 }
