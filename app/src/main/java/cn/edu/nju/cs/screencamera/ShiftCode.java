@@ -42,7 +42,7 @@ public class ShiftCode {
         return overlapSituation;
     }
     public int getTransmitFileLengthInBytes() throws CRCCheckException{
-        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP));
+        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP),RawImage.CHANNLE_Y);
         BitSet data=new BitSet();
         for(int i=0;i<content.length;i++){
             if(content[i]>binaryThreshold){
@@ -55,7 +55,7 @@ public class ShiftCode {
         return transmitFileLengthInBytes;
     }
     public void processBorderRight(){
-        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.RIGHT));
+        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.RIGHT),RawImage.CHANNLE_Y);
         int sumWhite=0,sumBlack=0;
         int maxWhite=0,minWhite=255;
         int maxBlack=0,minBlack=255;
@@ -84,7 +84,7 @@ public class ShiftCode {
         threshold=(maxWhite+maxBlack-minWhite-minBlack)/2;
     }
     public void processBorderLeft(){
-        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.LEFT));
+        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.LEFT),RawImage.CHANNLE_Y);
         int mixIndicatorUp=content[0];
         int mixIndicatorDown=content[content.length-1];
         int refBlackExpand=refBlack+threshold;
@@ -110,7 +110,7 @@ public class ShiftCode {
     public int[] getClearRawContent(){
         Zone zone=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN);
         ShiftBlock block=(ShiftBlock) zone.getBlock();
-        int[] content=mediateBarcode.getContent(zone);
+        int[] content=mediateBarcode.getContent(zone,RawImage.CHANNLE_Y);
         int[] rawData=new int[zone.widthInBlock*zone.heightInBlock];
         int step=block.getNumSamplePoints();
         int offset=0;
@@ -129,7 +129,7 @@ public class ShiftCode {
     public int[][] getMixedRawContent(){
         Zone zone=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN);
         ShiftBlock block=(ShiftBlock) zone.getBlock();
-        int[] content=mediateBarcode.getContent(zone);
+        int[] content=mediateBarcode.getContent(zone,RawImage.CHANNLE_Y);
         int[] rawDataPrev=new int[zone.widthInBlock*zone.heightInBlock];
         int[] rawDataNext=new int[zone.widthInBlock*zone.heightInBlock];
         int step=block.getNumSamplePoints();
@@ -141,7 +141,7 @@ public class ShiftCode {
                 int[] values=block.getMixed(isFormerWhite,threshold,x,y,content,offset);
                 offset+=step;
                 rawDataPrev[rawDataPos]=values[0];
-                rawDataNext[rawDataPos]=values[0];
+                rawDataNext[rawDataPos]=values[1];
                 rawDataPos++;
             }
         }

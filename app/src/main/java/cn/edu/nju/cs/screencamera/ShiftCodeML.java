@@ -28,7 +28,7 @@ public class ShiftCodeML extends ShiftCode{
         return isRandom;
     }
     private void processBorderDown(){
-        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.DOWN));
+        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.DOWN),RawImage.CHANNLE_Y);
         if(content[0]>binaryThreshold){
             isRandom=true;
         }

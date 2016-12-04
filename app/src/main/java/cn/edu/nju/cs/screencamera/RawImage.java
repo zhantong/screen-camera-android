@@ -7,6 +7,15 @@ package cn.edu.nju.cs.screencamera;
 public class RawImage {
     public static final int COLOR_TYPE_YUV=0;
     public static final int COLOR_TYPE_RGB=1;
+
+    public static final int CHANNLE_R=0;
+    public static final int CHANNLE_G=1;
+    public static final int CHANNLE_B=2;
+    public static final int CHANNLE_Y=0;
+    public static final int CHANNLE_U=1;
+    public static final int CHANNLE_V=2;
+    public static final int CHANNLE_ALL=-1;
+
     private byte[] pixels;
     private int width;
     private int height;
@@ -32,6 +41,18 @@ public class RawImage {
                 return getRGBGray(x,y);
         }
         throw new IllegalArgumentException("unknown color type "+colorType);
+    }
+    public int getPixel(int x,int y,int channel){
+        switch (channel){
+            case CHANNLE_ALL:
+                return ((pixels[y * width + x] & 0xff)<<8)|(pixels[width*height+y/2*(width/2)+x/2]&0xff);
+            case CHANNLE_Y:
+                return pixels[y * width + x] & 0xff;
+            case CHANNLE_U:
+                return pixels[width*height+y/2*(width/2)+x/2]&0xff;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
     public int getIndex(){
         return index;
@@ -354,6 +375,6 @@ public class RawImage {
     }
     @Override
     public String toString() {
-        return width+"x"+height+" color type "+colorType;
+        return width+"x"+height+" color type "+colorType+" index "+index;
     }
 }
