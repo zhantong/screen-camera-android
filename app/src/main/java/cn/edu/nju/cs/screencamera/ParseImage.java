@@ -24,11 +24,26 @@ public class ParseImage {
     public ParseImage(String filePath){
         Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
         hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
-        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.3);
         hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
         Log.i(TAG, "decoding video");
-        ShiftCodeMLVideo shiftCodeMLVideo=new ShiftCodeMLVideo(filePath,hints);
+        ShiftCodeStream shiftCodeStream=new ShiftCodeStream(hints);
+        shiftCodeStream.setVideo(filePath);
+        shiftCodeStream.start();
+        //ShiftCodeVideo shiftCodeMLVideo=new ShiftCodeVideo(filePath,hints);
+
+        /*
+        try {
+            LinkedBlockingQueue<RawImage> frameQueue = new LinkedBlockingQueue<>();
+            RawImage image = getRawImage(filePath);
+            frameQueue.put(image);
+            ShiftCodeStream shiftCodeStream = new ShiftCodeStream(hints);
+            shiftCodeStream.stream(frameQueue);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        */
     }
     public ParseImage(CameraPreview cameraPreview){
         Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
@@ -37,7 +52,10 @@ public class ParseImage {
         hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
         Log.i(TAG,"decoding camera");
-        ShiftCodeCamera shiftCodeCamera=new ShiftCodeCamera(cameraPreview,hints);
+        ShiftCodeStream shiftCodeStream=new ShiftCodeStream(hints);
+        shiftCodeStream.setCamera(cameraPreview);
+        shiftCodeStream.start();
+        //ShiftCodeCamera shiftCodeCamera=new ShiftCodeCamera(cameraPreview,hints);
     }
     public ParseImage(String filePath,boolean isDataFile){
         Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);

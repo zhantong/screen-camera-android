@@ -72,7 +72,7 @@ public class Zone {
         }
         return realSamplePoints;
     }
-    public int[] getContent(PerspectiveTransform transform,RawImage rawImage){
+    public int[] getContent(PerspectiveTransform transform,RawImage rawImage,int channel){
         if(content==null){
             int[] real=getRealSamplePoints(transform);
             int numBlockSamplePoints=block.getNumSamplePoints();
@@ -80,7 +80,7 @@ public class Zone {
             for(int i=0,pos=0;i<real.length;i+=2,pos++){
                 int x=real[i];
                 int y=real[i+1];
-                int value=rawImage.getGray(x,y);
+                int value=rawImage.getPixel(x,y,channel);
                 content[pos]=value;
             }
         }
