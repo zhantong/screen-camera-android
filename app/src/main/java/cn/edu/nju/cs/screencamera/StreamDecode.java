@@ -4,6 +4,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import com.google.common.io.Files;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +22,7 @@ public class StreamDecode {
     private CameraPreview cameraPreview;
     private boolean isVideo=false;
     private boolean isCamera=false;
+    private boolean isImage=false;
     private LinkedBlockingQueue<RawImage> queue;
     private String videoFilePath;
 
@@ -33,6 +38,11 @@ public class StreamDecode {
     public void setCamera(CameraPreview cameraPreview){
         this.cameraPreview=cameraPreview;
         isCamera=true;
+    }
+    public void setImage(String imageFilePath){
+        RawImage rawImage=getRawImageYuv(imageFilePath);
+        queue.add(rawImage);
+        isImage=true;
     }
     public void setStopQueue(){
         stopQueue=true;
@@ -58,7 +68,7 @@ public class StreamDecode {
                     stopCamera();
                 }
                 queue.clear();
-                RawImage rawImage=new RawImage(null,0,0,0,0);
+                RawImage rawImage=new RawImage(null,0,0,0,0,0);
                 queue.add(rawImage);
             }
         }
@@ -79,6 +89,7 @@ public class StreamDecode {
             }
         }else if(isCamera){
             cameraPreview.start(queue);
+        }else if(isImage){
         }
         try {
             stream(queue);
@@ -110,5 +121,20 @@ public class StreamDecode {
     }
     protected void focusCamera(){
         cameraPreview.focus();
+    }
+    private static RawImage getRawImageYuv(String imageFilePath){
+        String fileName= Files.getNameWithoutExtension(imageFilePath);
+        int[] widthAndHeight=Utils.extractResolution(fileName);
+        if(widthAndHeight==null){
+            throw new IllegalArgumentException("cannot infer resolution from file name "+fileName);
+        }
+        byte[] data=null;
+        try {
+            data=Files.toByteArray(new File(imageFilePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        RawImage rawImage=new RawImage(data,widthAndHeight[0],widthAndHeight[1],RawImage.COLOR_TYPE_YUV);
+        return rawImage;
     }
 }

@@ -15,6 +15,6 @@ public class ShiftCodeColorConfig extends BarcodeConfig {
         blockLengthInPixel = 10;
 
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
-        mainBlock = new DistrictConfig<Block>(new ColorShiftBlock());
+        mainBlock = new DistrictConfig<Block>(new ColorShiftBlock(2));
     }
 }

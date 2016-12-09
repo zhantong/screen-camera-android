@@ -13,8 +13,9 @@ public class ShiftCodeColor extends ShiftCode {
     }
     public void processBorderRight(){
         super.processBorderRight();
-        thresholds=new int[2];
-        for(int channel=0;channel<2;channel++) {
+        int numChannel=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).getBlock().getBitsPerUnit()/2;
+        thresholds=new int[numChannel];
+        for(int channel=0;channel<numChannel;channel++) {
             int[] content = mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.RIGHT), channel);
             int maxWhite = 0, minWhite = 255;
             int maxBlack = 0, minBlack = 255;

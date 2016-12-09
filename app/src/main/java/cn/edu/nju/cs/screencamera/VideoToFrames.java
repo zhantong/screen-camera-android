@@ -183,7 +183,8 @@ public class VideoToFrames implements Runnable {
 
                     if (mQueue != null) {
                         try {
-                            mQueue.put(new RawImage(getDataFromImage(image,COLOR_FormatI420),width,height,RawImage.COLOR_TYPE_YUV,outputFrameCount));
+
+                            mQueue.put(new RawImage(getDataFromImage(image,COLOR_FormatI420),width,height,RawImage.COLOR_TYPE_YUV,outputFrameCount,image.getTimestamp()));
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

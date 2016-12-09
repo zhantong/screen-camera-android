@@ -77,7 +77,7 @@ public class ShiftCodeMLStream{
 
             MediateBarcode mediateBarcode;
             try {
-                mediateBarcode = new MediateBarcode(frame,new ShiftCodeMLConfig());
+                mediateBarcode = new MediateBarcode(frame,new ShiftCodeMLConfig(),null);
             } catch (NotFoundException e) {
                 Log.i(TAG,"barcode not found");
                 if(callback!=null){

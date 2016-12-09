@@ -1,5 +1,6 @@
 package cn.edu.nju.cs.screencamera;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -16,14 +17,15 @@ public class MediateBarcode {
         districts=new Districts();
         loadConfig(config);
     }
-    public MediateBarcode(RawImage rawImage,BarcodeConfig config) throws NotFoundException {
+    public MediateBarcode(RawImage rawImage,BarcodeConfig config,int[] initRectangle) throws NotFoundException {
         this.config=config;
         this.rawImage=rawImage;
         districts=new Districts();
         loadConfig(config);
 
         int[] vertexes=null;
-        vertexes=rawImage.getBarcodeVertexes();
+        vertexes=rawImage.getBarcodeVertexes(initRectangle);
+        System.out.println("vertexes: "+ Arrays.toString(vertexes));
 
         int barcodeWidth=districts.get(Districts.BORDER).get(District.RIGHT).endInBlockX();
         int barcodeHeight=districts.get(Districts.BORDER).get(District.DOWN).endInBlockY();
@@ -32,6 +34,9 @@ public class MediateBarcode {
     }
     public int[] getContent(Zone zone,int channel){
         return zone.getContent(transform,rawImage,channel);
+    }
+    public int[] getRectangle(){
+        return rawImage.getRectangle();
     }
     private void loadConfig(BarcodeConfig config){
         int MARGIN=Districts.MARGIN;

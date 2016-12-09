@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
 /**
@@ -41,6 +42,10 @@ public class ShiftCodeStream extends StreamDecode{
     private int rsEcSize=-1;
     static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
     private EncodingPacket lastEncodingPacket;
+
+    private boolean DUMP=true;
+
+    private int[] rectangle=null;
     protected void beforeStream() {
         if(hints!=null){
             rsEcSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
@@ -63,17 +68,17 @@ public class ShiftCodeStream extends StreamDecode{
 
         MediateBarcode mediateBarcode;
         try {
-            //mediateBarcode = new MediateBarcode(frame,new ShiftCodeConfig());
-            mediateBarcode = new MediateBarcode(frame,new ShiftCodeColorConfig());
+            mediateBarcode = new MediateBarcode(frame,new ShiftCodeConfig(),rectangle);
+            //mediateBarcode = new MediateBarcode(frame,new ShiftCodeColorConfig(),rectangle);
         } catch (NotFoundException e) {
-            Log.i(TAG,"barcode not found");
+            Log.i(TAG,"barcode not found: "+e.toString());
             if(getIsCamera()){
                 focusCamera();
             }
             return;
         }
-        //ShiftCode shiftCode=new ShiftCode(mediateBarcode,hints);
-        ShiftCodeColor shiftCode=new ShiftCodeColor(mediateBarcode,hints);
+        ShiftCode shiftCode=new ShiftCode(mediateBarcode,hints);
+        //ShiftCodeColor shiftCode=new ShiftCodeColor(mediateBarcode,hints);
         if(raptorQSymbolSize ==-1){
             raptorQSymbolSize =shiftCode.calcRaptorQSymbolSize(shiftCode.calcRaptorQPacketSize());
         }
@@ -98,11 +103,14 @@ public class ShiftCodeStream extends StreamDecode{
         }
         int overlapSituation=shiftCode.getOverlapSituation();
         int[][] rawContents=shiftCode.getRawContents();
-        if(false) {
-            JsonObject root = shiftCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
-            root.addProperty("overlapSituation",shiftCode.getOverlapSituation());
-            root.add("result", new Gson().toJsonTree(rawContents));
-            LOG.info(new Gson().toJson(root));
+        if(DUMP) {
+            JsonObject barcodeJson=new JsonObject();
+            barcodeJson.addProperty("index",shiftCode.mediateBarcode.rawImage.getIndex());
+            barcodeJson.addProperty("timestamp",frame.getTimestamp());
+            int[][] temp=new int[][]{Utils.changeNumBitsPerInt(rawContents[0],2,12),Utils.changeNumBitsPerInt(rawContents[1],4,12)};
+
+            barcodeJson.add("results", new Gson().toJsonTree(temp));
+            LOG.info(CustomMarker.source,new Gson().toJson(barcodeJson));
         }
         for(int[] rawContent:rawContents){
             int[] rSDecodedData;
@@ -114,9 +122,16 @@ public class ShiftCodeStream extends StreamDecode{
             }
             Log.i(TAG,"RS decode success");
             byte[] raptorQEncodedData=Utils.intArrayToByteArray(rSDecodedData,rSDecodedData.length,rsEcSize, shiftCode.calcRaptorQPacketSize());
-            Log.i(TAG,"raptorq encoded data length: "+raptorQEncodedData.length);
-            Log.i(TAG,"raptorq encoded data: "+Arrays.toString(raptorQEncodedData));
+            //Log.i(TAG,"raptorq encoded data length: "+raptorQEncodedData.length);
+            //Log.i(TAG,"raptorq encoded data: "+Arrays.toString(raptorQEncodedData));
             EncodingPacket encodingPacket=dataDecoder.parsePacket(raptorQEncodedData,true).value();
+            if(DUMP){
+                JsonObject barcodeJson=new JsonObject();
+                barcodeJson.addProperty("index",shiftCode.mediateBarcode.rawImage.getIndex());
+                barcodeJson.addProperty("esi",encodingPacket.encodingSymbolID());
+                barcodeJson.addProperty("type",encodingPacket.symbolType().name());
+                LOG.info(CustomMarker.processed,new Gson().toJson(barcodeJson));
+            }
             Log.i(TAG,"encoding packet: source block number: "+encodingPacket.sourceBlockNumber()+" "+encodingPacket.encodingSymbolID()+" "+encodingPacket.symbolType()+" "+encodingPacket.numberOfSymbols());
             if(isLastEncodingPacket(encodingPacket)){
                 Log.i(TAG,"last encoding packet: "+encodingPacket.encodingSymbolID());
@@ -126,6 +141,7 @@ public class ShiftCodeStream extends StreamDecode{
             }
             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
         }
+        rectangle=zoomRectangle(mediateBarcode.getRectangle());
     }
 
 
@@ -164,5 +180,16 @@ public class ShiftCodeStream extends StreamDecode{
         }
         Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
         return true;
+    }
+    private static int[] zoomRectangle(int[] originRectangle){
+        int left=originRectangle[0];
+        int up=originRectangle[1];
+        int right=originRectangle[2];
+        int down=originRectangle[3];
+        left+=(left/5);
+        up+=(up/5);
+        right-=(right/5);
+        down-=(down/5);
+        return new int[]{left,up,right,down};
     }
 }

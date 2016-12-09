@@ -5,9 +5,13 @@ package cn.edu.nju.cs.screencamera;
  */
 
 public class ColorShiftBlock implements Block {
+    private int numChannel;
     private float[] samplePoints=new float[]{0.5f,0.5f,0.1f,0.5f,0.5f,0.1f,0.9f,0.5f,0.5f,0.9f};
+    public ColorShiftBlock(int numChannel){
+        this.numChannel=numChannel;
+    }
     public int getBitsPerUnit() {
-        return 4;
+        return numChannel*2;
     }
     public float[] getSamplePoints(){
         return samplePoints;
@@ -29,17 +33,22 @@ public class ColorShiftBlock implements Block {
         }
         throw new IllegalArgumentException("wrong index "+index+" should be 1 - 4.");
     }
-    public static int getClear(boolean isWhite,int x,int y,int[] rawPoints,int offset){
-        int[] values=new int[2];
-        for(int channel=0;channel<2;channel++) {
+    public int getClear(boolean isWhite,int x,int y,int[] rawPoints,int offset){
+        int[] values=new int[numChannel];
+        for(int channel=0;channel<numChannel;channel++) {
             int[] points=new int[rawPoints.length];
             switch (channel){
                 case 0:
                     for(int j=0;j<rawPoints.length;j++){
-                        points[j]=rawPoints[j]>>8;
+                        points[j]=rawPoints[j]>>16;
                     }
                     break;
                 case 1:
+                    for(int j=0;j<rawPoints.length;j++){
+                        points[j]=(rawPoints[j]>>8)&0xff;
+                    }
+                    break;
+                case 2:
                     for(int j=0;j<rawPoints.length;j++){
                         points[j]=rawPoints[j]&0xff;
                     }
@@ -66,19 +75,28 @@ public class ColorShiftBlock implements Block {
             }
             values[channel]=indexToValue(target);
         }
-        return (values[0]<<2)|values[1];
+        if(numChannel==2){
+            return (values[0]<<2)|values[1];
+        }else {
+            return (values[0] << 4) | (values[1] << 2) | values[2];
+        }
     }
-    public static int[] getMixed(boolean isFormerWhite,int[] thresholds,int x,int y,int[] rawPoints,int offset){
-        int[][] values=new int[2][2];
-        for(int channel=0;channel<2;channel++) {
+    public int[] getMixed(boolean isFormerWhite,int[] thresholds,int x,int y,int[] rawPoints,int offset){
+        int[][] values=new int[2][numChannel];
+        for(int channel=0;channel<numChannel;channel++) {
             int[] points=new int[rawPoints.length];
             switch (channel){
                 case 0:
                     for(int j=0;j<rawPoints.length;j++){
-                        points[j]=rawPoints[j]>>8;
+                        points[j]=rawPoints[j]>>16;
                     }
                     break;
                 case 1:
+                    for(int j=0;j<rawPoints.length;j++){
+                        points[j]=(rawPoints[j]>>8)&0xff;
+                    }
+                    break;
+                case 2:
                     for(int j=0;j<rawPoints.length;j++){
                         points[j]=rawPoints[j]&0xff;
                     }
@@ -117,6 +135,10 @@ public class ColorShiftBlock implements Block {
                 values[1][channel]=maxValue;
             }
         }
-        return new int[]{(values[0][0]<<2)|values[0][1],(values[1][0]<<2)|values[1][1]};
+        if(numChannel==2) {
+            return new int[]{(values[0][0] << 2) | values[0][1], (values[1][0] << 2) | values[1][1]};
+        }else {
+            return new int[]{(values[0][0] << 4) | (values[0][1] << 2) | values[0][2], (values[1][0] << 4) | (values[1][1] << 2) | values[1][2]};
+        }
     }
 }
