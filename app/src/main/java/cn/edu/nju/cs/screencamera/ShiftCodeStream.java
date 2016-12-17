@@ -36,16 +36,16 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
 public class ShiftCodeStream extends StreamDecode{
     private static final String TAG="ShiftCodeStream";
-    private Map<DecodeHintType,?> hints;
+    protected Map<DecodeHintType,?> hints;
     private ArrayDataDecoder dataDecoder=null;
     private int raptorQSymbolSize =-1;
     private int rsEcSize=-1;
     static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
     private EncodingPacket lastEncodingPacket;
 
-    private boolean DUMP=true;
+    private boolean DUMP=false;
 
-    private int[] rectangle=null;
+    protected int[] rectangle=null;
     protected void beforeStream() {
         if(hints!=null){
             rsEcSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
@@ -68,8 +68,7 @@ public class ShiftCodeStream extends StreamDecode{
 
         MediateBarcode mediateBarcode;
         try {
-            mediateBarcode = new MediateBarcode(frame,new ShiftCodeConfig(),rectangle);
-            //mediateBarcode = new MediateBarcode(frame,new ShiftCodeColorConfig(),rectangle);
+            mediateBarcode = getMediateBarcode(frame);
         } catch (NotFoundException e) {
             Log.i(TAG,"barcode not found: "+e.toString());
             if(getIsCamera()){
@@ -77,8 +76,7 @@ public class ShiftCodeStream extends StreamDecode{
             }
             return;
         }
-        ShiftCode shiftCode=new ShiftCode(mediateBarcode,hints);
-        //ShiftCodeColor shiftCode=new ShiftCodeColor(mediateBarcode,hints);
+        ShiftCode shiftCode=getShiftCode(mediateBarcode);
         if(raptorQSymbolSize ==-1){
             raptorQSymbolSize =shiftCode.calcRaptorQSymbolSize(shiftCode.calcRaptorQPacketSize());
         }
@@ -143,7 +141,12 @@ public class ShiftCodeStream extends StreamDecode{
         }
         rectangle=zoomRectangle(mediateBarcode.getRectangle());
     }
-
+    protected MediateBarcode getMediateBarcode(RawImage frame) throws NotFoundException {
+        return new MediateBarcode(frame,new ShiftCodeConfig(),rectangle);
+    }
+    protected ShiftCode getShiftCode(MediateBarcode mediateBarcode){
+        return new ShiftCode(mediateBarcode,hints);
+    }
 
     public ShiftCodeStream(Map<DecodeHintType,?> hints){
         this.hints=hints;
