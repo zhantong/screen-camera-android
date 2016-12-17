@@ -313,8 +313,7 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                VideoToFile videoToFile=new VideoToFile(mHandler,barcodeFormat,truthFilePath);
-                videoToFile.toFile(newFileName, videoFilePath);
+                MultiFormatStream.decode(barcodeFormat,videoFilePath,null,null);
             }
         };
         worker.start();
@@ -333,8 +332,7 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                SingleImgToFile singleImgToFile=new SingleImgToFile(mHandler,barcodeFormat,truthFilePath);
-                singleImgToFile.singleImg(imageFilePath);
+                MultiFormatStream.decode(barcodeFormat,null,imageFilePath,null);
             }
         };
         worker.start();
@@ -426,9 +424,7 @@ public class MainActivity extends Activity{
                 Thread worker = new Thread() {
                     @Override
                     public void run() {
-                        ParseImage parseImage=new ParseImage(fragment.mPreview);
-                        //CameraToFile cameraToFile=new CameraToFile(mHandler,barcodeFormat,truthFilePath);
-                        //cameraToFile.toFile(newFileName, fragment.mPreview);
+                        MultiFormatStream.decode(barcodeFormat,null,null,fragment.mPreview);
                         getFragmentManager().popBackStack();
                     }
                 };
