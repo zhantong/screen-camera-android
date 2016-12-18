@@ -8,7 +8,7 @@ import java.util.Map;
  */
 
 public class MultiFormatStream {
-    public static void decode(BarcodeFormat barcodeFormat,String videoFilePath,String ImageFilePath,CameraPreview cameraPreview){
+    public static StreamDecode getStreamDecode(BarcodeFormat barcodeFormat){
         StreamDecode streamDecode;
 
         Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
@@ -31,13 +31,6 @@ public class MultiFormatStream {
             default:
                 throw new IllegalArgumentException();
         }
-        if(videoFilePath!=null){
-            streamDecode.setVideo(videoFilePath);
-        }else if(ImageFilePath!=null){
-            streamDecode.setImage(ImageFilePath);
-        }else {
-            streamDecode.setCamera(cameraPreview);
-        }
-        streamDecode.start();
+        return streamDecode;
     }
 }

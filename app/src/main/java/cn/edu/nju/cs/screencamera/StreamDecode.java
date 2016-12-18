@@ -25,6 +25,7 @@ public class StreamDecode {
     private boolean isImage=false;
     private LinkedBlockingQueue<RawImage> queue;
     private String videoFilePath;
+    protected String outputFilePath;
 
     public StreamDecode(){
         queue=new LinkedBlockingQueue<>(4);
@@ -43,6 +44,9 @@ public class StreamDecode {
         RawImage rawImage=getRawImageYuv(imageFilePath);
         queue.add(rawImage);
         isImage=true;
+    }
+    public void setOutputFilePath(String outputFilePath){
+        this.outputFilePath=outputFilePath;
     }
     public void setStopQueue(){
         stopQueue=true;

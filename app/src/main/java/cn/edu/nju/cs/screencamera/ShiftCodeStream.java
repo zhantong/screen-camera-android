@@ -57,7 +57,11 @@ public class ShiftCodeStream extends StreamDecode{
             dataDecoder.sourceBlock(lastEncodingPacket.sourceBlockNumber()).putEncodingPacket(lastEncodingPacket);
             if(dataDecoder.isDataDecoded()){
                 Log.i(TAG,"RaptorQ decode success");
-                writeRaptorQDataFile(dataDecoder,"out.txt");
+                if(outputFilePath==null){
+                    Log.i(TAG,"output file path not set.");
+                    return;
+                }
+                writeRaptorQDataFile(dataDecoder,outputFilePath);
             }
         }
     }
@@ -157,18 +161,18 @@ public class ShiftCodeStream extends StreamDecode{
                 &&((encodingPacket.symbolType()== SymbolType.SOURCE&&!sourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))
                 ||(encodingPacket.symbolType()== SymbolType.REPAIR&&!sourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())));
     }
-    private void writeRaptorQDataFile(ArrayDataDecoder decoder,String fileName){
+    private void writeRaptorQDataFile(ArrayDataDecoder decoder,String filePath){
         byte[] out = decoder.dataArray();
         String sha1 = FileVerification.bytesToSHA1(out);
         Log.d(TAG, "file SHA-1 verification: " + sha1);
-        bytesToFile(out, fileName);
+        bytesToFile(out, filePath);
     }
-    private boolean bytesToFile(byte[] bytes,String fileName){
-        if(fileName.isEmpty()){
-            Log.i(TAG, "file name is empty");
+    private boolean bytesToFile(byte[] bytes,String filePath){
+        if(filePath.isEmpty()){
+            Log.i(TAG, "file path is empty");
             return false;
         }
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),fileName);
+        File file = new File(filePath);
         OutputStream os;
         try {
             os = new FileOutputStream(file);

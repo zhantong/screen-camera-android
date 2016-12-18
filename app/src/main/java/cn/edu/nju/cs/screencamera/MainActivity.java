@@ -288,7 +288,7 @@ public class MainActivity extends Activity{
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.file_path_input);
         final String videoFilePath = editTextVideoFilePath.getText().toString();
         EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
-        final String newFileName = editTextFileName.getText().toString();
+        final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(),editTextFileName.getText().toString());
         EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
         final String truthFilePath = editTextTruthFilePath.getText().toString();
 
@@ -297,7 +297,10 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                MultiFormatStream.decode(barcodeFormat,videoFilePath,null,null);
+                StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat);
+                streamDecode.setVideo(videoFilePath);
+                streamDecode.setOutputFilePath(outputFilePath);
+                streamDecode.start();
             }
         };
         worker.start();
@@ -316,7 +319,9 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                MultiFormatStream.decode(barcodeFormat,null,imageFilePath,null);
+                StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat);
+                streamDecode.setImage(imageFilePath);
+                streamDecode.start();
             }
         };
         worker.start();
@@ -390,13 +395,16 @@ public class MainActivity extends Activity{
             @Override
             public void onStartRecognize() {
                 EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
-                final String newFileName = editTextFileName.getText().toString();
+                final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(),editTextFileName.getText().toString());
                 EditText editTextTruthFilePath = (EditText) findViewById(R.id.file_path_truth);
                 final String truthFilePath = editTextTruthFilePath.getText().toString();
                 Thread worker = new Thread() {
                     @Override
                     public void run() {
-                        MultiFormatStream.decode(barcodeFormat,null,null,fragment.mPreview);
+                        StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat);
+                        streamDecode.setCamera(fragment.mPreview);
+                        streamDecode.setOutputFilePath(outputFilePath);
+                        streamDecode.start();
                         getFragmentManager().popBackStack();
                     }
                 };
