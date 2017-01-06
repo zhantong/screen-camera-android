@@ -188,4 +188,26 @@ public final class Utils {
         }
         return new Pair(leastDiffCount,leastDiffArray);
     }
+    public static BitSet intArrayToBitSet(int[] data,int bitsPerInt){
+        int index=0;
+        BitSet bitSet=new BitSet();
+        for(int current:data){
+            for(int i=0;i<bitsPerInt;i++){
+                if((current&(1<<i))>0){
+                    bitSet.set(index);
+                }
+                index++;
+            }
+        }
+        return bitSet;
+    }
+    public static int max(int[] array){
+        int max=-1;
+        for(int item:array){
+            if(item>max){
+                max=item;
+            }
+        }
+        return max;
+    }
 }

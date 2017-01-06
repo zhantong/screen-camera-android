@@ -72,7 +72,7 @@ public class StreamDecode {
                     stopCamera();
                 }
                 queue.clear();
-                RawImage rawImage=new RawImage(null,0,0,0,0,0);
+                RawImage rawImage=new RawImage();
                 queue.add(rawImage);
             }
         }
@@ -132,7 +132,7 @@ public class StreamDecode {
         if(widthAndHeight==null){
             throw new IllegalArgumentException("cannot infer resolution from file name "+fileName);
         }
-        byte[] data=null;
+        byte[] data;
         try {
             data=Files.toByteArray(new File(imageFilePath));
         } catch (IOException e) {

@@ -17,6 +17,12 @@ public class ShiftBlock implements Block {
     public int getNumSamplePoints() {
         return samplePoints.length/2;
     }
+
+    @Override
+    public int[] getChannels() {
+        return null;
+    }
+
     private static int indexToValue(int index){
         switch (index){
             case 1:

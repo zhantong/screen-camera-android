@@ -5,13 +5,13 @@ package cn.edu.nju.cs.screencamera;
  */
 
 public class ColorShiftBlock implements Block {
-    private int numChannel;
+    private int[] channels;
     private float[] samplePoints=new float[]{0.5f,0.5f,0.1f,0.5f,0.5f,0.1f,0.9f,0.5f,0.5f,0.9f};
-    public ColorShiftBlock(int numChannel){
-        this.numChannel=numChannel;
+    public ColorShiftBlock(int[] channels){
+        this.channels=channels;
     }
     public int getBitsPerUnit() {
-        return numChannel*2;
+        return channels.length*2;
     }
     public float[] getSamplePoints(){
         return samplePoints;
@@ -33,11 +33,14 @@ public class ColorShiftBlock implements Block {
         }
         throw new IllegalArgumentException("wrong index "+index+" should be 1 - 4.");
     }
+    public int[] getChannels(){
+        return channels;
+    }
     public int getClear(boolean isWhite,int x,int y,int[] rawPoints,int offset){
-        int[] values=new int[numChannel];
-        for(int channel=0;channel<numChannel;channel++) {
+        int[] values=new int[channels.length];
+        for(int channelIndex=0;channelIndex<channels.length;channelIndex++){
             int[] points=new int[rawPoints.length];
-            switch (channel){
+            switch (channels[channelIndex]){
                 case 0:
                     for(int j=0;j<rawPoints.length;j++){
                         points[j]=rawPoints[j]>>16;
@@ -73,19 +76,19 @@ public class ColorShiftBlock implements Block {
                     }
                 }
             }
-            values[channel]=indexToValue(target);
+            values[channelIndex]=indexToValue(target);
         }
-        if(numChannel==2){
+        if(channels.length==2){
             return (values[0]<<2)|values[1];
         }else {
             return (values[0] << 4) | (values[1] << 2) | values[2];
         }
     }
     public int[] getMixed(boolean isFormerWhite,int[] thresholds,int x,int y,int[] rawPoints,int offset){
-        int[][] values=new int[2][numChannel];
-        for(int channel=0;channel<numChannel;channel++) {
+        int[][] values=new int[2][channels.length];
+        for(int channelIndex=0;channelIndex<channels.length;channelIndex++){
             int[] points=new int[rawPoints.length];
-            switch (channel){
+            switch (channels[channelIndex]){
                 case 0:
                     for(int j=0;j<rawPoints.length;j++){
                         points[j]=rawPoints[j]>>16;
@@ -101,7 +104,7 @@ public class ColorShiftBlock implements Block {
                         points[j]=rawPoints[j]&0xff;
                     }
             }
-            int threshold=thresholds[channel];
+            int threshold=thresholds[channels[channelIndex]];
             int min = 256, max = -1;
             int minIndex = -1, maxIndex = -1;
             for (int i = 1; i < 5; i++) {
@@ -121,21 +124,21 @@ public class ColorShiftBlock implements Block {
             if (minOffset < threshold || maxOffset < threshold) {
                 int target = (minOffset < maxOffset) ? minIndex : maxIndex;
                 int value = indexToValue(target);
-                values[0][channel]=value;
-                values[1][channel]=value;
+                values[0][channelIndex]=value;
+                values[1][channelIndex]=value;
                 continue;
             }
             int minValue = indexToValue(minIndex);
             int maxValue = indexToValue(maxIndex);
             if ((isFormerWhite && ((x + y) % 2 == 0)) || (!isFormerWhite && ((x + y) % 2 == 1))) {
-                values[0][channel]=maxValue;
-                values[1][channel]=minValue;
+                values[0][channelIndex]=maxValue;
+                values[1][channelIndex]=minValue;
             } else {
-                values[0][channel]=minValue;
-                values[1][channel]=maxValue;
+                values[0][channelIndex]=minValue;
+                values[1][channelIndex]=maxValue;
             }
         }
-        if(numChannel==2) {
+        if(channels.length==2) {
             return new int[]{(values[0][0] << 2) | values[0][1], (values[1][0] << 2) | values[1][1]};
         }else {
             return new int[]{(values[0][0] << 4) | (values[0][1] << 2) | values[0][2], (values[1][0] << 4) | (values[1][1] << 2) | values[1][2]};

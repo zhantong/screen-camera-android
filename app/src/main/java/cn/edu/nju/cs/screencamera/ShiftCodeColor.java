@@ -11,11 +11,17 @@ public class ShiftCodeColor extends ShiftCode {
     public ShiftCodeColor(MediateBarcode mediateBarcode, Map<DecodeHintType, ?> hints) {
         super(mediateBarcode, hints);
     }
+    public int getTransmitFileLengthInBytes() throws CRCCheckException{
+        return getTransmitFileLengthInBytes(RawImage.CHANNLE_U);
+    }
+    public void processBorderLeft(){
+        processBorderLeft(RawImage.CHANNLE_U);
+    }
     public void processBorderRight(){
         super.processBorderRight();
-        int numChannel=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).getBlock().getBitsPerUnit()/2;
-        thresholds=new int[numChannel];
-        for(int channel=0;channel<numChannel;channel++) {
+        int[] channels=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).getBlock().getChannels();
+        thresholds=new int[Utils.max(channels)+1];
+        for(int channel:channels){
             int[] content = mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.RIGHT), channel);
             int maxWhite = 0, minWhite = 255;
             int maxBlack = 0, minBlack = 255;

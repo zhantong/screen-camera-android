@@ -17,14 +17,14 @@ public class MediateBarcode {
         districts=new Districts();
         loadConfig(config);
     }
-    public MediateBarcode(RawImage rawImage,BarcodeConfig config,int[] initRectangle) throws NotFoundException {
+    public MediateBarcode(RawImage rawImage,BarcodeConfig config,int[] initRectangle,int channel) throws NotFoundException {
         this.config=config;
         this.rawImage=rawImage;
         districts=new Districts();
         loadConfig(config);
 
         int[] vertexes=null;
-        vertexes=rawImage.getBarcodeVertexes(initRectangle);
+        vertexes=rawImage.getBarcodeVertexes(initRectangle,channel);
         System.out.println("vertexes: "+ Arrays.toString(vertexes));
 
         int barcodeWidth=districts.get(Districts.BORDER).get(District.RIGHT).endInBlockX();

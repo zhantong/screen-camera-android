@@ -8,4 +8,5 @@ public interface Block {
     int getBitsPerUnit();
     float[] getSamplePoints();
     int getNumSamplePoints();
+    int[] getChannels();
 }

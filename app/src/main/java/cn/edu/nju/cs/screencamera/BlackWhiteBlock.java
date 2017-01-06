@@ -15,4 +15,9 @@ public class BlackWhiteBlock implements Block{
     public int getNumSamplePoints(){
         return samplePoints.length/2;
     }
+
+    @Override
+    public int[] getChannels() {
+        return null;
+    }
 }

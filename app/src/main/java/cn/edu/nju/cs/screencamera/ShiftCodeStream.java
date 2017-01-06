@@ -146,7 +146,7 @@ public class ShiftCodeStream extends StreamDecode{
         rectangle=zoomRectangle(mediateBarcode.getRectangle());
     }
     protected MediateBarcode getMediateBarcode(RawImage frame) throws NotFoundException {
-        return new MediateBarcode(frame,new ShiftCodeConfig(),rectangle);
+        return new MediateBarcode(frame,new ShiftCodeConfig(),rectangle,RawImage.CHANNLE_Y);
     }
     protected ShiftCode getShiftCode(MediateBarcode mediateBarcode){
         return new ShiftCode(mediateBarcode,hints);

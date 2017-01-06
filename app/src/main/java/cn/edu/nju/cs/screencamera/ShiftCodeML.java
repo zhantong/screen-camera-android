@@ -28,21 +28,27 @@ public class ShiftCodeML extends ShiftCode{
         return isRandom;
     }
     private void processBorderDown(){
-        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.DOWN),RawImage.CHANNLE_Y);
+        processBorderDown(RawImage.CHANNLE_Y);
+    }
+    private void processBorderDown(int channel){
+        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.DOWN),channel);
         if(content[0]>binaryThreshold){
             isRandom=true;
         }
     }
     public SparseIntArray[] getVaryBar(){
+        return getVaryBar(RawImage.CHANNLE_Y);
+    }
+    public SparseIntArray[] getVaryBar(int channel){
         Zone leftPadding=mediateBarcode.districts.get(Districts.PADDING).get(District.LEFT);
         Zone rightPadding=mediateBarcode.districts.get(Districts.PADDING).get(District.RIGHT);
         SparseIntArray varyOne=new SparseIntArray();
-        leftPadding.scanColumn(0,varyOne,mediateBarcode.transform,mediateBarcode.rawImage);
-        rightPadding.scanColumn(0,varyOne,mediateBarcode.transform,mediateBarcode.rawImage);
+        leftPadding.scanColumn(0,varyOne,mediateBarcode.transform,mediateBarcode.rawImage,channel);
+        rightPadding.scanColumn(0,varyOne,mediateBarcode.transform,mediateBarcode.rawImage,channel);
 
         SparseIntArray varyTwo=new SparseIntArray();
-        leftPadding.scanColumn(1,varyTwo,mediateBarcode.transform,mediateBarcode.rawImage);
-        rightPadding.scanColumn(1,varyTwo,mediateBarcode.transform,mediateBarcode.rawImage);
+        leftPadding.scanColumn(1,varyTwo,mediateBarcode.transform,mediateBarcode.rawImage,channel);
+        rightPadding.scanColumn(1,varyTwo,mediateBarcode.transform,mediateBarcode.rawImage,channel);
         return new SparseIntArray[]{varyOne,varyTwo};
     }
     public JsonObject getVaryBarToJson(){

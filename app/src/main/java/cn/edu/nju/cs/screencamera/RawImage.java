@@ -22,14 +22,13 @@ public class RawImage {
     private int width;
     private int height;
     private int colorType;
-    private int grayThreshold=-1;
     private int index;
     private long timestamp;
 
     private int[] thresholds;
 
     private int[] rectangle;
-
+    public RawImage(){}
     public RawImage(byte[] pixels,int width,int height,int colorType){
         this(pixels,width,height,colorType,0,0);
     }
@@ -41,16 +40,6 @@ public class RawImage {
         this.index=index;
         this.timestamp=timestamp;
         thresholds=new int[3];
-    }
-    public int getGray(int x, int y) {
-        switch (colorType){
-            case COLOR_TYPE_YUV:
-                //return getYUVGray(x,y);
-                return getPixel(x,y,0);
-            case COLOR_TYPE_RGB:
-                return getRGBGray(x,y);
-        }
-        throw new IllegalArgumentException("unknown color type "+colorType);
     }
     public long getTimestamp(){
         return timestamp;
@@ -78,34 +67,25 @@ public class RawImage {
     public byte[] getPixels(){
         return pixels;
     }
-    private int getYUVGray(int x, int y) {
-        return pixels[y * width + x] & 0xff;
+    public void getThreshold() throws NotFoundException{
+        getThreshold(new int[]{CHANNLE_Y,CHANNLE_U,CHANNLE_V});
     }
-    private int getRGBGray(int x, int y) {
-        int offset = (y * width + x) * 4;
-        int r = pixels[offset] & 0xFF;
-        int g = pixels[offset + 1] & 0xFF;
-        int b = pixels[offset + 2] & 0xFF;
-        return ((b * 29 + g * 150 + r * 77 + 128) >> 8);
-    }
-    public int getGrayThreshold() throws NotFoundException {
-        if(grayThreshold==-1){
-            grayThreshold=getGrayThreshold1();
-
-            thresholds[0]=grayThreshold;
-            //thresholds[1]=getThreshold1(1);
-            //thresholds[2]=getThreshold1(1);
+    public void getThreshold(int[] channels) throws NotFoundException{
+        for(int channel:channels){
+            thresholds[channel]=getThreshold2(channel);
         }
-        return grayThreshold;
     }
-    private int getGrayThreshold1() throws NotFoundException {
+    public void getThreshold(int channel) throws NotFoundException{
+        thresholds[channel]=getThreshold2(channel);
+    }
+    private int getThreshold2(int channel) throws NotFoundException {
         int[] buckets = new int[256];
 
         for (int y = 1; y < 5; y++) {
             int row = height * y / 5;
             int right = (width * 4) / 5;
             for (int column = width / 5; column < right; column++) {
-                int gray = getPixel(column, row,0);
+                int gray = getPixel(column, row,channel);
                 buckets[gray]++;
             }
         }
@@ -173,14 +153,14 @@ public class RawImage {
         }
         return ninty+20;
     }
-    public int[] getBarcodeVertexes(int[] initRectangle) throws NotFoundException{
-        getGrayThreshold();
+    public int[] getBarcodeVertexes(int[] initRectangle,int channel) throws NotFoundException{
+        getThreshold(channel);
         System.out.println("thresholds: "+ Arrays.toString(thresholds));
-        int[] whiteRectangle=findWhiteRectangle(initRectangle);
+        int[] whiteRectangle=findWhiteRectangle(initRectangle,channel);
         rectangle=whiteRectangle;
         //int[]whiteRectangle=findWhiteRectangle1(null);
         //return findVertexesFromWhiteRectangle1(whiteRectangle);
-        return findVertexesFromWhiteRectangle2(whiteRectangle);
+        return findVertexesFromWhiteRectangle2(whiteRectangle,channel);
         //return findVertexesFromWhiteRectangle3(whiteRectangle);
     }
     private int[] genInitBorder(){
@@ -191,7 +171,7 @@ public class RawImage {
         int down = height / 2 + init;
         return new int[] {left,up,right,down};
     }
-    private int[] findWhiteRectangle(int[] initRectangle) throws NotFoundException {
+    private int[] findWhiteRectangle(int[] initRectangle,int channel) throws NotFoundException {
         if(initRectangle==null){
             initRectangle=genInitBorder();
         }
@@ -209,20 +189,20 @@ public class RawImage {
         boolean flag;
         while (true) {
             flag = false;
-            while (right < width && contains(up, down, right, false,0,0)) {
+            while (right < width && contains(up, down, right, false,channel,0)) {
                 right++;
                 flag = true;
 
             }
-            while (down < height && contains(left, right, down, true,0,0)) {
+            while (down < height && contains(left, right, down, true,channel,0)) {
                 down++;
                 flag = true;
             }
-            while (left > 0 && contains(up, down, left, false,0,0)) {
+            while (left > 0 && contains(up, down, left, false,channel,0)) {
                 left--;
                 flag = true;
             }
-            while (up > 0 && contains(left, right, up, true,0,0)) {
+            while (up > 0 && contains(left, right, up, true,channel,0)) {
                 up--;
                 flag = true;
             }
@@ -396,93 +376,7 @@ public class RawImage {
         }
         return new int[]{left,up,right,down};
     }
-    private int[] findVertexesFromWhiteRectangle1(int[] whiteRectangle) throws NotFoundException{
-        int left=whiteRectangle[0];
-        int up=whiteRectangle[1];
-        int right=whiteRectangle[2];
-        int down=whiteRectangle[3];
-        int[] vertexes = new int[8];
-        left = findVertexes(up, down, left, vertexes, 0, 3, false, false);
-        up = findVertexes(left, right, up, vertexes, 0, 1, true, false);
-        right = findVertexes(up, down, right, vertexes, 1, 2, false, true);
-        down = findVertexes(left, right, down, vertexes, 3, 2, true, true);
-        if (vertexes[0] == 0 || vertexes[2] == 0 || vertexes[4] == 0 || vertexes[6] == 0) {
-            throw new NotFoundException("vertexes error");
-        }
-        return vertexes;
-    }
-    private int findVertexes(int b1, int b2, int fixed, int[] vertexs, int p1, int p2, boolean horizontal, boolean sub) throws NotFoundException {
-        int mid = (b2 - b1) / 2;
-        boolean checkP1 = vertexs[p1 * 2] == 0;
-        boolean checkP2 = vertexs[p2 * 2] == 0;
-
-        if (horizontal) {
-            while (true) {
-                if (checkP1) {
-                    for (int i = 1; i <= mid; i++) {
-                        if (pixelIsBlack(b1 + i, fixed) && !isSinglePoint(b1 + i, fixed)) {
-                            vertexs[p1 * 2] = b1 + i;
-                            vertexs[p1 * 2 + 1] = fixed;
-                            return fixed;
-                        }
-                    }
-                }
-                if (checkP2) {
-                    for (int i = 1; i <= mid; i++) {
-                        if (pixelIsBlack(b2 - i, fixed) && !isSinglePoint(b2 - i, fixed)) {
-                            vertexs[p2 * 2] = b2 - i;
-                            vertexs[p2 * 2 + 1] = fixed;
-                            return fixed;
-                        }
-                    }
-                }
-                if (sub) {
-                    fixed--;
-                    if (fixed <= 0) {
-                        throw new NotFoundException("didn't find any possible bar code");
-                    }
-                } else {
-                    fixed++;
-                    if (fixed >= height) {
-                        throw new NotFoundException("didn't find any possible bar code");
-                    }
-                }
-            }
-        } else {
-            while (true) {
-                if (checkP1) {
-                    for (int i = 1; i <= mid; i++) {
-                        if (pixelIsBlack(fixed, b1 + i) && !isSinglePoint(fixed, b1 + i)) {
-                            vertexs[p1 * 2] = fixed;
-                            vertexs[p1 * 2 + 1] = b1 + i;
-                            return fixed;
-                        }
-                    }
-                }
-                if (checkP2) {
-                    for (int i = 1; i <= mid; i++) {
-                        if (pixelIsBlack(fixed, b2 - i) && !isSinglePoint(fixed, b2 - i)) {
-                            vertexs[p2 * 2] = fixed;
-                            vertexs[p2 * 2 + 1] = b2 - i;
-                            return fixed;
-                        }
-                    }
-                }
-                if (sub) {
-                    fixed--;
-                    if (fixed <= 0) {
-                        throw new NotFoundException("didn't find any possible bar code");
-                    }
-                } else {
-                    fixed++;
-                    if (fixed >= width) {
-                        throw new NotFoundException("didn't find any possible bar code");
-                    }
-                }
-            }
-        }
-    }
-    private int[] findVertexesFromWhiteRectangle2(int[] whiteRectangle){
+    private int[] findVertexesFromWhiteRectangle2(int[] whiteRectangle,int channel){
         int left=whiteRectangle[0];
         int up=whiteRectangle[1];
         int right=whiteRectangle[2];
@@ -494,7 +388,7 @@ public class RawImage {
         boolean flag=false;
         for(int startX=left,startY=up;startY-up<length;startY++){
             for(int currentX=startX,currentY=startY;currentY>=up;currentX++,currentY--){
-                if(pixelEquals(currentX,currentY,0,0)&&!isSinglePoint(currentX,currentY,0)){
+                if(pixelEquals(currentX,currentY,channel,0)&&!isSinglePoint(currentX,currentY,channel)){
                     vertexes[0]=currentX;
                     vertexes[1]=currentY;
                     flag=true;
@@ -508,7 +402,7 @@ public class RawImage {
         flag=false;
         for(int startX=right,startY=up;right-startX<length;startX--){
             for(int currentX=startX,currentY=startY;currentX<=right;currentX++,currentY++){
-                if(pixelEquals(currentX,currentY,0,0)&&!isSinglePoint(currentX,currentY,0)){
+                if(pixelEquals(currentX,currentY,channel,0)&&!isSinglePoint(currentX,currentY,channel)){
                     vertexes[2]=currentX;
                     vertexes[3]=currentY;
                     flag=true;
@@ -522,7 +416,7 @@ public class RawImage {
         flag=false;
         for(int startX=right,startY=down;right-startX<length;startX--){
             for(int currentX=startX,currentY=startY;currentX<=right;currentX++,currentY--){
-                if(pixelEquals(currentX,currentY,0,0)&&!isSinglePoint(currentX,currentY,0)){
+                if(pixelEquals(currentX,currentY,channel,0)&&!isSinglePoint(currentX,currentY,channel)){
                     vertexes[4]=currentX;
                     vertexes[5]=currentY;
                     flag=true;
@@ -536,7 +430,7 @@ public class RawImage {
         flag=false;
         for(int startX=left,startY=down;down-startY<length;startY--){
             for(int currentX=startX,currentY=startY;currentY<=down;currentX++,currentY++){
-                if(pixelEquals(currentX,currentY,0,0)&&!isSinglePoint(currentX,currentY,0)){
+                if(pixelEquals(currentX,currentY,channel,0)&&!isSinglePoint(currentX,currentY,channel)){
                     vertexes[6]=currentX;
                     vertexes[7]=currentY;
                     flag=true;
@@ -618,10 +512,6 @@ public class RawImage {
         }
         return vertexes;
     }
-    private boolean isSinglePoint(int x, int y) {
-        int sum = getBinary(x - 1, y - 1) + getBinary(x, y - 1) + getBinary(x + 1, y - 1) + getBinary(x - 1, y) + getBinary(x + 1, y) + getBinary(x - 1, y + 1) + getBinary(x, y + 1) + getBinary(x + 1, y + 1);
-        return sum >= 6;
-    }
     private boolean isSinglePoint(int x,int y,int channel){
         int countSame=0;
         int value=getBinary(x,y,channel);
@@ -634,23 +524,6 @@ public class RawImage {
             }
         }
         return countSame<=2;
-    }
-    private boolean containsBlack(int start, int end, int fixed, boolean horizontal) {
-        if (horizontal) {
-            for (int x = start; x <= end; x++) {
-                if (pixelIsBlack(x, fixed)) {
-                    return true;
-                }
-
-            }
-        } else {
-            for (int y = start; y <= end; y++) {
-                if (pixelIsBlack(fixed, y)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
     private boolean contains(int start, int end, int fixed, boolean horizontal,int channel,int shouldBe) {
         if (horizontal) {
@@ -668,21 +541,8 @@ public class RawImage {
         }
         return false;
     }
-    private boolean pixelEquals(int x, int y, int pixel) {
-        return getBinary(x, y) == pixel;
-    }
     private boolean pixelEquals(int x, int y,int channel, int pixel){
         return getBinary(x,y,channel)==pixel;
-    }
-    private boolean pixelIsBlack(int x, int y){
-        return pixelEquals(x,y,0);
-    }
-    public int getBinary(int x, int y) {
-        if (getGray(x, y) >= grayThreshold) {
-            return 0;
-        } else {
-            return 1;
-        }
     }
     public int getBinary(int x,int y,int channel){
         if(getPixel(x,y,channel)>=thresholds[channel]){

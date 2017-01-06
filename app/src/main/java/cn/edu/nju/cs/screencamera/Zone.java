@@ -86,7 +86,7 @@ public class Zone {
         }
         return content;
     }
-    public void scanColumn(int x,SparseIntArray map,PerspectiveTransform transform,RawImage rawImage){
+    public void scanColumn(int x,SparseIntArray map,PerspectiveTransform transform,RawImage rawImage,int channel){
         for(int y=0;y<heightInBlock-1;y++){
             float standardXPrev=baseOffsetInBlockX+x+0.5f;
             float standardYPrev=baseOffsetInBlockY+y+0.5f;
@@ -104,7 +104,7 @@ public class Zone {
             for(Pair<Integer,Integer> pair:line){
                 int column=pair.first;
                 int row=pair.second;
-                int grayValue=rawImage.getGray(column,row);
+                int grayValue=rawImage.getPixel(column,row,channel);
                 map.put(row,grayValue);
             }
         }
