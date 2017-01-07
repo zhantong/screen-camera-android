@@ -47,7 +47,7 @@ public class ShiftCodeColor extends ShiftCode {
     public int[] getClearRawContent(){
         Zone zone=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN);
         ColorShiftBlock block=(ColorShiftBlock) zone.getBlock();
-        int[] content=mediateBarcode.getContent(zone,RawImage.CHANNLE_ALL);
+        int[][] content=mediateBarcode.getContent(zone,block.getChannels());
         int[] rawData=new int[zone.widthInBlock*zone.heightInBlock];
         int step=block.getNumSamplePoints();
         int offset=0;
@@ -66,7 +66,7 @@ public class ShiftCodeColor extends ShiftCode {
     public int[][] getMixedRawContent(){
         Zone zone=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN);
         ColorShiftBlock block=(ColorShiftBlock) zone.getBlock();
-        int[] content=mediateBarcode.getContent(zone,RawImage.CHANNLE_ALL);
+        int[][] content=mediateBarcode.getContent(zone,block.getChannels());
         int[] rawDataPrev=new int[zone.widthInBlock*zone.heightInBlock];
         int[] rawDataNext=new int[zone.widthInBlock*zone.heightInBlock];
         int step=block.getNumSamplePoints();

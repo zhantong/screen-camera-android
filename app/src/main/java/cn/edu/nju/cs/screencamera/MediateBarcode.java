@@ -35,6 +35,13 @@ public class MediateBarcode {
     public int[] getContent(Zone zone,int channel){
         return zone.getContent(transform,rawImage,channel);
     }
+    public int[][] getContent(Zone zone,int[] channels){
+        int[][] result=new int[channels.length][];
+        for(int channelIndex=0;channelIndex<channels.length;channelIndex++){
+            result[channelIndex]=zone.getContent(transform,rawImage,channels[channelIndex]);
+        }
+        return result;
+    }
     public int[] getRectangle(){
         return rawImage.getRectangle();
     }

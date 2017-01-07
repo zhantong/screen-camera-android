@@ -19,7 +19,7 @@ public class Zone {
     public int heightInBlock;
     public int baseOffsetInBlockX;
     public int baseOffsetInBlockY;
-    private int[] content;
+    private int[][] content;
     private Block block;
     private float[] standardSamplePoints=null;
     private int[] realSamplePoints=null;
@@ -32,6 +32,8 @@ public class Zone {
         this.baseOffsetInBlockX=baseOffsetInBlockX;
         this.baseOffsetInBlockY=baseOffsetInBlockY;
         this.block=block;
+
+        content=new int[3][];
     }
     public void addBlock(Block block){
         this.block=block;
@@ -73,18 +75,18 @@ public class Zone {
         return realSamplePoints;
     }
     public int[] getContent(PerspectiveTransform transform,RawImage rawImage,int channel){
-        if(content==null){
+        if(content[channel]==null){
             int[] real=getRealSamplePoints(transform);
             int numBlockSamplePoints=block.getNumSamplePoints();
-            content=new int[widthInBlock*heightInBlock*numBlockSamplePoints];
+            content[channel]=new int[widthInBlock*heightInBlock*numBlockSamplePoints];
             for(int i=0,pos=0;i<real.length;i+=2,pos++){
                 int x=real[i];
                 int y=real[i+1];
                 int value=rawImage.getPixel(x,y,channel);
-                content[pos]=value;
+                content[channel][pos]=value;
             }
         }
-        return content;
+        return content[channel];
     }
     public void scanColumn(int x,SparseIntArray map,PerspectiveTransform transform,RawImage rawImage,int channel){
         for(int y=0;y<heightInBlock-1;y++){

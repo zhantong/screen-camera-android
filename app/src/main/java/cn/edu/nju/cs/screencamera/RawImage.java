@@ -16,7 +16,6 @@ public class RawImage {
     public static final int CHANNLE_Y=0;
     public static final int CHANNLE_U=1;
     public static final int CHANNLE_V=2;
-    public static final int CHANNLE_ALL=-1;
 
     private byte[] pixels;
     private int width;
@@ -28,6 +27,9 @@ public class RawImage {
     private int[] thresholds;
 
     private int[] rectangle;
+
+    private int offsetU;
+    private int offsetV;
     public RawImage(){}
     public RawImage(byte[] pixels,int width,int height,int colorType){
         this(pixels,width,height,colorType,0,0);
@@ -40,20 +42,20 @@ public class RawImage {
         this.index=index;
         this.timestamp=timestamp;
         thresholds=new int[3];
+        offsetU=width*height;
+        offsetV=width*height+width*height/4;
     }
     public long getTimestamp(){
         return timestamp;
     }
     public int getPixel(int x,int y,int channel){
         switch (channel){
-            case CHANNLE_ALL:
-                return ((getPixel(x,y,CHANNLE_Y)&0xff)<<16)|((getPixel(x,y,CHANNLE_U)&0xff)<<8)|((getPixel(x,y,CHANNLE_V)&0xff)<<0);
             case CHANNLE_Y:
                 return pixels[y * width + x] & 0xff;
             case CHANNLE_U:
-                return pixels[width*height+y/2*(width/2)+x/2]&0xff;
+                return pixels[offsetU+y/2*(width/2)+x/2]&0xff;
             case CHANNLE_V:
-                return pixels[width*height+width*height/4+y/2*(width/2)+x/2]&0xff;
+                return pixels[offsetV+y/2*(width/2)+x/2]&0xff;
             default:
                 throw new IllegalArgumentException();
         }

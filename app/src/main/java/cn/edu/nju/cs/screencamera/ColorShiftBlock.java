@@ -36,26 +36,10 @@ public class ColorShiftBlock implements Block {
     public int[] getChannels(){
         return channels;
     }
-    public int getClear(boolean isWhite,int x,int y,int[] rawPoints,int offset){
+    public int getClear(boolean isWhite,int x,int y,int[][] rawPoints,int offset){
         int[] values=new int[channels.length];
         for(int channelIndex=0;channelIndex<channels.length;channelIndex++){
-            int[] points=new int[rawPoints.length];
-            switch (channels[channelIndex]){
-                case 0:
-                    for(int j=0;j<rawPoints.length;j++){
-                        points[j]=rawPoints[j]>>16;
-                    }
-                    break;
-                case 1:
-                    for(int j=0;j<rawPoints.length;j++){
-                        points[j]=(rawPoints[j]>>8)&0xff;
-                    }
-                    break;
-                case 2:
-                    for(int j=0;j<rawPoints.length;j++){
-                        points[j]=rawPoints[j]&0xff;
-                    }
-            }
+            int[] points=rawPoints[channelIndex];
             int target = -1;
             if ((isWhite && ((x + y) % 2 == 0)) || (!isWhite && ((x + y) % 2 == 1))) {
                 int max = 0;
@@ -84,26 +68,10 @@ public class ColorShiftBlock implements Block {
             return (values[0] << 4) | (values[1] << 2) | values[2];
         }
     }
-    public int[] getMixed(boolean isFormerWhite,int[] thresholds,int x,int y,int[] rawPoints,int offset){
+    public int[] getMixed(boolean isFormerWhite,int[] thresholds,int x,int y,int[][] rawPoints,int offset){
         int[][] values=new int[2][channels.length];
         for(int channelIndex=0;channelIndex<channels.length;channelIndex++){
-            int[] points=new int[rawPoints.length];
-            switch (channels[channelIndex]){
-                case 0:
-                    for(int j=0;j<rawPoints.length;j++){
-                        points[j]=rawPoints[j]>>16;
-                    }
-                    break;
-                case 1:
-                    for(int j=0;j<rawPoints.length;j++){
-                        points[j]=(rawPoints[j]>>8)&0xff;
-                    }
-                    break;
-                case 2:
-                    for(int j=0;j<rawPoints.length;j++){
-                        points[j]=rawPoints[j]&0xff;
-                    }
-            }
+            int[] points=rawPoints[channelIndex];
             int threshold=thresholds[channels[channelIndex]];
             int min = 256, max = -1;
             int minIndex = -1, maxIndex = -1;
