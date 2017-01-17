@@ -107,11 +107,13 @@ public class ShiftCodeStream extends StreamDecode{
         int[][] rawContents=shiftCode.getRawContents();
         if(DUMP) {
             JsonObject barcodeJson=new JsonObject();
+            JsonObject mainJson=shiftCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
+            barcodeJson.add("barcode",mainJson);
             barcodeJson.addProperty("index",shiftCode.mediateBarcode.rawImage.getIndex());
             barcodeJson.addProperty("timestamp",frame.getTimestamp());
-            int[][] temp=new int[][]{Utils.changeNumBitsPerInt(rawContents[0],2,12),Utils.changeNumBitsPerInt(rawContents[1],4,12)};
+            //int[][] temp=new int[][]{Utils.changeNumBitsPerInt(rawContents[0],2,12),Utils.changeNumBitsPerInt(rawContents[1],4,12)};
 
-            barcodeJson.add("results", new Gson().toJsonTree(temp));
+            //barcodeJson.add("results", new Gson().toJsonTree(temp));
             LOG.info(CustomMarker.source,new Gson().toJson(barcodeJson));
         }
         for(int[] rawContent:rawContents){

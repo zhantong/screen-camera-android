@@ -41,7 +41,7 @@ public class ColorShiftBlock implements Block {
         for(int channelIndex=0;channelIndex<channels.length;channelIndex++){
             int[] points=rawPoints[channelIndex];
             int target = -1;
-            if ((isWhite && ((x + y) % 2 == 0)) || (!isWhite && ((x + y) % 2 == 1))) {
+            if (isWhite) {
                 int max = 0;
                 for (int i = 1; i < 5; i++) {
                     int current = points[offset + i];
@@ -98,7 +98,7 @@ public class ColorShiftBlock implements Block {
             }
             int minValue = indexToValue(minIndex);
             int maxValue = indexToValue(maxIndex);
-            if ((isFormerWhite && ((x + y) % 2 == 0)) || (!isFormerWhite && ((x + y) % 2 == 1))) {
+            if (isFormerWhite) {
                 values[0][channelIndex]=maxValue;
                 values[1][channelIndex]=minValue;
             } else {
