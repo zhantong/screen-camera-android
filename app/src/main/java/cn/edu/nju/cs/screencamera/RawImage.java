@@ -158,7 +158,9 @@ public class RawImage {
     public int[] getBarcodeVertexes(int[] initRectangle,int channel) throws NotFoundException{
         getThreshold(channel);
         System.out.println("thresholds: "+ Arrays.toString(thresholds));
-        int[] whiteRectangle=findWhiteRectangle(initRectangle,channel);
+        //int[] whiteRectangle=findWhiteRectangle(initRectangle,channel);
+        int[] whiteRectangle=findWhiteRectangle3(initRectangle,channel);
+        System.out.println("white rectangle: "+Arrays.toString(whiteRectangle));
         rectangle=whiteRectangle;
         //int[]whiteRectangle=findWhiteRectangle1(null);
         //return findVertexesFromWhiteRectangle1(whiteRectangle);
@@ -378,6 +380,75 @@ public class RawImage {
         }
         return new int[]{left,up,right,down};
     }
+    private int[] findWhiteRectangle3(int[] initRectangle,int channel) throws NotFoundException {
+        if(initRectangle==null){
+            initRectangle=genInitBorder();
+        }
+        int left=initRectangle[0];
+        int up=initRectangle[1];
+        int right=initRectangle[2];
+        int down=initRectangle[3];
+        int leftOrig = left;
+        int rightOrig = right;
+        int upOrig = up;
+        int downOrig = down;
+        if (left < 0 || right >= width || up < 0 || down >= height) {
+            throw new NotFoundException("frame size too small");
+        }
+        boolean expandFlag;
+        while (true) {
+            expandFlag = false;
+            while (right < width && !contains(up, down, right, false,channel,0)) {
+                right++;
+                expandFlag = true;
+
+            }
+            while (down < height && !contains(left, right, down, true,channel,0)) {
+                down++;
+                expandFlag = true;
+            }
+            while (left > 0 && !contains(up, down, left, false,channel,0)) {
+                left--;
+                expandFlag = true;
+            }
+            while (up > 0 && !contains(left, right, up, true,channel,0)) {
+                up--;
+                expandFlag = true;
+            }
+            if (!expandFlag) {
+                break;
+            }
+        }
+        System.out.println("expand left "+left+" up "+up+" right "+right+" down "+down);
+        boolean flag;
+        while (true) {
+            flag = false;
+            while (right < width && contains(up, down, right, false,channel,0)) {
+                right++;
+                flag = true;
+
+            }
+            while (down < height && contains(left, right, down, true,channel,0)) {
+                down++;
+                flag = true;
+            }
+            while (left > 0 && contains(up, down, left, false,channel,0)) {
+                left--;
+                flag = true;
+            }
+            while (up > 0 && contains(left, right, up, true,channel,0)) {
+                up--;
+                flag = true;
+            }
+            if (!flag) {
+                break;
+            }
+        }
+        if ((left == 0 || up == 0 || right == width || down == height) || (left == leftOrig && right == rightOrig && up == upOrig && down == downOrig)) {
+            throw new NotFoundException("didn't find any possible bar code: "+left+" "+up+" "+right+" "+down);
+        }
+        return new int[]{left,up,right,down};
+    }
     private int[] findVertexesFromWhiteRectangle2(int[] whiteRectangle,int channel){
         int left=whiteRectangle[0];
         int up=whiteRectangle[1];
@@ -530,13 +601,13 @@ public class RawImage {
     private boolean contains(int start, int end, int fixed, boolean horizontal,int channel,int shouldBe) {
         if (horizontal) {
             for (int x = start; x <= end; x++) {
-                if(pixelEquals(x,fixed,channel,shouldBe)){
+                if(pixelEquals(x,fixed,channel,shouldBe)&&pixelEquals(x+1,fixed,channel,shouldBe)&&pixelEquals(x-1,fixed,channel,shouldBe)&&pixelEquals(x+2,fixed,channel,shouldBe)&&pixelEquals(x-2,fixed,channel,shouldBe)){
                     return true;
                 }
             }
         } else {
             for (int y = start; y <= end; y++) {
-                if(pixelEquals(fixed,y,channel,shouldBe)){
+                if(pixelEquals(fixed,y,channel,shouldBe)&&pixelEquals(fixed,y+1,channel,shouldBe)&&pixelEquals(fixed,y-1,channel,shouldBe)&&pixelEquals(fixed,y+2,channel,shouldBe)&&pixelEquals(fixed,y-2,channel,shouldBe)){
                     return true;
                 }
             }

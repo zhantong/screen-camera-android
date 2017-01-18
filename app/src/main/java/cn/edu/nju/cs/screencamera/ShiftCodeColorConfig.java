@@ -7,7 +7,7 @@ package cn.edu.nju.cs.screencamera;
 public class ShiftCodeColorConfig extends BarcodeConfig {
     public ShiftCodeColorConfig() {
         borderLength = new DistrictConfig<>(1);
-        paddingLength = new DistrictConfig<>(0);
+        paddingLength = new DistrictConfig<>(1);
 
         mainWidth = 40;
         mainHeight = 40;

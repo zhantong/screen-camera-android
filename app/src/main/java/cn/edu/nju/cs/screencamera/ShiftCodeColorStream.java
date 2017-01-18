@@ -11,7 +11,7 @@ public class ShiftCodeColorStream extends ShiftCodeStream {
         super(hints);
     }
     protected MediateBarcode getMediateBarcode(RawImage frame) throws NotFoundException {
-        return new MediateBarcode(frame,new ShiftCodeColorConfig(),rectangle,RawImage.CHANNLE_U);
+        return new MediateBarcode(frame,new ShiftCodeColorConfig(),rectangle,RawImage.CHANNLE_Y);
     }
     protected ShiftCode getShiftCode(MediateBarcode mediateBarcode){
         return new ShiftCodeColor(mediateBarcode,hints);
