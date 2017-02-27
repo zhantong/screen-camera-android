@@ -38,7 +38,9 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import cn.edu.nju.cs.screencamera.Logback.ConfigureLogback;
@@ -322,6 +324,22 @@ public class MainActivity extends Activity{
                 StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat);
                 streamDecode.setImage(imageFilePath);
                 streamDecode.start();
+            }
+        };
+        worker.start();
+    }
+    public void processFile(View view) {
+        EditText editTextVideoFilePath = (EditText) findViewById(R.id.file_path_input);
+        final String filePath = editTextVideoFilePath.getText().toString();
+        Thread worker = new Thread() {
+            @Override
+            public void run() {
+                Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
+                hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+                hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
+                hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
+
+                new ShiftCodeMLFile(filePath,hints);
             }
         };
         worker.start();

@@ -23,11 +23,10 @@ public class MultiFormatStream {
             case SHIFTCODECOLOR:
                 streamDecode=new ShiftCodeColorStream(hints);
                 break;
-            /*
+
             case SHIFTCODEML:
                 streamDecode=new ShiftCodeMLStream(hints);
                 break;
-            */
             default:
                 throw new IllegalArgumentException();
         }

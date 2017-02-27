@@ -160,6 +160,12 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="@string/process_file"
+                    android:onClick="processFile"
+                    android:layout_weight="1"/>
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="@string/save_frames"
                     android:id="@+id/save_frames"
                     android:layout_weight="1"/>
