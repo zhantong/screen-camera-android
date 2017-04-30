@@ -1,5 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
+import java.util.Arrays;
+
 /**
  * Created by zhantong on 2016/12/2.
  */
@@ -42,7 +44,7 @@ public class ColorShiftBlock implements Block {
             int[] points=rawPoints[channelIndex];
             int target = -1;
             if (isWhite) {
-                int max = 0;
+                int max = -1;
                 for (int i = 1; i < 5; i++) {
                     int current = points[offset + i];
                     if (max < current) {
@@ -51,7 +53,7 @@ public class ColorShiftBlock implements Block {
                     }
                 }
             } else {
-                int min = 255;
+                int min = 256;
                 for (int i = 1; i < 5; i++) {
                     int current = points[offset + i];
                     if (min > current) {
