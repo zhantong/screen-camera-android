@@ -6,7 +6,8 @@ package cn.edu.nju.cs.screencamera;
 public enum BarcodeFormat{
     SHIFTCODE("ShiftCode"),
     SHIFTCODECOLOR("ShiftCodeColor"),
-    SHIFTCODEML("ShiftCodeML");
+    SHIFTCODEML("ShiftCodeML"),
+    SHIFTCODECOLORML("ShiftCodeColorML");
     private String friendlyName;
     private BarcodeFormat(String friendlyName){
         this.friendlyName=friendlyName;
