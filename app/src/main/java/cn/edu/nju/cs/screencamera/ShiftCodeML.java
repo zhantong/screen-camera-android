@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ import java.util.Map;
  */
 
 public class ShiftCodeML extends ShiftCode{
-    private static int numRandomBarcode=40;
+    public static int numRandomBarcode=200;
     private boolean isRandom=false;
     public ShiftCodeML(MediateBarcode mediateBarcode, Map<DecodeHintType, ?> hints) {
         super(mediateBarcode, hints);
@@ -32,7 +33,7 @@ public class ShiftCodeML extends ShiftCode{
     }
     private void processBorderDown(int channel){
         int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.DOWN),channel);
-        if(content[0]>binaryThreshold){
+        if(content[2]>binaryThreshold){
             isRandom=true;
         }
     }
@@ -50,6 +51,25 @@ public class ShiftCodeML extends ShiftCode{
         leftPadding.scanColumn(1,varyTwo,mediateBarcode.transform,mediateBarcode.rawImage,channel);
         rightPadding.scanColumn(1,varyTwo,mediateBarcode.transform,mediateBarcode.rawImage,channel);
         return new SparseIntArray[]{varyOne,varyTwo};
+    }
+    public int getTransmitFileLengthInBytes(int channel) throws CRCCheckException{
+        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP),channel);
+        System.out.println(mediateBarcode.districts.get(Districts.BORDER).get(District.UP).toJson());
+        System.out.println(Arrays.toString(content));
+        BitSet data=new BitSet();
+        for(int i=0;i<content.length;i++){
+            if(content[i]>binaryThreshold){
+                data.set(i);
+            }
+        }
+        if(isRandom) {
+            int transmitFileLengthInBytes = Utils.bitsToInt(Utils.reverse(data, 32), 32, 0);
+            return Utils.grayCodeToInt(transmitFileLengthInBytes);
+        }
+        int transmitFileLengthInBytes=Utils.bitsToInt(data,32,0);
+        int crc=Utils.bitsToInt(data,8,32);
+        Utils.crc8Check(transmitFileLengthInBytes,crc);
+        return transmitFileLengthInBytes;
     }
     public JsonObject getVaryBarToJson(){
         Gson gson=new Gson();

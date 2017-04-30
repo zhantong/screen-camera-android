@@ -1,6 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
 import android.os.Environment;
+import android.os.Looper;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseIntArray;
@@ -24,7 +25,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -48,15 +51,21 @@ public class ShiftCodeMLStream extends StreamDecode{
     static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
 
     private List<int[]> randomIntArrayList=ShiftCodeML.randomBarcodeValue(new ShiftCodeMLConfig());
+    private List<BitSet> truthBitSetList;
 
     public interface Callback{
         void onBarcodeNotFound();
         void onCRCCheckFailed();
         void onBeforeDataDecoded();
     }
-
+    private List<BitSet> loadBitSetListFromFile(String fileName){
+        String filePath=Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(),fileName);
+        return (List<BitSet>)Utils.loadObjectFromFile(filePath);
+    }
     public ShiftCodeMLStream(Map<DecodeHintType,?> hints){
         this.hints=hints;
+
+        truthBitSetList=loadBitSetListFromFile("truth.txt");
     }
     public void setCallback(Callback callback){
         this.callback=callback;
@@ -87,27 +96,41 @@ public class ShiftCodeMLStream extends StreamDecode{
             }
             ShiftCodeML shiftCodeML=new ShiftCodeML(mediateBarcode,hints);
             shiftCodeML.mediateBarcode.getContent(shiftCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
+            int overlapSituation=shiftCodeML.getOverlapSituation();
             if(DUMP) {
                 JsonObject mainJson=shiftCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
                 barcodeJson.add("barcode",mainJson);
                 barcodeJson.addProperty("index",shiftCodeML.mediateBarcode.rawImage.getIndex());
                 JsonObject varyBarJson=shiftCodeML.getVaryBarToJson();
                 barcodeJson.add("varyBar",varyBarJson);
+                barcodeJson.addProperty("overlapSituation",overlapSituation);
+                barcodeJson.addProperty("isRandom",shiftCodeML.getIsRandom());
                 //String jsonString=new Gson().toJson(root);
                 //LOG.info(CustomMarker.source,jsonString);
             }
             if(shiftCodeML.getIsRandom()){
-                try {
-                    int index = shiftCodeML.getTransmitFileLengthInBytes();
-                    System.out.println("random index: "+index);
-                    int[] value=randomIntArrayList.get(index);
-                    if(DUMP){
-                        barcodeJson.add("value",new Gson().toJsonTree(value));
-                        //root.addProperty("index",shiftCodeML.mediateBarcode.rawImage.getIndex());
-                        //LOG.info(CustomMarker.processed,new Gson().toJson(barcodeJson));
+                if(true) {
+                    try {
+                        try {
+                            int index = shiftCodeML.getTransmitFileLengthInBytes();
+                            System.out.println("random index: " + index);
+                            barcodeJson.addProperty("randomIndex",index);
+                            if (index >= ShiftCodeML.numRandomBarcode) {
+                                continue;
+                            }
+                            int[] value = randomIntArrayList.get(index);
+                            if (DUMP) {
+                                barcodeJson.add("value", new Gson().toJsonTree(value));
+                                //root.addProperty("index",shiftCodeML.mediateBarcode.rawImage.getIndex());
+                                //LOG.info(CustomMarker.processed,new Gson().toJson(barcodeJson));
+                            }
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
+
+                    } catch (CRCCheckException e) {
+                        e.printStackTrace();
                     }
-                }catch (CRCCheckException e){
-                    e.printStackTrace();
                 }
             }else{
                 if(raptorQSymbolSize ==-1){
@@ -138,6 +161,24 @@ public class ShiftCodeMLStream extends StreamDecode{
                         }
                         continue;
                     }
+                }
+            }
+            if(true){
+                int[][] rawContents=shiftCodeML.getRawContents();
+                int leastDiffCount=Integer.MAX_VALUE;
+                BitSet leastDiffBitSet=null;
+                for(int[] rawContent:rawContents){
+                    BitSet inBitSet=Utils.intArrayToBitSet(rawContent,2);
+                    Pair pair=Utils.getMostCommon(inBitSet,truthBitSetList);
+                    int diffCount=(int)pair.first;
+                    BitSet diffBitSet=(BitSet) pair.second;
+                    if(leastDiffCount>diffCount){
+                        leastDiffCount=diffCount;
+                        leastDiffBitSet=diffBitSet;
+                    }
+                }
+                if(DUMP){
+                    barcodeJson.add("truth",new Gson().toJsonTree(Utils.bitSetToIntArray(leastDiffBitSet,rawContents[0].length*2,2)));
                 }
             }
             if(DUMP){

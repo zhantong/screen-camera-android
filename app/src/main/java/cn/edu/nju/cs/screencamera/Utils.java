@@ -3,6 +3,9 @@ package cn.edu.nju.cs.screencamera;
 import android.util.Pair;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -188,6 +191,20 @@ public final class Utils {
         }
         return new Pair(leastDiffCount,leastDiffArray);
     }
+    public static Pair getMostCommon(BitSet origin,List<BitSet> bitSetList){
+        int leastDiffCount=Integer.MAX_VALUE;
+        BitSet leastDiffBitset=null;
+        for(BitSet bitSet:bitSetList){
+            BitSet clone=(BitSet)bitSet.clone();
+            clone.xor(origin);
+            int countSame=clone.cardinality();
+            if(countSame<leastDiffCount){
+                leastDiffCount=countSame;
+                leastDiffBitset=bitSet;
+            }
+        }
+        return new Pair(leastDiffCount,leastDiffBitset);
+    }
     public static BitSet intArrayToBitSet(int[] data,int bitsPerInt){
         int index=0;
         BitSet bitSet=new BitSet();
@@ -209,5 +226,49 @@ public final class Utils {
             }
         }
         return max;
+    }
+    public static int grayCodeToInt(int n){
+        String gray=Integer.toBinaryString(n);
+        String binary="";
+        binary+=gray.charAt(0);
+        for(int i=1;i<gray.length();i++){
+            if(gray.charAt(i)=='0'){
+                binary+=binary.charAt(i-1);
+            }else{
+                binary+=binary.charAt(i-1)=='0'?'1':'0';
+            }
+        }
+        return Integer.parseInt(binary,2);
+    }
+    public static BitSet reverse(BitSet origin,int length){
+        BitSet reversed=new BitSet();
+        for(int i=0;i<length;i++){
+            if(origin.get(i)){
+                reversed.set(length-i-1,true);
+            }
+        }
+        return reversed;
+    }
+    public static Object loadObjectFromFile(String filePath){
+        try {
+            FileInputStream fis = new FileInputStream(filePath);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            Object object = ois.readObject();
+            return object;
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch(ClassNotFoundException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static int[] bitSetToIntArray(BitSet bitSet,int length,int bitsPerInt){
+        int[] array=new int[(int)Math.ceil((float) length/bitsPerInt)];
+        for(int i=0;i<length;i++){
+            if(bitSet.get(i)){
+                array[i/bitsPerInt]|=1<<(i%bitsPerInt);
+            }
+        }
+        return array;
     }
 }
