@@ -30,6 +30,9 @@ public class MultiFormatStream {
             case SHIFTCODECOLORML:
                 streamDecode=new ShiftCodeColorMLStream(hints);
                 break;
+            case BLACKWHITECODEML:
+                streamDecode=new BlackWhiteCodeMLStream(hints);
+                break;
             default:
                 throw new IllegalArgumentException();
         }
