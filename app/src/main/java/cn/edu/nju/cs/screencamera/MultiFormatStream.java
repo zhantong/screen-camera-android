@@ -36,6 +36,9 @@ public class MultiFormatStream {
             case COLORCODEML:
                 streamDecode=new ColorCodeMLStream(hints);
                 break;
+            case BLACKWHITECODE:
+                streamDecode=new BlackWhiteCodeStream(hints);
+                break;
             default:
                 throw new IllegalArgumentException();
         }
