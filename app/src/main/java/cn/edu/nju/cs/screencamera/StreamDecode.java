@@ -101,10 +101,10 @@ public class StreamDecode {
             e.printStackTrace();
         }
     }
-    private void stopVideoDecoding(){
+    protected void stopVideoDecoding(){
         videoToFrames.stopDecode();
     }
-    private void stopCamera(){
+    protected void stopCamera(){
         Runnable task=new Runnable() {
             @Override
             public void run() {
