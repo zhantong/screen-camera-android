@@ -111,6 +111,8 @@ public class RDCodeMLFile {
                 }
                 if(currentWindow!=7) {
                     interRegionEC(interRegionParity,window,currentFrame,numRegionDataBytes);
+                }else{
+                    interFrameEC(window,currentFrame,currentWindow,numRegionDataBytes,interRegionParity);
                 }
             }
         }
@@ -137,6 +139,32 @@ public class RDCodeMLFile {
                     }
                     window[currentFrame][indexErrorRegion] = region;
                     System.out.println("inter region recover success index " + indexErrorRegion + " data:" + Arrays.toString(region));
+                }
+            }
+        }
+    }
+    static void interFrameEC(int[][][] window,int currentFrame,int currentWindow,int numRegionDataBytes,List<Integer>[] interRegionParity){
+        for(int i=0;i<window[currentFrame].length;i++){
+            if(window[currentFrame][i]!=null){
+                int countErrorRegion = 0;
+                int indexErrorFrame = -1;
+                for(int j=0;j<currentWindow;j++){
+                    if(window[j][i]==null){
+                        countErrorRegion++;
+                        indexErrorFrame=j;
+                    }
+                }
+                if(countErrorRegion==1){
+                    int[] region=new int[numRegionDataBytes];
+                    for(int j=0;j<currentWindow;j++){
+                        if(j!=indexErrorFrame){
+                            for(int pos=0;pos<region.length;pos++){
+                                region[pos]^=window[j][i][pos];
+                            }
+                        }
+                    }
+                    window[indexErrorFrame][i]=region;
+                    System.out.println("inter frame recover success frame " + indexErrorFrame+" region "+i + " data:" + Arrays.toString(region));
                 }
             }
         }
