@@ -165,6 +165,7 @@ public class RDCodeMLFile {
                     }
                     window[indexErrorFrame][i]=region;
                     System.out.println("inter frame recover success frame " + indexErrorFrame+" region "+i + " data:" + Arrays.toString(region));
+                    interRegionEC(interRegionParity,window,indexErrorFrame,numRegionDataBytes);
                 }
             }
         }
