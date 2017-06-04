@@ -12,7 +12,8 @@ public class MultiFormatStream {
         StreamDecode streamDecode;
 
         Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
-        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+        //hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,8);
         hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
         hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
@@ -38,6 +39,9 @@ public class MultiFormatStream {
                 break;
             case BLACKWHITECODE:
                 streamDecode=new BlackWhiteCodeStream(hints);
+                break;
+            case RDCODEML:
+                streamDecode=new RDCodeMLStream(hints);
                 break;
             default:
                 throw new IllegalArgumentException();

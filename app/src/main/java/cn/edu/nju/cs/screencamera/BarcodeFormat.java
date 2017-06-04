@@ -10,7 +10,8 @@ public enum BarcodeFormat{
     SHIFTCODECOLORML("ShiftCodeColorML"),
     BLACKWHITECODEML("BlackWhiteCodeML"),
     COLORCODEML("ColorCodeML"),
-    BLACKWHITECODE("BlackWhiteCode");
+    BLACKWHITECODE("BlackWhiteCode"),
+    RDCODEML("RDCodeML");
     private String friendlyName;
     private BarcodeFormat(String friendlyName){
         this.friendlyName=friendlyName;
