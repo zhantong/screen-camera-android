@@ -109,6 +109,35 @@ public class RDCodeMLFile {
                         window[currentFrame][i]=frame[i];
                     }
                 }
+                if(currentWindow!=7) {
+                    interRegionEC(interRegionParity,window,currentFrame,numRegionDataBytes);
+                }
+            }
+        }
+    }
+    static void interRegionEC(List<Integer>[] interRegionParity,int[][][] window,int currentFrame,int numRegionDataBytes){
+        for (int i = 0; i < interRegionParity.length; i++) {
+            for (int j = 0; j < interRegionParity.length; j++) {
+                int countErrorRegion = 0;
+                int indexErrorRegion = -1;
+                for (int k : interRegionParity[j]) {
+                    if (window[currentFrame][k] == null) {
+                        countErrorRegion++;
+                        indexErrorRegion = k;
+                    }
+                }
+                if (countErrorRegion == 1) {
+                    int[] region = new int[numRegionDataBytes];
+                    for (int k : interRegionParity[j]) {
+                        if (k != indexErrorRegion) {
+                            for (int pos = 0; pos < region.length; pos++) {
+                                region[pos] ^= window[currentFrame][k][pos];
+                            }
+                        }
+                    }
+                    window[currentFrame][indexErrorRegion] = region;
+                    System.out.println("inter region recover success index " + indexErrorRegion + " data:" + Arrays.toString(region));
+                }
             }
         }
     }
