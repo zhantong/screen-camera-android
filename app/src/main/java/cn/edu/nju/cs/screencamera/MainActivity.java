@@ -331,17 +331,35 @@ public class MainActivity extends Activity{
     public void processFile(View view) {
         EditText editTextVideoFilePath = (EditText) findViewById(R.id.file_path_input);
         final String filePath = editTextVideoFilePath.getText().toString();
-        Thread worker = new Thread() {
-            @Override
-            public void run() {
-                Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
-                hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
-                hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
-                hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
+        Thread worker=null;
+        switch (barcodeFormat){
+            case SHIFTCODEML:
+                worker = new Thread() {
+                    @Override
+                    public void run() {
+                        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
+                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
+                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
+                        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
 
-                new ShiftCodeMLFile(filePath,hints);
-            }
-        };
+                        new ShiftCodeMLFile(filePath,hints);
+                    }
+                };
+                break;
+            case RDCODEML:
+                worker = new Thread() {
+                    @Override
+                    public void run() {
+                        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
+                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,8);
+                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
+                        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
+
+                        new RDCodeMLFile(filePath,hints);
+                    }
+                };
+                break;
+        }
         worker.start();
     }
 
