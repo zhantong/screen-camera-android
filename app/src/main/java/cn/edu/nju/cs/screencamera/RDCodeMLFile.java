@@ -1,12 +1,19 @@
 package cn.edu.nju.cs.screencamera;
 
 
+import android.os.Environment;
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +53,41 @@ public class RDCodeMLFile {
         }
         int[][] data=gson.fromJson(root.get("values"),int[][].class);
         stream(data);
+        if(numAllRegions==countAllRegions) {
+            byte[] out=new byte[numFileBytes];
+            int outPos=0;
+            int numRegionsPerWindow=7*numDataRegions;
+            int i=0;
+            while(true){
+                int window=i/numRegionsPerWindow;
+                int frame=i%numRegionsPerWindow/numDataRegions;
+                int region=i%numRegionsPerWindow%numDataRegions;
+                if(region!=indexCenterBlock){
+                    int[] regionData=windows.get(window)[frame][region];
+                    System.out.println("window: "+window+" frame: "+frame+" region: "+region +" bytes: "+(regionData==null?"null":regionData.length));
+                    for(int pos=0;pos<regionData.length&&outPos<out.length;pos++,outPos++){
+                        out[outPos]=(byte)regionData[pos];
+                    }
+                    if(outPos==out.length){
+                        break;
+                    }
+                }
+                i++;
+            }
+            File file = new File(Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(), "testt.txt"));
+            OutputStream os;
+            try {
+                os = new FileOutputStream(file);
+                os.write(out);
+                os.close();
+            } catch (FileNotFoundException e) {
+                Log.i(TAG, "file path error, cannot create file:" + e.toString());
+            } catch (IOException e) {
+                Log.i(TAG, "IOException:" + e.toString());
+            }
+        }else{
+            Log.i(TAG,"file not complete");
+        }
     }
     public void stream(int[][] rawFrames){
         int numRSBytes=6;
