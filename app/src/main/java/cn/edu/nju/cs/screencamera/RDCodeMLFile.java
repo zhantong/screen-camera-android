@@ -23,6 +23,16 @@ public class RDCodeMLFile {
     private static final String TAG="ShiftCodeMLFile";
     Map<DecodeHintType,?> hints;
     RDCodeMLConfig config=new RDCodeMLConfig();
+    int countAllRegions=0;
+    int numFileBytes=-1;
+    int numAllRegions=-1;
+    int countFrames=0;
+    int numDataRegions;
+    int indexCenterBlock;
+    int numRegionDataBytes;
+    int realCurrentRegionOffset;
+    Map<Integer,int[][][]> windows=new HashMap<>();
+
     public RDCodeMLFile(String filePath,Map<DecodeHintType,?> hints){
         this.hints=hints;
         Gson gson=new Gson();
@@ -41,17 +51,20 @@ public class RDCodeMLFile {
         int numRSBytes=6;
         int numColors=4;
         int numRegionBytes=(config.regionWidth*config.regionHeight)/(8/(int)Math.sqrt(numColors));
-        int numRegionDataBytes=numRegionBytes-numRSBytes;
+        numRegionDataBytes=numRegionBytes-numRSBytes;
         int numInterFrameParity=1;
         int numFramesPerWindow=8;
         int indexLastFrame=numFramesPerWindow-numInterFrameParity;
         int numBytesPerRegionLine=config.mainBlock.get(District.MAIN).getBitsPerUnit()*config.regionWidth/8;
         int numBytesPerRegion=numBytesPerRegionLine*config.regionHeight;
         int numRegions=config.numRegionVertical*config.numRegionHorizon;
+        int numParityRegions=3;
+        numDataRegions=numRegions-numParityRegions;
         int numBytesPerFrame=numRegions*numBytesPerRegion;
-        int indexCenterBlock=numRegions/2;
-        Map<Integer,int[][][]> windows=new HashMap<>();
+        indexCenterBlock=numRegions/2;
+
         for(int[] rawFrame:rawFrames){
+            countFrames++;
             rawFrame=Utils.changeNumBitsPerInt(rawFrame,config.mainBlock.get(District.MAIN).getBitsPerUnit(),8);
             int[][] frame=new int[numRegions][];
             for(int indexRegionOffset=0,posOffset=0;indexRegionOffset<numRegions;indexRegionOffset+=config.numRegionHorizon,posOffset+=numBytesPerRegion*config.numRegionHorizon){
@@ -65,7 +78,11 @@ public class RDCodeMLFile {
                         regionDataPos+=numBytesPerRegionLine;
                     }
                     try {
-                        Utils.rSDecode(regionData,numRSBytes,8);
+                        if(indexRegion==indexCenterBlock){
+                            Utils.rSDecode(regionData, 12, 8);
+                        }else {
+                            Utils.rSDecode(regionData, numRSBytes, 8);
+                        }
                         frame[indexRegion]=new int[numRegionDataBytes];
                         System.arraycopy(regionData,0,frame[indexRegion],0,numRegionDataBytes);
                     } catch (ReedSolomonException e) {
@@ -99,6 +116,13 @@ public class RDCodeMLFile {
             }else{
                 int currentWindow=frame[indexCenterBlock][0];
                 int currentFrame=frame[indexCenterBlock][1];
+                if(numFileBytes==-1){
+                    numFileBytes=(frame[indexCenterBlock][2]<<24)|(frame[indexCenterBlock][3]<<16)|(frame[indexCenterBlock][4]<<8)|frame[indexCenterBlock][5];
+                    numAllRegions=(int)Math.ceil(numFileBytes/(double)numRegionDataBytes);
+                    System.out.println("numFileBytes: "+numFileBytes+" numAllRegions: "+numAllRegions+" numRegionDataBytes: "+numRegionDataBytes);
+                }
+                realCurrentRegionOffset=(currentWindow*7+currentFrame)*(numDataRegions-1);
+                System.out.println("realCurrentRegionOffset: "+realCurrentRegionOffset);
                 System.out.println("window "+currentWindow+" frame "+currentFrame+" data:"+ Arrays.toString(frame));
                 if(!windows.containsKey(currentWindow)){
                     windows.put(currentWindow,new int[8][numRegions][]);
@@ -106,18 +130,28 @@ public class RDCodeMLFile {
                 int[][][] window=windows.get(currentWindow);
                 for(int i=0;i<frame.length;i++){
                     if(frame[i]!=null) {
-                        window[currentFrame][i]=frame[i];
+                        if(window[currentFrame][i]==null) {
+                            window[currentFrame][i] = frame[i];
+                            if (i < numDataRegions && i != indexCenterBlock && currentFrame < 7&&realCurrentRegionOffset+(i<indexCenterBlock?i:i-1)<numAllRegions) {
+                                countAllRegions++;
+                            }
+                            if (numAllRegions == -1 || countAllRegions == numAllRegions) {
+                                System.out.println("done in " + countFrames + " frames");
+                                return;
+                            }
+                        }
                     }
                 }
-                if(currentWindow!=7) {
+                if(currentFrame!=7) {
                     interRegionEC(interRegionParity,window,currentFrame,numRegionDataBytes);
                 }else{
-                    interFrameEC(window,currentFrame,currentWindow,numRegionDataBytes,interRegionParity);
+                    interFrameEC(window,currentFrame,numRegionDataBytes,interRegionParity);
                 }
             }
+            System.out.println("progress: "+(double)countAllRegions/numAllRegions);
         }
     }
-    static void interRegionEC(List<Integer>[] interRegionParity,int[][][] window,int currentFrame,int numRegionDataBytes){
+    void interRegionEC(List<Integer>[] interRegionParity,int[][][] window,int currentFrame,int numRegionDataBytes){
         for (int i = 0; i < interRegionParity.length; i++) {
             for (int j = 0; j < interRegionParity.length; j++) {
                 int countErrorRegion = 0;
@@ -137,18 +171,27 @@ public class RDCodeMLFile {
                             }
                         }
                     }
-                    window[currentFrame][indexErrorRegion] = region;
-                    System.out.println("inter region recover success index " + indexErrorRegion + " data:" + Arrays.toString(region));
+                    if(window[currentFrame][indexErrorRegion]==null) {
+                        window[currentFrame][indexErrorRegion] = region;
+                        System.out.println("inter region recover success index " + indexErrorRegion + " data:" + Arrays.toString(region));
+                        if (indexErrorRegion < numDataRegions && indexErrorRegion != indexCenterBlock && currentFrame < 7&&realCurrentRegionOffset+i<numAllRegions) {
+                            countAllRegions++;
+                        }
+                        if (numAllRegions == -1 || countAllRegions == numAllRegions) {
+                            System.out.println("done in " + countFrames + " frames");
+                            return;
+                        }
+                    }
                 }
             }
         }
     }
-    static void interFrameEC(int[][][] window,int currentFrame,int currentWindow,int numRegionDataBytes,List<Integer>[] interRegionParity){
+    void interFrameEC(int[][][] window,int currentFrame,int numRegionDataBytes,List<Integer>[] interRegionParity){
         for(int i=0;i<window[currentFrame].length;i++){
             if(window[currentFrame][i]!=null){
                 int countErrorRegion = 0;
                 int indexErrorFrame = -1;
-                for(int j=0;j<currentWindow;j++){
+                for(int j=0;j<currentFrame;j++){
                     if(window[j][i]==null){
                         countErrorRegion++;
                         indexErrorFrame=j;
@@ -156,16 +199,25 @@ public class RDCodeMLFile {
                 }
                 if(countErrorRegion==1){
                     int[] region=new int[numRegionDataBytes];
-                    for(int j=0;j<currentWindow;j++){
+                    for(int j=0;j<=currentFrame;j++){
                         if(j!=indexErrorFrame){
                             for(int pos=0;pos<region.length;pos++){
                                 region[pos]^=window[j][i][pos];
                             }
                         }
                     }
-                    window[indexErrorFrame][i]=region;
-                    System.out.println("inter frame recover success frame " + indexErrorFrame+" region "+i + " data:" + Arrays.toString(region));
-                    interRegionEC(interRegionParity,window,indexErrorFrame,numRegionDataBytes);
+                    if(window[indexErrorFrame][i]==null) {
+                        window[indexErrorFrame][i] = region;
+                        System.out.println("inter frame recover success frame " + indexErrorFrame + " region " + i + " data:" + Arrays.toString(region));
+                        if (i < numDataRegions && i != indexCenterBlock && indexErrorFrame < 7&&realCurrentRegionOffset+i<numAllRegions) {
+                            countAllRegions++;
+                        }
+                        if (countAllRegions == numAllRegions) {
+                            System.out.println("done in " + countFrames + " frames");
+                            return;
+                        }
+                        interRegionEC(interRegionParity, window, indexErrorFrame, numRegionDataBytes);
+                    }
                 }
             }
         }
