@@ -20,6 +20,9 @@ public class BlackWhiteBlock implements Block{
     public int[] getChannels() {
         return null;
     }
+    public static int getClear(int value,int threshold){
+        return value>threshold?1:0;
+    }
     public static int[] getMixed(int value,int black,int white,int ref1,int ref2){
         int minDistance=10000;
         int[] result=null;
