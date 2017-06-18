@@ -29,9 +29,14 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
 
     public BlackWhiteCodeMLFile(Map<DecodeHintType,?> hints){
         super(hints);
-        blackWhiteCodeML=new BlackWhiteCodeML(new MediateBarcode(new BlackWhiteCodeMLConfig()),hints);
+        blackWhiteCodeML=getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance()),hints);
     }
-
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode,Map<DecodeHintType,?> hints){
+        return new BlackWhiteCodeML(mediateBarcode,hints);
+    }
+    BarcodeConfig getBarcodeConfigInstance(){
+        return new BlackWhiteCodeMLConfig();
+    }
     @Override
     protected void beforeStream() {
         super.beforeStream();

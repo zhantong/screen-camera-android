@@ -41,9 +41,17 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
                 numRandomBarcode=Integer.parseInt(hints.get(DecodeHintType.NUMBER_OF_RANDOM_BARCODES).toString());
             }
         }
-        randomIntArrayList=BlackWhiteCodeML.randomBarcodeValue(new BlackWhiteCodeMLConfig(),numRandomBarcode);
+        randomIntArrayList=getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance()),hints).randomBarcodeValue(getBarcodeConfigInstance(),numRandomBarcode);
     }
-
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode,Map<DecodeHintType,?> hints){
+        return new BlackWhiteCodeML(mediateBarcode,hints);
+    }
+    BarcodeConfig getBarcodeConfigInstance(){
+        return new BlackWhiteCodeMLConfig();
+    }
+    void sampleContent(BlackWhiteCodeML blackWhiteCodeML){
+        blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
+    }
     @Override
     protected void processFrame(RawImage frame) {
         JsonObject barcodeJson=new JsonObject();
@@ -54,13 +62,13 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
 
         MediateBarcode mediateBarcode;
         try {
-            mediateBarcode = new MediateBarcode(frame,new BlackWhiteCodeMLConfig(),null,RawImage.CHANNLE_Y);
+            mediateBarcode = new MediateBarcode(frame,getBarcodeConfigInstance(),null,RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             Log.i(TAG,"barcode not found");
             return;
         }
-        BlackWhiteCodeML blackWhiteCodeML=new BlackWhiteCodeML(mediateBarcode,hints);
-        blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
+        BlackWhiteCodeML blackWhiteCodeML=getBarcodeInstance(mediateBarcode,hints);
+        sampleContent(blackWhiteCodeML);
         int overlapSituation=blackWhiteCodeML.getOverlapSituation();
         if(DUMP) {
             JsonObject mainJson=blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
