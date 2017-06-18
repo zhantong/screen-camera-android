@@ -1,6 +1,5 @@
 package cn.edu.nju.cs.screencamera;
 
-import android.os.Environment;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -151,7 +150,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
     protected void afterStream() {
         if(dataDecoder!=null&&dataDecoder.isDataDecoded()){
             Log.i(TAG,"RaptorQ decode success");
-            writeRaptorQDataFile(dataDecoder,"out.txt");
+            writeRaptorQDataFile(dataDecoder,outputFilePath);
         }
     }
     private boolean isLastEncodingPacket(EncodingPacket encodingPacket){
@@ -160,18 +159,18 @@ public class BlackWhiteCodeStream extends StreamDecode {
                 &&((encodingPacket.symbolType()== SymbolType.SOURCE&&!sourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))
                 ||(encodingPacket.symbolType()== SymbolType.REPAIR&&!sourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())));
     }
-    private void writeRaptorQDataFile(ArrayDataDecoder decoder,String fileName){
+    private void writeRaptorQDataFile(ArrayDataDecoder decoder,String filePath){
         byte[] out = decoder.dataArray();
         String sha1 = FileVerification.bytesToSHA1(out);
         Log.d(TAG, "file SHA-1 verification: " + sha1);
-        bytesToFile(out, fileName);
+        bytesToFile(out, filePath);
     }
-    private boolean bytesToFile(byte[] bytes,String fileName){
-        if(fileName.isEmpty()){
+    private boolean bytesToFile(byte[] bytes,String filePath){
+        if(filePath.isEmpty()){
             Log.i(TAG, "file name is empty");
             return false;
         }
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),fileName);
+        File file = new File(filePath);
         OutputStream os;
         try {
             os = new FileOutputStream(file);
