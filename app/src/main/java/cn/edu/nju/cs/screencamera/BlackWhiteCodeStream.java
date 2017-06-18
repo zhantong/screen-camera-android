@@ -34,9 +34,9 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 public class BlackWhiteCodeStream extends StreamDecode {
     private static final String TAG="BlackWhiteCodeStream";
     private static final boolean DUMP=false;
-    private Map<DecodeHintType,?> hints;
-    private ArrayDataDecoder dataDecoder=null;
-    private int raptorQSymbolSize =-1;
+    Map<DecodeHintType,?> hints;
+    ArrayDataDecoder dataDecoder=null;
+    int raptorQSymbolSize =-1;
     int rsEcSize=-1;
 
     static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
@@ -153,19 +153,19 @@ public class BlackWhiteCodeStream extends StreamDecode {
             writeRaptorQDataFile(dataDecoder,outputFilePath);
         }
     }
-    private boolean isLastEncodingPacket(EncodingPacket encodingPacket){
+    boolean isLastEncodingPacket(EncodingPacket encodingPacket){
         SourceBlockDecoder sourceBlock=dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber());
         return (sourceBlock.missingSourceSymbols().size()-sourceBlock.availableRepairSymbols().size()==1)
                 &&((encodingPacket.symbolType()== SymbolType.SOURCE&&!sourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))
                 ||(encodingPacket.symbolType()== SymbolType.REPAIR&&!sourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())));
     }
-    private void writeRaptorQDataFile(ArrayDataDecoder decoder,String filePath){
+    void writeRaptorQDataFile(ArrayDataDecoder decoder,String filePath){
         byte[] out = decoder.dataArray();
         String sha1 = FileVerification.bytesToSHA1(out);
         Log.d(TAG, "file SHA-1 verification: " + sha1);
         bytesToFile(out, filePath);
     }
-    private boolean bytesToFile(byte[] bytes,String filePath){
+    boolean bytesToFile(byte[] bytes,String filePath){
         if(filePath.isEmpty()){
             Log.i(TAG, "file name is empty");
             return false;
