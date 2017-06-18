@@ -38,7 +38,7 @@ public class MultiFormatStream {
                 streamDecode=new ColorCodeMLStream(hints);
                 break;
             case BLACKWHITECODE:
-                streamDecode=new BlackWhiteCodeStream(hints);
+                streamDecode=new BlackWhiteCodeWithBarStream(hints);
                 break;
             case RDCODEML:
                 streamDecode=new RDCodeMLStream(hints);

@@ -10,7 +10,7 @@ public enum BarcodeFormat{
     SHIFTCODECOLORML("ShiftCodeColorML"),
     BLACKWHITECODEML("BlackWhiteCodeML"),
     COLORCODEML("ColorCodeML"),
-    BLACKWHITECODE("BlackWhiteCode"),
+    BLACKWHITECODE("BlackWhiteCodeWithBar"),
     RDCODEML("RDCodeML");
     private String friendlyName;
     private BarcodeFormat(String friendlyName){

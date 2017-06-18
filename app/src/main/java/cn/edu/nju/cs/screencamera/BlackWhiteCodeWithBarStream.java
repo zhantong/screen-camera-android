@@ -37,7 +37,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  * Created by zhantong on 2017/5/24.
  */
 
-public class BlackWhiteCodeStream extends StreamDecode{
+public class BlackWhiteCodeWithBarStream extends StreamDecode{
     private static final String TAG="ShiftCodeMLStream";
     private static final boolean DUMP=false;
     private Map<DecodeHintType,?> hints;
@@ -55,7 +55,7 @@ public class BlackWhiteCodeStream extends StreamDecode{
         void onCRCCheckFailed();
         void onBeforeDataDecoded();
     }
-    public BlackWhiteCodeStream(Map<DecodeHintType,?> hints){
+    public BlackWhiteCodeWithBarStream(Map<DecodeHintType,?> hints){
         this.hints=hints;
 
     }
@@ -78,7 +78,7 @@ public class BlackWhiteCodeStream extends StreamDecode{
 
             MediateBarcode mediateBarcode;
             try {
-                mediateBarcode = new MediateBarcode(frame,new BlackWhiteCodeConfig(),null,RawImage.CHANNLE_Y);
+                mediateBarcode = new MediateBarcode(frame,new BlackWhiteCodeWithBarConfig(),null,RawImage.CHANNLE_Y);
             } catch (NotFoundException e) {
                 Log.i(TAG,"barcode not found");
                 if(callback!=null){
@@ -86,13 +86,13 @@ public class BlackWhiteCodeStream extends StreamDecode{
                 }
                 continue;
             }
-            BlackWhiteCode blackWhiteCode=new BlackWhiteCode(mediateBarcode,hints);
-            blackWhiteCode.mediateBarcode.getContent(blackWhiteCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
-            int overlapSituation=blackWhiteCode.getOverlapSituation();
+            BlackWhiteCodeWithBar blackWhiteCodeWithBar =new BlackWhiteCodeWithBar(mediateBarcode,hints);
+            blackWhiteCodeWithBar.mediateBarcode.getContent(blackWhiteCodeWithBar.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
+            int overlapSituation= blackWhiteCodeWithBar.getOverlapSituation();
             if(DUMP) {
-                JsonObject mainJson=blackWhiteCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
+                JsonObject mainJson= blackWhiteCodeWithBar.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
                 barcodeJson.add("barcode",mainJson);
-                barcodeJson.addProperty("index",blackWhiteCode.mediateBarcode.rawImage.getIndex());
+                barcodeJson.addProperty("index", blackWhiteCodeWithBar.mediateBarcode.rawImage.getIndex());
                 //JsonObject varyBarJson=shiftCodeML.getVaryBarToJson();
                 //barcodeJson.add("varyBar",varyBarJson);
                 barcodeJson.addProperty("overlapSituation",overlapSituation);
@@ -102,11 +102,11 @@ public class BlackWhiteCodeStream extends StreamDecode{
             }
 
             if(raptorQSymbolSize ==-1){
-                raptorQSymbolSize =blackWhiteCode.calcRaptorQSymbolSize(blackWhiteCode.calcRaptorQPacketSize());
+                raptorQSymbolSize = blackWhiteCodeWithBar.calcRaptorQSymbolSize(blackWhiteCodeWithBar.calcRaptorQPacketSize());
             }
             if(dataDecoder==null){
                 try {
-                    int head = blackWhiteCode.getTransmitFileLengthInBytes();
+                    int head = blackWhiteCodeWithBar.getTransmitFileLengthInBytes();
                     int numSourceBlock=0;
                     if(hints!=null){
                         numSourceBlock=Integer.parseInt(hints.get(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS).toString());
@@ -130,24 +130,24 @@ public class BlackWhiteCodeStream extends StreamDecode{
                     continue;
                 }
             }
-            int[][] rawContents=blackWhiteCode.getMixedRawContent();
+            int[][] rawContents= blackWhiteCodeWithBar.getMixedRawContent();
             for(int[] rawContent:rawContents){
                 int[] rSDecodedData;
                 try {
-                    rSDecodedData = blackWhiteCode.rSDecode(rawContent,blackWhiteCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN));
+                    rSDecodedData = blackWhiteCodeWithBar.rSDecode(rawContent, blackWhiteCodeWithBar.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN));
                 } catch (ReedSolomonException e) {
                     Log.i(TAG,"RS decode failed");
                     continue;
                 }
                 Log.i(TAG,"RS decode success");
-                byte[] raptorQEncodedData=Utils.intArrayToByteArray(rSDecodedData,rSDecodedData.length,rsEcSize, blackWhiteCode.calcRaptorQPacketSize());
+                byte[] raptorQEncodedData=Utils.intArrayToByteArray(rSDecodedData,rSDecodedData.length,rsEcSize, blackWhiteCodeWithBar.calcRaptorQPacketSize());
                 Log.i(TAG,"raptorq encoded data length: "+raptorQEncodedData.length);
                 Log.i(TAG,"raptorq encoded data: "+ Arrays.toString(raptorQEncodedData));
                 try {
                     EncodingPacket encodingPacket = dataDecoder.parsePacket(raptorQEncodedData, true).value();
 //                if(DUMP){
 //                    JsonObject barcodeJson=new JsonObject();
-//                    barcodeJson.addProperty("index",blackWhiteCode.mediateBarcode.rawImage.getIndex());
+//                    barcodeJson.addProperty("index",blackWhiteCodeWithBar.mediateBarcode.rawImage.getIndex());
 //                    barcodeJson.addProperty("esi",encodingPacket.encodingSymbolID());
 //                    barcodeJson.addProperty("type",encodingPacket.symbolType().name());
 //                    LOG.info(CustomMarker.processed,new Gson().toJson(barcodeJson));

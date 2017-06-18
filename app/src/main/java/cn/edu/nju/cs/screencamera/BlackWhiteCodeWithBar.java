@@ -11,7 +11,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  * Created by zhantong on 2017/5/24.
  */
 
-public class BlackWhiteCode {
+public class BlackWhiteCodeWithBar {
     public static final int OVERLAP_CLEAR_WHITE=0;
     public static final int OVERLAP_CLEAR_BLACK=1;
     public static final int OVERLAP_BLACK_TO_WHITE=2;
@@ -25,7 +25,7 @@ public class BlackWhiteCode {
     int overlapSituation;
     Map<DecodeHintType,?> hints;
 
-    public BlackWhiteCode(MediateBarcode mediateBarcode, Map<DecodeHintType,?> hints){
+    public BlackWhiteCodeWithBar(MediateBarcode mediateBarcode, Map<DecodeHintType,?> hints){
         this.mediateBarcode=mediateBarcode;
         this.hints=hints;
         if(mediateBarcode.rawImage==null){
