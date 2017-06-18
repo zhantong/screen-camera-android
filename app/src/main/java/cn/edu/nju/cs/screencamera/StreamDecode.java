@@ -5,8 +5,13 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +28,11 @@ public class StreamDecode {
     private boolean isVideo=false;
     private boolean isCamera=false;
     private boolean isImage=false;
+    private boolean isJsonFile=false;
     private LinkedBlockingQueue<RawImage> queue;
     private String videoFilePath;
     protected String outputFilePath;
+    protected JsonObject jsonRoot;
 
     public StreamDecode(){
         queue=new LinkedBlockingQueue<>(4);
@@ -44,6 +51,15 @@ public class StreamDecode {
         RawImage rawImage=getRawImageYuv(imageFilePath);
         queue.add(rawImage);
         isImage=true;
+    }
+    public void setJsonFile(String jsonFilePath){
+        try {
+            JsonParser parser=new JsonParser();
+            jsonRoot=(JsonObject) parser.parse(new FileReader(jsonFilePath));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        isJsonFile=true;
     }
     public void setOutputFilePath(String outputFilePath){
         this.outputFilePath=outputFilePath;
@@ -78,27 +94,44 @@ public class StreamDecode {
         }
         afterStream();
     }
+    public void stream(int[][] framesData){
+        beforeStream();
+        for(int[] frameData:framesData){
+            processFrame(frameData);
+            if(stopQueue){
+                break;
+            }
+        }
+        afterStream();
+    }
     protected void beforeStream(){
     }
     protected void processFrame(RawImage frame){
     }
+    protected void processFrame(int[] frameData){
+    }
     protected void afterStream(){
     }
     public void start(){
-        if(isVideo){
-            try {
-                videoToFrames.decode(videoFilePath);
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
+        if(isJsonFile){
+            int[][] data=new Gson().fromJson(jsonRoot.get("values"),int[][].class);
+            stream(data);
+        }else {
+            if (isVideo) {
+                try {
+                    videoToFrames.decode(videoFilePath);
+                } catch (Throwable throwable) {
+                    throwable.printStackTrace();
+                }
+            } else if (isCamera) {
+                cameraPreview.start(queue);
+            } else if (isImage) {
             }
-        }else if(isCamera){
-            cameraPreview.start(queue);
-        }else if(isImage){
-        }
-        try {
-            stream(queue);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            try {
+                stream(queue);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
     protected void stopVideoDecoding(){

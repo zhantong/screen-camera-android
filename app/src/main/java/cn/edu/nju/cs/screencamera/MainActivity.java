@@ -329,37 +329,27 @@ public class MainActivity extends Activity{
         worker.start();
     }
     public void processFile(View view) {
-        EditText editTextVideoFilePath = (EditText) findViewById(R.id.file_path_input);
-        final String filePath = editTextVideoFilePath.getText().toString();
-        Thread worker=null;
-        switch (barcodeFormat){
-            case SHIFTCODEML:
-                worker = new Thread() {
-                    @Override
-                    public void run() {
-                        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
-                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
-                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
-                        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
+        EditText editTextInputFilePath = (EditText) findViewById(R.id.file_path_input);
+        final String inputFilePath = editTextInputFilePath.getText().toString();
+        EditText editTextFileName = (EditText) findViewById(R.id.file_name_created);
+        final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(),editTextFileName.getText().toString());
 
-                        new ShiftCodeMLFile(filePath,hints);
-                    }
-                };
-                break;
-            case RDCODEML:
-                worker = new Thread() {
-                    @Override
-                    public void run() {
-                        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
-                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,8);
-                        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
-                        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
+        LOG.info(CustomMarker.source,inputFilePath);
 
-                        new RDCodeMLFile(filePath,hints);
-                    }
-                };
-                break;
-        }
+        Thread worker = new Thread() {
+            @Override
+            public void run() {
+                StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat,true);
+                if(inputFilePath.endsWith(".json")){
+                    streamDecode.setJsonFile(inputFilePath);
+                }else{
+                    throw new IllegalArgumentException();
+                }
+                streamDecode.setOutputFilePath(outputFilePath);
+                streamDecode.setHandler(mHandler);
+                streamDecode.start();
+            }
+        };
         worker.start();
     }
 
