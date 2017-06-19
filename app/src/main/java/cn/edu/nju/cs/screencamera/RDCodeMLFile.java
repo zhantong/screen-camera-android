@@ -175,7 +175,11 @@ public class RDCodeMLFile extends StreamDecode{
             }
             String sha1 = FileVerification.bytesToSHA1(out);
             Log.d(TAG, "file SHA-1 verification: " + sha1);
-            bytesToFile(out,outputFilePath);
+            if(Utils.bytesToFile(out, outputFilePath)){
+                Log.i(TAG,"successfully write to "+outputFilePath);
+            }else{
+                Log.i(TAG,"failed to write to "+outputFilePath);
+            }
         }else{
             Log.i(TAG,"file not complete");
         }
@@ -250,26 +254,5 @@ public class RDCodeMLFile extends StreamDecode{
                 }
             }
         }
-    }
-    boolean bytesToFile(byte[] bytes,String filePath){
-        if(filePath.isEmpty()){
-            Log.i(TAG, "file name is empty");
-            return false;
-        }
-        File file = new File(filePath);
-        OutputStream os;
-        try {
-            os = new FileOutputStream(file);
-            os.write(bytes);
-            os.close();
-        } catch (FileNotFoundException e) {
-            Log.i(TAG, "file path error, cannot create file:" + e.toString());
-            return false;
-        }catch (IOException e){
-            Log.i(TAG, "IOException:" + e.toString());
-            return false;
-        }
-        Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
-        return true;
     }
 }

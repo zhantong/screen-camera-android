@@ -13,8 +13,6 @@ public class BlackWhiteCodeConfig extends BarcodeConfig{
         mainWidth = 40;
         mainHeight = 40;
 
-        blockLengthInPixel = 20;
-
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
     }

@@ -58,20 +58,17 @@ public class BlackWhiteCodeML extends BlackWhiteCodeWithBar{
         return isRandom;
     }
     public int getTransmitFileLengthInBytes(int channel) throws CRCCheckException{
-        int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP),channel);
-        BitSet data=new BitSet();
-        for(int i=0;i<content.length;i++){
-            if(content[i]>binaryThreshold){
-                data.set(i);
-            }
-        }
         if(isRandom) {
+            int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.UP),channel);
+            BitSet data=new BitSet();
+            for(int i=0;i<content.length;i++){
+                if(content[i]>binaryThreshold){
+                    data.set(i);
+                }
+            }
             int transmitFileLengthInBytes = Utils.bitsToInt(Utils.reverse(data, 32), 32, 0);
             return Utils.grayCodeToInt(transmitFileLengthInBytes);
         }
-        int transmitFileLengthInBytes=Utils.bitsToInt(data,32,0);
-        int crc=Utils.bitsToInt(data,8,32);
-        Utils.crc8Check(transmitFileLengthInBytes,crc);
-        return transmitFileLengthInBytes;
+        return super.getTransmitFileLengthInBytes(channel);
     }
 }

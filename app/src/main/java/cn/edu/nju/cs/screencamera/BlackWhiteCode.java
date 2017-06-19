@@ -18,7 +18,7 @@ public class BlackWhiteCode {
     MediateBarcode mediateBarcode;
     int refWhite;
     int refBlack;
-    int threshold;
+    int expand;
     int binaryThreshold;
     int overlapSituation;
     Map<DecodeHintType,?> hints;
@@ -31,10 +31,8 @@ public class BlackWhiteCode {
         }
         processBorderRight();
         processBorderLeft();
-        System.out.println("refWhite: "+refWhite+" refBlack: "+refBlack+" binary threshold: "+binaryThreshold+" threshold: "+threshold);
+        System.out.println("refWhite: "+refWhite+" refBlack: "+refBlack+" binary expand: "+binaryThreshold+" expand: "+ expand);
         System.out.println("overlap: "+overlapSituation);
-        //getClearRawContent();
-        //getMixedContent();
     }
     public int getOverlapSituation(){
         return overlapSituation;
@@ -85,7 +83,7 @@ public class BlackWhiteCode {
         refWhite=sumWhite/numHalfPoints;
         refBlack=sumBlack/numHalfPoints;
         binaryThreshold=(refWhite+refBlack)/2;
-        threshold=(maxWhite+maxBlack-minWhite-minBlack)/2;
+        expand =(maxWhite+maxBlack-minWhite-minBlack)/2;
     }
     public void processBorderLeft(){
         processBorderLeft(RawImage.CHANNLE_Y);
@@ -94,8 +92,8 @@ public class BlackWhiteCode {
         int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.BORDER).get(District.LEFT),channel);
         int mixIndicatorUp=content[0];
         int mixIndicatorDown=content[content.length-1];
-        int refBlackExpand=refBlack+threshold;
-        int refWhiteExpand=refWhite-threshold;
+        int refBlackExpand=refBlack+ expand;
+        int refWhiteExpand=refWhite- expand;
         if((mixIndicatorUp<=refBlackExpand)&&(mixIndicatorDown<=refBlackExpand)){
             overlapSituation=OVERLAP_CLEAR_BLACK;
         }else if((mixIndicatorUp>=refWhiteExpand)&&(mixIndicatorDown>=refWhiteExpand)){
@@ -121,7 +119,6 @@ public class BlackWhiteCode {
         int rawDataPos=0;
         for(int y=0;y<zone.heightInBlock;y++) {
             for (int x = 0; x < zone.widthInBlock; x++) {
-                //boolean isFormerWhite=(overlapSituation==OVERLAP_WHITE_TO_BLACK);
                 int value=block.getClear(content[offset],binaryThreshold);
                 offset+=step;
                 rawData[rawDataPos]=value;

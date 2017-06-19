@@ -346,7 +346,6 @@ public class MainActivity extends Activity{
                     throw new IllegalArgumentException();
                 }
                 streamDecode.setOutputFilePath(outputFilePath);
-                streamDecode.setHandler(mHandler);
                 streamDecode.start();
             }
         };

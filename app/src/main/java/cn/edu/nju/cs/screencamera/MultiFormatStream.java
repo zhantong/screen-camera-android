@@ -22,13 +22,13 @@ public class MultiFormatStream {
         hints.put(DecodeHintType.NUMBER_OF_RANDOM_BARCODES,100);
         if(isFile){
             switch (barcodeFormat){
-                case BLACKWHITECODEML:
+                case BLACK_WHITE_CODE_ML:
                     streamDecode=new BlackWhiteCodeMLFile(hints);
                     break;
-                case COLORCODEML:
+                case COLOR_CODE_ML:
                     streamDecode=new ColorCodeMLFile(hints);
                     break;
-                case RDCODEML:
+                case RD_CODE_ML:
                     streamDecode=new RDCodeMLFile(hints);
                     break;
                 default:
@@ -36,32 +36,32 @@ public class MultiFormatStream {
             }
         }else {
             switch (barcodeFormat) {
-                case SHIFTCODE:
+                case SHIFT_CODE:
                     streamDecode = new ShiftCodeStream(hints);
                     break;
-                case SHIFTCODECOLOR:
+                case SHIFT_CODE_COLOR:
                     streamDecode = new ShiftCodeColorStream(hints);
                     break;
 
-                case SHIFTCODEML:
+                case SHIFT_CODE_ML:
                     streamDecode = new ShiftCodeMLStream(hints);
                     break;
-                case SHIFTCODECOLORML:
+                case SHIFT_CODE_COLOR_ML:
                     streamDecode = new ShiftCodeColorMLStream(hints);
                     break;
-                case BLACKWHITECODEML:
+                case BLACK_WHITE_CODE_ML:
                     streamDecode = new BlackWhiteCodeMLStream(hints);
                     break;
-                case COLORCODEML:
+                case COLOR_CODE_ML:
                     streamDecode = new ColorCodeMLStream(hints);
                     break;
-                case BLACKWHITECODEWITHBAR:
+                case BLACK_WHITE_CODE_WITH_BAR:
                     streamDecode = new BlackWhiteCodeWithBarStream(hints);
                     break;
-                case RDCODEML:
+                case RD_CODE_ML:
                     streamDecode = new RDCodeMLStream(hints);
                     break;
-                case BLACKWHITECODE:
+                case BLACK_WHITE_CODE:
                     streamDecode = new BlackWhiteCodeStream(hints);
                     break;
                 default:
