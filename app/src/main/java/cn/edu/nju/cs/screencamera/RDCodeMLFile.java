@@ -1,17 +1,12 @@
 package cn.edu.nju.cs.screencamera;
 
 
-import android.os.Environment;
 import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -26,7 +21,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  * Created by zhantong on 2017/6/4.
  */
 
-public class RDCodeMLFile {
+public class RDCodeMLFile extends StreamDecode{
     private static final String TAG="ShiftCodeMLFile";
     Map<DecodeHintType,?> hints;
     RDCodeMLConfig config=new RDCodeMLConfig();
@@ -38,21 +33,125 @@ public class RDCodeMLFile {
     int indexCenterBlock;
     int numRegionDataBytes;
     int realCurrentRegionOffset;
+    int numRegions;
+    int numBytesPerRegion;
+    int numBytesPerRegionLine;
+    int numRSBytes;
     Map<Integer,int[][][]> windows=new HashMap<>();
-
-    public RDCodeMLFile(String filePath,Map<DecodeHintType,?> hints){
+    public RDCodeMLFile(Map<DecodeHintType,?> hints){
         this.hints=hints;
-        Gson gson=new Gson();
-        JsonObject root=null;
-        try {
-            JsonParser parser=new JsonParser();
-            root=(JsonObject) parser.parse(new FileReader(filePath));
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    }
+
+    @Override
+    protected void beforeStream() {
+        numRSBytes=6;
+        int numColors=4;
+        int numRegionBytes=(config.regionWidth*config.regionHeight)/(8/(int)Math.sqrt(numColors));
+        numRegionDataBytes=numRegionBytes-numRSBytes;
+        int numInterFrameParity=1;
+        int numFramesPerWindow=8;
+        int indexLastFrame=numFramesPerWindow-numInterFrameParity;
+        numBytesPerRegionLine=config.mainBlock.get(District.MAIN).getBitsPerUnit()*config.regionWidth/8;
+        numBytesPerRegion=numBytesPerRegionLine*config.regionHeight;
+        numRegions=config.numRegionVertical*config.numRegionHorizon;
+        int numParityRegions=3;
+        numDataRegions=numRegions-numParityRegions;
+        int numBytesPerFrame=numRegions*numBytesPerRegion;
+        indexCenterBlock=numRegions/2;
+    }
+
+    @Override
+    protected void processFrame(int[] frameData) {
+        countFrames++;
+        frameData=Utils.changeNumBitsPerInt(frameData,config.mainBlock.get(District.MAIN).getBitsPerUnit(),8);
+        int[][] frame=new int[numRegions][];
+        for(int indexRegionOffset=0,posOffset=0;indexRegionOffset<numRegions;indexRegionOffset+=config.numRegionHorizon,posOffset+=numBytesPerRegion*config.numRegionHorizon){
+            for(int indexRegionInLine=0;indexRegionInLine<config.numRegionHorizon;indexRegionInLine++){
+                int indexRegion=indexRegionOffset+indexRegionInLine;
+                int pos=posOffset+indexRegionInLine*numBytesPerRegionLine;
+                int[] regionData=new int[numBytesPerRegion];
+                int regionDataPos=0;
+                for(int line=0;line<numBytesPerRegion;line+=numBytesPerRegionLine,pos+=numBytesPerRegionLine*config.numRegionHorizon){
+                    System.arraycopy(frameData,pos,regionData,regionDataPos,numBytesPerRegionLine);
+                    regionDataPos+=numBytesPerRegionLine;
+                }
+                try {
+                    if(indexRegion==indexCenterBlock){
+                        Utils.rSDecode(regionData, 12, 8);
+                    }else {
+                        Utils.rSDecode(regionData, numRSBytes, 8);
+                    }
+                    frame[indexRegion]=new int[numRegionDataBytes];
+                    System.arraycopy(regionData,0,frame[indexRegion],0,numRegionDataBytes);
+                } catch (ReedSolomonException e) {
+                    System.out.println("RS decode failed "+indexRegion);
+                }
+            }
         }
-        int[][] data=gson.fromJson(root.get("values"),int[][].class);
-        stream(data);
+
+        List<Integer>[] interRegionParity=new List[3];
+        interRegionParity[0]=new ArrayList<>();
+        for(int i=0;i<numRegions-2;i++){
+            if(i!=indexCenterBlock&&((numRegions-i-3)%4<2)){
+                interRegionParity[0].add(i);
+            }
+        }
+        interRegionParity[1]=new ArrayList<>();
+        for(int i=0;i<numRegions;i++){
+            if(i!=indexCenterBlock&&(i%2==numRegions%2)){
+                interRegionParity[1].add(i);
+            }
+        }
+        interRegionParity[2]=new ArrayList<>();
+        for(int i=0;i<numRegions;i++){
+            if(i!=indexCenterBlock){
+                interRegionParity[2].add(i);
+            }
+        }
+
+        if(frame[indexCenterBlock]==null){
+            System.out.println("null center region");
+        }else{
+            int currentWindow=frame[indexCenterBlock][0];
+            int currentFrame=frame[indexCenterBlock][1];
+            if(numFileBytes==-1){
+                numFileBytes=(frame[indexCenterBlock][2]<<24)|(frame[indexCenterBlock][3]<<16)|(frame[indexCenterBlock][4]<<8)|frame[indexCenterBlock][5];
+                numAllRegions=(int)Math.ceil(numFileBytes/(double)numRegionDataBytes);
+                System.out.println("numFileBytes: "+numFileBytes+" numAllRegions: "+numAllRegions+" numRegionDataBytes: "+numRegionDataBytes);
+            }
+            realCurrentRegionOffset=(currentWindow*7+currentFrame)*(numDataRegions-1);
+            System.out.println("realCurrentRegionOffset: "+realCurrentRegionOffset);
+            System.out.println("window "+currentWindow+" frame "+currentFrame+" data:"+ Arrays.toString(frame));
+            if(!windows.containsKey(currentWindow)){
+                windows.put(currentWindow,new int[8][numRegions][]);
+            }
+            int[][][] window=windows.get(currentWindow);
+            for(int i=0;i<frame.length;i++){
+                if(frame[i]!=null) {
+                    if(window[currentFrame][i]==null) {
+                        window[currentFrame][i] = frame[i];
+                        if (i < numDataRegions && i != indexCenterBlock && currentFrame < 7&&realCurrentRegionOffset+(i<indexCenterBlock?i:i-1)<numAllRegions) {
+                            countAllRegions++;
+                        }
+                        if (numAllRegions == -1 || countAllRegions == numAllRegions) {
+                            System.out.println("done in " + countFrames + " frames");
+                            return;
+                        }
+                    }
+                }
+            }
+            if(currentFrame!=7) {
+                interRegionEC(interRegionParity,window,currentFrame,numRegionDataBytes);
+            }else{
+                interFrameEC(window,currentFrame,numRegionDataBytes,interRegionParity);
+            }
+        }
+        System.out.println("progress: "+(double)countAllRegions/numAllRegions);
+    }
+
+    @Override
+    protected void afterStream() {
         if(numAllRegions==countAllRegions) {
             byte[] out=new byte[numFileBytes];
             int outPos=0;
@@ -74,123 +173,11 @@ public class RDCodeMLFile {
                 }
                 i++;
             }
-            File file = new File(Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(), "testt.txt"));
-            OutputStream os;
-            try {
-                os = new FileOutputStream(file);
-                os.write(out);
-                os.close();
-            } catch (FileNotFoundException e) {
-                Log.i(TAG, "file path error, cannot create file:" + e.toString());
-            } catch (IOException e) {
-                Log.i(TAG, "IOException:" + e.toString());
-            }
+            String sha1 = FileVerification.bytesToSHA1(out);
+            Log.d(TAG, "file SHA-1 verification: " + sha1);
+            bytesToFile(out,outputFilePath);
         }else{
             Log.i(TAG,"file not complete");
-        }
-    }
-    public void stream(int[][] rawFrames){
-        int numRSBytes=6;
-        int numColors=4;
-        int numRegionBytes=(config.regionWidth*config.regionHeight)/(8/(int)Math.sqrt(numColors));
-        numRegionDataBytes=numRegionBytes-numRSBytes;
-        int numInterFrameParity=1;
-        int numFramesPerWindow=8;
-        int indexLastFrame=numFramesPerWindow-numInterFrameParity;
-        int numBytesPerRegionLine=config.mainBlock.get(District.MAIN).getBitsPerUnit()*config.regionWidth/8;
-        int numBytesPerRegion=numBytesPerRegionLine*config.regionHeight;
-        int numRegions=config.numRegionVertical*config.numRegionHorizon;
-        int numParityRegions=3;
-        numDataRegions=numRegions-numParityRegions;
-        int numBytesPerFrame=numRegions*numBytesPerRegion;
-        indexCenterBlock=numRegions/2;
-
-        for(int[] rawFrame:rawFrames){
-            countFrames++;
-            rawFrame=Utils.changeNumBitsPerInt(rawFrame,config.mainBlock.get(District.MAIN).getBitsPerUnit(),8);
-            int[][] frame=new int[numRegions][];
-            for(int indexRegionOffset=0,posOffset=0;indexRegionOffset<numRegions;indexRegionOffset+=config.numRegionHorizon,posOffset+=numBytesPerRegion*config.numRegionHorizon){
-                for(int indexRegionInLine=0;indexRegionInLine<config.numRegionHorizon;indexRegionInLine++){
-                    int indexRegion=indexRegionOffset+indexRegionInLine;
-                    int pos=posOffset+indexRegionInLine*numBytesPerRegionLine;
-                    int[] regionData=new int[numBytesPerRegion];
-                    int regionDataPos=0;
-                    for(int line=0;line<numBytesPerRegion;line+=numBytesPerRegionLine,pos+=numBytesPerRegionLine*config.numRegionHorizon){
-                        System.arraycopy(rawFrame,pos,regionData,regionDataPos,numBytesPerRegionLine);
-                        regionDataPos+=numBytesPerRegionLine;
-                    }
-                    try {
-                        if(indexRegion==indexCenterBlock){
-                            Utils.rSDecode(regionData, 12, 8);
-                        }else {
-                            Utils.rSDecode(regionData, numRSBytes, 8);
-                        }
-                        frame[indexRegion]=new int[numRegionDataBytes];
-                        System.arraycopy(regionData,0,frame[indexRegion],0,numRegionDataBytes);
-                    } catch (ReedSolomonException e) {
-                        System.out.println("RS decode failed "+indexRegion);
-                    }
-                }
-            }
-
-            List<Integer>[] interRegionParity=new List[3];
-            interRegionParity[0]=new ArrayList<>();
-            for(int i=0;i<numRegions-2;i++){
-                if(i!=indexCenterBlock&&((numRegions-i-3)%4<2)){
-                    interRegionParity[0].add(i);
-                }
-            }
-            interRegionParity[1]=new ArrayList<>();
-            for(int i=0;i<numRegions;i++){
-                if(i!=indexCenterBlock&&(i%2==numRegions%2)){
-                    interRegionParity[1].add(i);
-                }
-            }
-            interRegionParity[2]=new ArrayList<>();
-            for(int i=0;i<numRegions;i++){
-                if(i!=indexCenterBlock){
-                    interRegionParity[2].add(i);
-                }
-            }
-
-            if(frame[indexCenterBlock]==null){
-                System.out.println("null center region");
-            }else{
-                int currentWindow=frame[indexCenterBlock][0];
-                int currentFrame=frame[indexCenterBlock][1];
-                if(numFileBytes==-1){
-                    numFileBytes=(frame[indexCenterBlock][2]<<24)|(frame[indexCenterBlock][3]<<16)|(frame[indexCenterBlock][4]<<8)|frame[indexCenterBlock][5];
-                    numAllRegions=(int)Math.ceil(numFileBytes/(double)numRegionDataBytes);
-                    System.out.println("numFileBytes: "+numFileBytes+" numAllRegions: "+numAllRegions+" numRegionDataBytes: "+numRegionDataBytes);
-                }
-                realCurrentRegionOffset=(currentWindow*7+currentFrame)*(numDataRegions-1);
-                System.out.println("realCurrentRegionOffset: "+realCurrentRegionOffset);
-                System.out.println("window "+currentWindow+" frame "+currentFrame+" data:"+ Arrays.toString(frame));
-                if(!windows.containsKey(currentWindow)){
-                    windows.put(currentWindow,new int[8][numRegions][]);
-                }
-                int[][][] window=windows.get(currentWindow);
-                for(int i=0;i<frame.length;i++){
-                    if(frame[i]!=null) {
-                        if(window[currentFrame][i]==null) {
-                            window[currentFrame][i] = frame[i];
-                            if (i < numDataRegions && i != indexCenterBlock && currentFrame < 7&&realCurrentRegionOffset+(i<indexCenterBlock?i:i-1)<numAllRegions) {
-                                countAllRegions++;
-                            }
-                            if (numAllRegions == -1 || countAllRegions == numAllRegions) {
-                                System.out.println("done in " + countFrames + " frames");
-                                return;
-                            }
-                        }
-                    }
-                }
-                if(currentFrame!=7) {
-                    interRegionEC(interRegionParity,window,currentFrame,numRegionDataBytes);
-                }else{
-                    interFrameEC(window,currentFrame,numRegionDataBytes,interRegionParity);
-                }
-            }
-            System.out.println("progress: "+(double)countAllRegions/numAllRegions);
         }
     }
     void interRegionEC(List<Integer>[] interRegionParity,int[][][] window,int currentFrame,int numRegionDataBytes){
@@ -263,5 +250,26 @@ public class RDCodeMLFile {
                 }
             }
         }
+    }
+    boolean bytesToFile(byte[] bytes,String filePath){
+        if(filePath.isEmpty()){
+            Log.i(TAG, "file name is empty");
+            return false;
+        }
+        File file = new File(filePath);
+        OutputStream os;
+        try {
+            os = new FileOutputStream(file);
+            os.write(bytes);
+            os.close();
+        } catch (FileNotFoundException e) {
+            Log.i(TAG, "file path error, cannot create file:" + e.toString());
+            return false;
+        }catch (IOException e){
+            Log.i(TAG, "IOException:" + e.toString());
+            return false;
+        }
+        Log.i(TAG,"file created successfully: "+file.getAbsolutePath());
+        return true;
     }
 }

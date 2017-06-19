@@ -28,6 +28,9 @@ public class MultiFormatStream {
                 case COLORCODEML:
                     streamDecode=new ColorCodeMLFile(hints);
                     break;
+                case RDCODEML:
+                    streamDecode=new RDCodeMLFile(hints);
+                    break;
                 default:
                     throw new IllegalArgumentException();
             }
