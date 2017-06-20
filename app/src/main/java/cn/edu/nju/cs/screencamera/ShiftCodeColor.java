@@ -1,7 +1,6 @@
 package cn.edu.nju.cs.screencamera;
 
 import java.util.BitSet;
-import java.util.Map;
 
 /**
  * Created by zhantong on 2016/12/2.
@@ -9,8 +8,8 @@ import java.util.Map;
 
 public class ShiftCodeColor extends ShiftCode {
     int[] thresholds;
-    public ShiftCodeColor(MediateBarcode mediateBarcode, Map<DecodeHintType, ?> hints) {
-        super(mediateBarcode, hints);
+    public ShiftCodeColor(MediateBarcode mediateBarcode) {
+        super(mediateBarcode);
     }
     public int getTransmitFileLengthInBytes() throws CRCCheckException{
         return getTransmitFileLengthInBytes(RawImage.CHANNLE_U);
@@ -35,8 +34,8 @@ public class ShiftCodeColor extends ShiftCode {
         int[] content=mediateBarcode.getContent(mediateBarcode.districts.get(Districts.PADDING).get(District.LEFT),channel);
         int mixIndicatorUp=content[0];
         int mixIndicatorDown=content[content.length-1];
-        int refBlackExpand=refBlack+threshold;
-        int refWhiteExpand=refWhite-threshold;
+        int refBlackExpand=refBlack+expand;
+        int refWhiteExpand=refWhite-expand;
         if((mixIndicatorUp<=refBlackExpand)&&(mixIndicatorDown<=refBlackExpand)){
             overlapSituation=OVERLAP_CLEAR_BLACK;
         }else if((mixIndicatorUp>=refWhiteExpand)&&(mixIndicatorDown>=refWhiteExpand)){

@@ -10,8 +10,8 @@ import java.util.Map;
 
 public class ShiftCodeColorML extends ShiftCodeML {
     int[] thresholds;
-    public ShiftCodeColorML(MediateBarcode mediateBarcode, Map<DecodeHintType, ?> hints) {
-        super(mediateBarcode, hints);
+    public ShiftCodeColorML(MediateBarcode mediateBarcode) {
+        super(mediateBarcode);
     }
     public void processBorderRight(){
         super.processBorderRight(RawImage.CHANNLE_Y);
