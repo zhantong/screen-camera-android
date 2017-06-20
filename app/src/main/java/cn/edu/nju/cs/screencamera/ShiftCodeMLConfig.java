@@ -12,9 +12,12 @@ public class ShiftCodeMLConfig extends BarcodeConfig {
         mainWidth = 40;
         mainHeight = 40;
 
-        blockLengthInPixel = 10;
-
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new ShiftBlock());
+
+        hints.put(ShiftCodeML.KEY_SIZE_RS_ERROR_CORRECTION,12);
+        hints.put(ShiftCodeML.KEY_LEVEL_RS_ERROR_CORRECTION,0.1);
+        hints.put(ShiftCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS,1);
+        hints.put(ShiftCodeML.KEY_NUMBER_RANDOM_BARCODES,100);
     }
 }
