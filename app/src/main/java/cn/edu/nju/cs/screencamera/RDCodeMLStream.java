@@ -1,6 +1,5 @@
 package cn.edu.nju.cs.screencamera;
 
-import java.util.Map;
 
 /**
  * Created by zhantong on 2017/6/4.
@@ -8,11 +7,10 @@ import java.util.Map;
 
 public class RDCodeMLStream extends ColorCodeMLStream{
 
-    public RDCodeMLStream(Map<DecodeHintType, ?> hints) {
-        super(hints);
+    public RDCodeMLStream() {
     }
-    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode,Map<DecodeHintType,?> hints){
-        return new RDCodeML(mediateBarcode,hints);
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode){
+        return new RDCodeML(mediateBarcode);
     }
     BarcodeConfig getBarcodeConfigInstance(){
         return new RDCodeMLConfig();

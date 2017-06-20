@@ -15,5 +15,9 @@ public class BlackWhiteCodeWithBarConfig extends BarcodeConfig{
 
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
+
+        hints.put(BlackWhiteCodeWithBar.KEY_SIZE_RS_ERROR_CORRECTION,12);
+        hints.put(BlackWhiteCodeWithBar.KEY_LEVEL_RS_ERROR_CORRECTION,0.1);
+        hints.put(BlackWhiteCodeWithBar.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS,1);
     }
 }

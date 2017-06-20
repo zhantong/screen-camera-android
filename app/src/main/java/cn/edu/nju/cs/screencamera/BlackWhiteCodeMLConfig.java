@@ -10,10 +10,15 @@ public class BlackWhiteCodeMLConfig extends BarcodeConfig{
         paddingLength = new DistrictConfig<>(2,0,2,0);
         metaLength=new DistrictConfig<>(0);
 
-        mainWidth = 100;
-        mainHeight = 100;
+        mainWidth = 40;
+        mainHeight = 40;
 
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
+
+        hints.put(BlackWhiteCodeML.KEY_SIZE_RS_ERROR_CORRECTION,12);
+        hints.put(BlackWhiteCodeML.KEY_LEVEL_RS_ERROR_CORRECTION,0.1);
+        hints.put(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS,1);
+        hints.put(BlackWhiteCodeML.KEY_NUMBER_RANDOM_BARCODES,100);
     }
 }

@@ -9,16 +9,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by zhantong on 2017/5/11.
  */
 
 public class BlackWhiteCodeML extends BlackWhiteCodeWithBar{
+    public static final String KEY_NUMBER_RANDOM_BARCODES="NUMBER_RANDOM_BARCODES";
     private boolean isRandom=false;
-    public BlackWhiteCodeML(MediateBarcode mediateBarcode, Map<DecodeHintType, ?> hints) {
-        super(mediateBarcode,hints);
+    public BlackWhiteCodeML(MediateBarcode mediateBarcode) {
+        super(mediateBarcode);
         if(mediateBarcode.rawImage==null){
             return;
         }

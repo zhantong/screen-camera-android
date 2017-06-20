@@ -1,6 +1,5 @@
 package cn.edu.nju.cs.screencamera;
 
-import java.util.Map;
 
 /**
  * Created by zhantong on 2017/6/18.
@@ -8,12 +7,11 @@ import java.util.Map;
 
 public class ColorCodeMLFile extends BlackWhiteCodeMLFile{
 
-    public ColorCodeMLFile(Map<DecodeHintType, ?> hints) {
-        super(hints);
+    public ColorCodeMLFile() {
     }
 
-    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode, Map<DecodeHintType,?> hints){
-        return new ColorCodeML(mediateBarcode,hints);
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode){
+        return new ColorCodeML(mediateBarcode);
     }
     BarcodeConfig getBarcodeConfigInstance(){
         return new ColorCodeMLConfig();

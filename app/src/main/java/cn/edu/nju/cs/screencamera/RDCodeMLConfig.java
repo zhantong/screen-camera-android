@@ -25,5 +25,9 @@ public class RDCodeMLConfig extends BarcodeConfig {
 
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new ColorBlock(2));
+
+        hints.put(RDCodeML.KEY_SIZE_RS_ERROR_CORRECTION,8);
+        hints.put(RDCodeML.KEY_LEVEL_RS_ERROR_CORRECTION,0.1);
+        hints.put(RDCodeML.KEY_NUMBER_RANDOM_BARCODES,100);
     }
 }

@@ -30,10 +30,11 @@ public class BlackWhiteCodeWithBarStream extends BlackWhiteCodeStream{
     static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
 
 
-    public BlackWhiteCodeWithBarStream(Map<DecodeHintType, ?> hints) {
-        super(hints);
+    public BlackWhiteCodeWithBarStream() {
     }
-
+    BarcodeConfig getBarcodeConfigInstance(){
+        return new BlackWhiteCodeWithBarConfig();
+    }
     @Override
     protected void processFrame(RawImage frame) {
         JsonObject barcodeJson=new JsonObject();
@@ -49,7 +50,7 @@ public class BlackWhiteCodeWithBarStream extends BlackWhiteCodeStream{
             Log.i(TAG,"barcode not found");
             return;
         }
-        BlackWhiteCodeWithBar blackWhiteCodeWithBar =new BlackWhiteCodeWithBar(mediateBarcode,hints);
+        BlackWhiteCodeWithBar blackWhiteCodeWithBar =new BlackWhiteCodeWithBar(mediateBarcode);
         blackWhiteCodeWithBar.mediateBarcode.getContent(blackWhiteCodeWithBar.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
         int overlapSituation= blackWhiteCodeWithBar.getOverlapSituation();
         if(DUMP) {
@@ -70,10 +71,7 @@ public class BlackWhiteCodeWithBarStream extends BlackWhiteCodeStream{
         if(dataDecoder==null){
             try {
                 int head = blackWhiteCodeWithBar.getTransmitFileLengthInBytes();
-                int numSourceBlock=0;
-                if(hints!=null){
-                    numSourceBlock=Integer.parseInt(hints.get(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS).toString());
-                }
+                int numSourceBlock=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
                 FECParameters parameters=FECParameters.newParameters(head, raptorQSymbolSize,numSourceBlock);
                 if(DUMP){
                     JsonObject paramsJson=new JsonObject();

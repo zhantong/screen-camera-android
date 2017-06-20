@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 
@@ -25,26 +24,22 @@ import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 public class BlackWhiteCodeMLStream extends StreamDecode {
     private static final String TAG="BlackWhiteCodeMLStream";
     private static final boolean DUMP=true;
-    private Map<DecodeHintType,?> hints;
-    private ArrayDataDecoder dataDecoder=null;
-    private int raptorQSymbolSize =-1;
-    private int numRandomBarcode=100;
+    ArrayDataDecoder dataDecoder=null;
+    int raptorQSymbolSize =-1;
+    int numRandomBarcode;
+    BarcodeConfig barcodeConfig;
 
     static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
 
-    private List<int[]> randomIntArrayList;
+    List<int[]> randomIntArrayList;
 
-    public BlackWhiteCodeMLStream(Map<DecodeHintType,?> hints){
-        this.hints=hints;
-        if(hints!=null){
-            if(hints.containsKey(DecodeHintType.NUMBER_OF_RANDOM_BARCODES)){
-                numRandomBarcode=Integer.parseInt(hints.get(DecodeHintType.NUMBER_OF_RANDOM_BARCODES).toString());
-            }
-        }
-        randomIntArrayList=getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance()),hints).randomBarcodeValue(getBarcodeConfigInstance(),numRandomBarcode);
+    public BlackWhiteCodeMLStream(){
+        barcodeConfig=getBarcodeConfigInstance();
+        numRandomBarcode=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RANDOM_BARCODES).toString());
+        randomIntArrayList=getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance())).randomBarcodeValue(getBarcodeConfigInstance(),numRandomBarcode);
     }
-    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode,Map<DecodeHintType,?> hints){
-        return new BlackWhiteCodeML(mediateBarcode,hints);
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode){
+        return new BlackWhiteCodeML(mediateBarcode);
     }
     BarcodeConfig getBarcodeConfigInstance(){
         return new BlackWhiteCodeMLConfig();
@@ -67,7 +62,7 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
             Log.i(TAG,"barcode not found");
             return;
         }
-        BlackWhiteCodeML blackWhiteCodeML=getBarcodeInstance(mediateBarcode,hints);
+        BlackWhiteCodeML blackWhiteCodeML=getBarcodeInstance(mediateBarcode);
         sampleContent(blackWhiteCodeML);
         int overlapSituation=blackWhiteCodeML.getOverlapSituation();
         if(DUMP) {
@@ -107,10 +102,7 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
             if(dataDecoder==null){
                 try {
                     int head = blackWhiteCodeML.getTransmitFileLengthInBytes();
-                    int numSourceBlock=0;
-                    if(hints!=null){
-                        numSourceBlock=Integer.parseInt(hints.get(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS).toString());
-                    }
+                    int numSourceBlock=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
                     FECParameters parameters=FECParameters.newParameters(head, raptorQSymbolSize,numSourceBlock);
                     if(DUMP){
                         JsonObject paramsJson=new JsonObject();

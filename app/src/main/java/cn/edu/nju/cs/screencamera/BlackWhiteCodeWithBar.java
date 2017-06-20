@@ -12,8 +12,8 @@ import java.util.Map;
 public class BlackWhiteCodeWithBar extends BlackWhiteCode{
 
 
-    public BlackWhiteCodeWithBar(MediateBarcode mediateBarcode, Map<DecodeHintType,?> hints){
-        super(mediateBarcode,hints);
+    public BlackWhiteCodeWithBar(MediateBarcode mediateBarcode){
+        super(mediateBarcode);
     }
 
     public SparseIntArray[] getVaryBar(){

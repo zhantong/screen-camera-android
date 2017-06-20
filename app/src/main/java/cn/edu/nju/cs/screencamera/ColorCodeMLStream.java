@@ -9,11 +9,10 @@ import java.util.Map;
 
 public class ColorCodeMLStream extends BlackWhiteCodeMLStream {
 
-    public ColorCodeMLStream(Map<DecodeHintType,?> hints){
-        super(hints);
+    public ColorCodeMLStream(){
     }
-    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode,Map<DecodeHintType,?> hints){
-        return new ColorCodeML(mediateBarcode,hints);
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode){
+        return new ColorCodeML(mediateBarcode);
     }
     BarcodeConfig getBarcodeConfigInstance(){
         return new ColorCodeMLConfig();

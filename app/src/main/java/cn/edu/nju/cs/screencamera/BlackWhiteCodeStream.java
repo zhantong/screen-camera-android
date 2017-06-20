@@ -34,23 +34,22 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 public class BlackWhiteCodeStream extends StreamDecode {
     private static final String TAG="BlackWhiteCodeStream";
     private static final boolean DUMP=false;
-    Map<DecodeHintType,?> hints;
     ArrayDataDecoder dataDecoder=null;
     int raptorQSymbolSize =-1;
     int rsEcSize=-1;
+    BarcodeConfig barcodeConfig;
 
     static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
 
-    public BlackWhiteCodeStream(Map<DecodeHintType,?> hints){
-        this.hints=hints;
-
+    public BlackWhiteCodeStream(){
+        barcodeConfig=getBarcodeConfigInstance();
     }
-
+    BarcodeConfig getBarcodeConfigInstance(){
+        return new BlackWhiteCodeConfig();
+    }
     @Override
     protected void beforeStream() {
-        if(hints!=null){
-            rsEcSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
-        }
+        rsEcSize=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_SIZE_RS_ERROR_CORRECTION).toString());
     }
 
     @Override
@@ -63,12 +62,12 @@ public class BlackWhiteCodeStream extends StreamDecode {
 
         MediateBarcode mediateBarcode;
         try {
-            mediateBarcode = new MediateBarcode(frame,new BlackWhiteCodeConfig(),null,RawImage.CHANNLE_Y);
+            mediateBarcode = new MediateBarcode(frame,getBarcodeConfigInstance(),null,RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             Log.i(TAG,"barcode not found");
             return;
         }
-        BlackWhiteCode blackWhiteCode =new BlackWhiteCode(mediateBarcode,hints);
+        BlackWhiteCode blackWhiteCode =new BlackWhiteCode(mediateBarcode);
         blackWhiteCode.mediateBarcode.getContent(blackWhiteCode.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
         int overlapSituation= blackWhiteCode.getOverlapSituation();
         if(DUMP) {
@@ -89,10 +88,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
         if(dataDecoder==null){
             try {
                 int head = blackWhiteCode.getTransmitFileLengthInBytes();
-                int numSourceBlock=0;
-                if(hints!=null){
-                    numSourceBlock=Integer.parseInt(hints.get(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS).toString());
-                }
+                int numSourceBlock=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
                 FECParameters parameters=FECParameters.newParameters(head, raptorQSymbolSize,numSourceBlock);
                 if(DUMP){
                     JsonObject paramsJson=new JsonObject();

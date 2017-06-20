@@ -10,6 +10,10 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  */
 
 public class BlackWhiteCode {
+    public static final String KEY_SIZE_RS_ERROR_CORRECTION="SIZE_RS_ERROR_CORRECTION";
+    public static final String KEY_LEVEL_RS_ERROR_CORRECTION="LEVEL_RS_ERROR_CORRECTION";
+    public static final String KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS="NUMBER_RAPTORQ_SOURCE_BLOCKS";
+
     public static final int OVERLAP_CLEAR_WHITE=0;
     public static final int OVERLAP_CLEAR_BLACK=1;
     public static final int OVERLAP_BLACK_TO_WHITE=2;
@@ -21,11 +25,9 @@ public class BlackWhiteCode {
     int expand;
     int binaryThreshold;
     int overlapSituation;
-    Map<DecodeHintType,?> hints;
 
-    public BlackWhiteCode(MediateBarcode mediateBarcode, Map<DecodeHintType,?> hints){
+    public BlackWhiteCode(MediateBarcode mediateBarcode){
         this.mediateBarcode=mediateBarcode;
-        this.hints=hints;
         if(mediateBarcode.rawImage==null){
             return;
         }
@@ -129,21 +131,9 @@ public class BlackWhiteCode {
     }
 
     public int[] rSDecode(int[] rawContent,Zone zone) throws ReedSolomonException {
-        int ecSize=-1;
-        float ecLevel=0.1f;
+        int ecSize=Integer.parseInt(mediateBarcode.config.hints.get(KEY_SIZE_RS_ERROR_CORRECTION).toString());
+        float ecLevel=Float.parseFloat(mediateBarcode.config.hints.get(KEY_LEVEL_RS_ERROR_CORRECTION).toString());
         int rawBitsPerUnit=zone.getBlock().getBitsPerUnit();
-        if(hints!=null){
-            if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_SIZE)){
-                ecSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
-            }else {
-                throw new IllegalArgumentException();
-            }
-            if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_LEVEL)){
-                ecLevel=Float.parseFloat(hints.get(DecodeHintType.RS_ERROR_CORRECTION_LEVEL).toString());
-            }else{
-                throw new IllegalArgumentException();
-            }
-        }
         int numRS=calcNumRS(zone,ecSize);
         int numRSEc=calcNumRSEc(numRS,ecLevel);
         int numRSData=calcNumRSData(numRS,numRSEc);
@@ -169,20 +159,8 @@ public class BlackWhiteCode {
     }
 
     public int calcRaptorQPacketSize(){
-        int ecSize=0;
-        float ecLevel=0f;
-        if(hints!=null){
-            if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_SIZE)){
-                ecSize=Integer.parseInt(hints.get(DecodeHintType.RS_ERROR_CORRECTION_SIZE).toString());
-            }else {
-                throw new IllegalArgumentException();
-            }
-            if(hints.containsKey(DecodeHintType.RS_ERROR_CORRECTION_LEVEL)){
-                ecLevel=Float.parseFloat(hints.get(DecodeHintType.RS_ERROR_CORRECTION_LEVEL).toString());
-            }else{
-                throw new IllegalArgumentException();
-            }
-        }
+        int ecSize=Integer.parseInt(mediateBarcode.config.hints.get(KEY_SIZE_RS_ERROR_CORRECTION).toString());
+        float ecLevel=Float.parseFloat(mediateBarcode.config.hints.get(KEY_LEVEL_RS_ERROR_CORRECTION).toString());
         int numRS=calcNumRS(mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),ecSize);
         int numRSEc=calcNumRSEc(numRS,ecLevel);
         int numRSData=calcNumRSData(numRS,numRSEc);

@@ -1,5 +1,8 @@
 package cn.edu.nju.cs.screencamera;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by zhantong on 2016/11/24.
  */
@@ -56,4 +59,6 @@ public class BarcodeConfig {
     */
 
     public DistrictConfig<Block> mainBlock=new DistrictConfig<Block>(new BlackWhiteBlock());
+
+    public Map<String,Object> hints=new HashMap<>();
 }

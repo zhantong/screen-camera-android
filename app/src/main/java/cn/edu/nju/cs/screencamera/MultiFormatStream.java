@@ -1,7 +1,5 @@
 package cn.edu.nju.cs.screencamera;
 
-import java.util.EnumMap;
-import java.util.Map;
 
 /**
  * Created by zhantong on 2016/12/17.
@@ -13,23 +11,16 @@ public class MultiFormatStream {
     }
     public static StreamDecode getStreamDecode(BarcodeFormat barcodeFormat,boolean isFile){
         StreamDecode streamDecode;
-
-        Map<DecodeHintType,Object> hints=new EnumMap<>(DecodeHintType.class);
-        //hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,12);
-        hints.put(DecodeHintType.RS_ERROR_CORRECTION_SIZE,8);
-        hints.put(DecodeHintType.RS_ERROR_CORRECTION_LEVEL,0.1);
-        hints.put(DecodeHintType.RAPTORQ_NUMBER_OF_SOURCE_BLOCKS,1);
-        hints.put(DecodeHintType.NUMBER_OF_RANDOM_BARCODES,100);
         if(isFile){
             switch (barcodeFormat){
                 case BLACK_WHITE_CODE_ML:
-                    streamDecode=new BlackWhiteCodeMLFile(hints);
+                    streamDecode=new BlackWhiteCodeMLFile();
                     break;
                 case COLOR_CODE_ML:
-                    streamDecode=new ColorCodeMLFile(hints);
+                    streamDecode=new ColorCodeMLFile();
                     break;
                 case RD_CODE_ML:
-                    streamDecode=new RDCodeMLFile(hints);
+                    streamDecode=new RDCodeMLFile();
                     break;
                 default:
                     throw new IllegalArgumentException();
@@ -37,32 +28,32 @@ public class MultiFormatStream {
         }else {
             switch (barcodeFormat) {
                 case SHIFT_CODE:
-                    streamDecode = new ShiftCodeStream(hints);
+                    streamDecode = new ShiftCodeStream();
                     break;
                 case SHIFT_CODE_COLOR:
-                    streamDecode = new ShiftCodeColorStream(hints);
+                    streamDecode = new ShiftCodeColorStream();
                     break;
 
                 case SHIFT_CODE_ML:
-                    streamDecode = new ShiftCodeMLStream(hints);
+                    streamDecode = new ShiftCodeMLStream();
                     break;
                 case SHIFT_CODE_COLOR_ML:
-                    streamDecode = new ShiftCodeColorMLStream(hints);
+                    streamDecode = new ShiftCodeColorMLStream();
                     break;
                 case BLACK_WHITE_CODE_ML:
-                    streamDecode = new BlackWhiteCodeMLStream(hints);
+                    streamDecode = new BlackWhiteCodeMLStream();
                     break;
                 case COLOR_CODE_ML:
-                    streamDecode = new ColorCodeMLStream(hints);
+                    streamDecode = new ColorCodeMLStream();
                     break;
                 case BLACK_WHITE_CODE_WITH_BAR:
-                    streamDecode = new BlackWhiteCodeWithBarStream(hints);
+                    streamDecode = new BlackWhiteCodeWithBarStream();
                     break;
                 case RD_CODE_ML:
-                    streamDecode = new RDCodeMLStream(hints);
+                    streamDecode = new RDCodeMLStream();
                     break;
                 case BLACK_WHITE_CODE:
-                    streamDecode = new BlackWhiteCodeStream(hints);
+                    streamDecode = new BlackWhiteCodeStream();
                     break;
                 default:
                     throw new IllegalArgumentException();

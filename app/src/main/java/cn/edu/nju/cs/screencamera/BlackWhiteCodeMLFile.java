@@ -23,16 +23,14 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
     private static final String TAG="BlackWhiteCodeMLFile";
     private static final boolean DUMP=false;
-    Map<DecodeHintType,?> hints;
     private BlackWhiteCodeML blackWhiteCodeML;
 
 
-    public BlackWhiteCodeMLFile(Map<DecodeHintType,?> hints){
-        super(hints);
-        blackWhiteCodeML=getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance()),hints);
+    public BlackWhiteCodeMLFile(){
+        blackWhiteCodeML=getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance()));
     }
-    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode,Map<DecodeHintType,?> hints){
-        return new BlackWhiteCodeML(mediateBarcode,hints);
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode){
+        return new BlackWhiteCodeML(mediateBarcode);
     }
     BarcodeConfig getBarcodeConfigInstance(){
         return new BlackWhiteCodeMLConfig();

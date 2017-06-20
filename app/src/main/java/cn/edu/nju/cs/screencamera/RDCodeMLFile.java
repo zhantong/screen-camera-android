@@ -23,7 +23,6 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
 public class RDCodeMLFile extends StreamDecode{
     private static final String TAG="ShiftCodeMLFile";
-    Map<DecodeHintType,?> hints;
     RDCodeMLConfig config=new RDCodeMLConfig();
     int countAllRegions=0;
     int numFileBytes=-1;
@@ -38,9 +37,7 @@ public class RDCodeMLFile extends StreamDecode{
     int numBytesPerRegionLine;
     int numRSBytes;
     Map<Integer,int[][][]> windows=new HashMap<>();
-    public RDCodeMLFile(Map<DecodeHintType,?> hints){
-        this.hints=hints;
-
+    public RDCodeMLFile(){
     }
 
     @Override
