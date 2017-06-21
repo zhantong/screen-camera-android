@@ -7,14 +7,12 @@ import com.google.gson.JsonObject;
 
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
+import net.fec.openrq.ParsingFailureException;
 import net.fec.openrq.parameters.FECParameters;
 import net.fec.openrq.parameters.SerializableParameters;
 
-import java.util.Arrays;
-import java.util.Map;
 
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
-import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
 /**
  * Created by zhantong on 2017/6/18.
@@ -22,7 +20,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
 public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
     private static final String TAG="BlackWhiteCodeMLFile";
-    private static final boolean DUMP=false;
+    private static final boolean DUMP=true;
     private BlackWhiteCodeML blackWhiteCodeML;
 
 
@@ -38,7 +36,7 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
     @Override
     protected void beforeStream() {
         super.beforeStream();
-        JsonObject raptorQMeta=(JsonObject)jsonRoot.get("raptorQMeta");
+        JsonObject raptorQMeta=(JsonObject) inputJsonRoot.get("raptorQMeta");
         long commonOTI=raptorQMeta.get("commonOTI").getAsLong();
         int schemeSpecificOTI=raptorQMeta.get("schemeSpecificOTI").getAsInt();
         SerializableParameters serializableParameters=new SerializableParameters(commonOTI,schemeSpecificOTI);
@@ -48,40 +46,40 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
 
     @Override
     protected void processFrame(int[] frameData) {
-        JsonObject barcodeJson=new JsonObject();
-        int[] rSDecodedData;
-        try {
-            rSDecodedData = blackWhiteCodeML.rSDecode(frameData,blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN));
-        } catch (ReedSolomonException e) {
-            Log.i(TAG,"RS decode failed");
-            return;
-        }
-        Log.i(TAG,"RS decode success");
-        byte[] raptorQEncodedData=Utils.intArrayToByteArray(rSDecodedData,rSDecodedData.length,rsEcSize, blackWhiteCodeML.calcRaptorQPacketSize());
-        Log.i(TAG,"raptorq encoded data length: "+raptorQEncodedData.length);
-        Log.i(TAG,"raptorq encoded data: "+ Arrays.toString(raptorQEncodedData));
-        try {
-            EncodingPacket encodingPacket = dataDecoder.parsePacket(raptorQEncodedData, true).value();
-//                if(DUMP){
-//                    JsonObject barcodeJson=new JsonObject();
-//                    barcodeJson.addProperty("index",blackWhiteCodeWithBar.mediateBarcode.rawImage.getIndex());
-//                    barcodeJson.addProperty("esi",encodingPacket.encodingSymbolID());
-//                    barcodeJson.addProperty("type",encodingPacket.symbolType().name());
-//                    LOG.info(CustomMarker.processed,new Gson().toJson(barcodeJson));
-//                }
-            Log.i(TAG, "encoding packet: source block number: " + encodingPacket.sourceBlockNumber() + " " + encodingPacket.encodingSymbolID() + " " + encodingPacket.symbolType() + " " + encodingPacket.numberOfSymbols());
-            if (isLastEncodingPacket(encodingPacket)) {
-                Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
-                setStopQueue();
-            }
-            dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
-        }catch (Exception e){
-            e.printStackTrace();
-            return;
-        }
-
+        Gson gson=new Gson();
+        JsonObject jsonRoot=new JsonObject();
+        JsonObject rsJsonRoot=new JsonObject();
         if(DUMP){
-            LOG.info(CustomMarker.processed,new Gson().toJson(barcodeJson));
+            rsJsonRoot.add("rsEncodedContent",gson.toJsonTree(frameData));
+        }
+        int[] rsDecodedContent=rsDecode(blackWhiteCodeML,frameData);
+        JsonObject raptorQJsonRoot=new JsonObject();
+        if(rsDecodedContent!=null) {
+            if(DUMP){
+                rsJsonRoot.add("rsDecodedContent",gson.toJsonTree(rsDecodedContent));
+            }
+            byte[] raptorQEncodedData = getRaptorQEncodedData(blackWhiteCodeML, rsDecodedContent);
+            EncodingPacket encodingPacket=null;
+            try {
+                encodingPacket = dataDecoder.parsePacket(raptorQEncodedData, true).value();
+            }catch (ParsingFailureException e){
+                e.printStackTrace();
+            }
+
+            if(encodingPacket!=null) {
+                raptorQJsonRoot.add("encodingPacket",Utils.encodingPacketToJson(encodingPacket));
+                if (isLastEncodingPacket(encodingPacket)) {
+                    Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
+                    setStopQueue();
+                }
+                dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
+            }
+        }
+        raptorQJsonRoot.add("decoder",Utils.sourceBlockDecoderToJson(dataDecoder.sourceBlock(0)));
+        jsonRoot.add("rs",rsJsonRoot);
+        jsonRoot.add("raptorQ",raptorQJsonRoot);
+        if(DUMP){
+            LOG.info(CustomMarker.processed,new Gson().toJson(jsonRoot));
         }
     }
 }

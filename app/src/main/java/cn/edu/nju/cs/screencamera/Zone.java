@@ -127,8 +127,9 @@ public class Zone {
         Gson gson=new Gson();
         JsonObject root= new JsonObject();
         root.addProperty("samplesPerUnit",block.getNumSamplePoints());
-        root.add("real",gson.toJsonTree(realSamplePoints));
-        root.add("content",gson.toJsonTree(content));
+        root.add("standardSampleCoordinates",gson.toJsonTree(standardSamplePoints));
+        root.add("realSampleCoordinates",gson.toJsonTree(realSamplePoints));
+        root.add("samplePixels",gson.toJsonTree(content));
         return root;
     }
 }

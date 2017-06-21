@@ -32,7 +32,7 @@ public class StreamDecode {
     private LinkedBlockingQueue<RawImage> queue;
     private String videoFilePath;
     protected String outputFilePath;
-    protected JsonObject jsonRoot;
+    protected JsonObject inputJsonRoot;
 
     public StreamDecode(){
         queue=new LinkedBlockingQueue<>(4);
@@ -55,7 +55,7 @@ public class StreamDecode {
     public void setJsonFile(String jsonFilePath){
         try {
             JsonParser parser=new JsonParser();
-            jsonRoot=(JsonObject) parser.parse(new FileReader(jsonFilePath));
+            inputJsonRoot =(JsonObject) parser.parse(new FileReader(jsonFilePath));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -114,7 +114,7 @@ public class StreamDecode {
     }
     public void start(){
         if(isJsonFile){
-            int[][] data=new Gson().fromJson(jsonRoot.get("values"),int[][].class);
+            int[][] data=new Gson().fromJson(inputJsonRoot.get("values"),int[][].class);
             stream(data);
         }else {
             if (isVideo) {
