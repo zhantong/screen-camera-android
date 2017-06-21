@@ -2,6 +2,14 @@ package cn.edu.nju.cs.screencamera;
 
 import android.util.Pair;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import net.fec.openrq.EncodingPacket;
+import net.fec.openrq.decoder.SourceBlockDecoder;
+import net.fec.openrq.parameters.FECParameters;
+import net.fec.openrq.parameters.SerializableParameters;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -290,5 +298,33 @@ public final class Utils {
             return false;
         }
         return true;
+    }
+    public static JsonObject fecParametersToJson(FECParameters parameters){
+        JsonObject root=new JsonObject();
+        root.addProperty("numDataBytes",parameters.dataLength());
+        root.addProperty("numSymbolBytes",parameters.symbolSize());
+        root.addProperty("numSourceBlocks",parameters.numberOfSourceBlocks());
+        root.addProperty("numSourceSymbols",parameters.totalSymbols());
+        root.addProperty("lengthInterleaver",parameters.interleaverLength());
+
+        SerializableParameters serializableParameters= parameters.asSerializable();
+        root.addProperty("commonOTI",serializableParameters.commonOTI());
+        root.addProperty("schemeSpecificOTI",serializableParameters.schemeSpecificOTI());
+        return root;
+    }
+    public static JsonObject encodingPacketToJson(EncodingPacket encodingPacket){
+        JsonObject root=new JsonObject();
+        root.addProperty("encodingSymbolID",encodingPacket.encodingSymbolID());
+        root.addProperty("fecPayloadID",encodingPacket.fecPayloadID());
+        root.addProperty("sourceBlockNumber",encodingPacket.sourceBlockNumber());
+        root.addProperty("symbolType",encodingPacket.symbolType().name());
+        return root;
+    }
+    public static JsonObject sourceBlockDecoderToJson(SourceBlockDecoder decoder){
+        Gson gson=new Gson();
+        JsonObject root=new JsonObject();
+        root.add("availableRepairSymbols",gson.toJsonTree(decoder.availableRepairSymbols()));
+        root.add("missingSourceSymbols",gson.toJsonTree(decoder.missingSourceSymbols()));
+        return root;
     }
 }
