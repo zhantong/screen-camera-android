@@ -1,5 +1,8 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import java.util.Arrays;
 
 /**
@@ -27,6 +30,8 @@ public class RawImage {
     private int[] thresholds;
 
     private int[] rectangle;
+
+    private int[] vertexes;
 
     private int offsetU;
     private int offsetV;
@@ -164,11 +169,13 @@ public class RawImage {
         rectangle=whiteRectangle;
         //int[]whiteRectangle=findWhiteRectangle1(null);
         //return findVertexesFromWhiteRectangle1(whiteRectangle);
-        return findVertexesFromWhiteRectangle2(whiteRectangle,channel);
         //return findVertexesFromWhiteRectangle3(whiteRectangle);
+        vertexes=findVertexesFromWhiteRectangle2(whiteRectangle,channel);
+        return vertexes;
     }
     private int[] genInitBorder(){
-        int init = 300;
+        //int init = 300;
+        int init = 400;
         int left = width / 2 - init;
         int right = width / 2 + init;
         int up = height / 2 - init;
@@ -627,5 +634,18 @@ public class RawImage {
     @Override
     public String toString() {
         return width+"x"+height+" color type "+colorType+" index "+index;
+    }
+    JsonObject toJson(){
+        Gson gson=new Gson();
+        JsonObject root=new JsonObject();
+        root.addProperty("index",index);
+        root.addProperty("width",width);
+        root.addProperty("height",height);
+        root.addProperty("colorType",colorType);
+        root.addProperty("timestamp",timestamp);
+        root.add("threshold",gson.toJsonTree(thresholds));
+        root.add("rectangle",gson.toJsonTree(rectangle));
+        root.add("vertexes",gson.toJsonTree(vertexes));
+        return root;
     }
 }
