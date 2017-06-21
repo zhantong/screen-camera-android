@@ -1,5 +1,9 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,4 +65,21 @@ public class BarcodeConfig {
     public DistrictConfig<Block> mainBlock=new DistrictConfig<Block>(new BlackWhiteBlock());
 
     public Map<String,Object> hints=new HashMap<>();
+
+    JsonElement toJson(){
+        Gson gson=new Gson();
+        JsonObject root=new JsonObject();
+        root.add("borderLength",borderLength.toJson());
+        root.add("paddingLength",paddingLength.toJson());
+        root.add("metaLength",metaLength.toJson());
+        root.addProperty("mainWidth",mainWidth);
+        root.addProperty("mainHeight",mainHeight);
+
+        Block block=mainBlock.get(District.MAIN);
+        root.addProperty("mainBlockName",block.getClass().getName());
+        root.addProperty("mainBlockBitsPerUnit",block.getBitsPerUnit());
+
+        root.add("hints",gson.toJsonTree(hints));
+        return root;
+    }
 }

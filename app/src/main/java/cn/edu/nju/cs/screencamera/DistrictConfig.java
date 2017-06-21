@@ -1,5 +1,8 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,5 +46,8 @@ public class DistrictConfig<T> {
     }
     public void set(int part,T t){
         configs.set(part,t);
+    }
+    JsonElement toJson(){
+        return new Gson().toJsonTree(configs);
     }
 }
