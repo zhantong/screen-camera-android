@@ -1,8 +1,5 @@
 package cn.edu.nju.cs.screencamera;
 
-import android.util.SparseIntArray;
-
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -47,13 +44,6 @@ public class BlackWhiteCodeML extends BlackWhiteCodeWithBar{
             isRandom=true;
         }
     }
-    public JsonObject getVaryBarToJson(){
-        Gson gson=new Gson();
-        JsonObject root=new JsonObject();
-        SparseIntArray[] varyBars=getVaryBar();
-        root.add("vary bar",gson.toJsonTree(varyBars));
-        return root;
-    }
     public boolean getIsRandom(){
         return isRandom;
     }
@@ -70,5 +60,12 @@ public class BlackWhiteCodeML extends BlackWhiteCodeWithBar{
             return Utils.grayCodeToInt(transmitFileLengthInBytes);
         }
         return super.getTransmitFileLengthInBytes(channel);
+    }
+
+    @Override
+    JsonObject toJson() {
+        JsonObject root= super.toJson();
+        root.addProperty("isRandom",isRandom);
+        return root;
     }
 }

@@ -1,5 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.google.gson.JsonObject;
+
 import java.util.BitSet;
 import java.util.Map;
 
@@ -168,5 +170,14 @@ public class BlackWhiteCode {
     }
     public int calcRaptorQSymbolSize(int raptorQPacketSize){
         return raptorQPacketSize-8;
+    }
+    JsonObject toJson(){
+        JsonObject root=mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
+        root.addProperty("referenceWhite",refWhite);
+        root.addProperty("referenceBlack",refBlack);
+        root.addProperty("expand",expand);
+        root.addProperty("binaryThreshold",binaryThreshold);
+        root.addProperty("overlapSituation",overlapSituation);
+        return root;
     }
 }

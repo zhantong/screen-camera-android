@@ -2,6 +2,10 @@ package cn.edu.nju.cs.screencamera;
 
 import android.util.SparseIntArray;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.util.Map;
 
 
@@ -88,5 +92,15 @@ public class BlackWhiteCodeWithBar extends BlackWhiteCode{
             }
         }
         return new int[][]{rawDataPrev,rawDataNext};
+    }
+    public JsonElement getVaryBarToJson(){
+        SparseIntArray[] varyBars=getVaryBar();
+        return new Gson().toJsonTree(varyBars);
+    }
+    @Override
+    JsonObject toJson() {
+        JsonObject root= super.toJson();
+        root.add("varyBars",getVaryBarToJson());
+        return root;
     }
 }
