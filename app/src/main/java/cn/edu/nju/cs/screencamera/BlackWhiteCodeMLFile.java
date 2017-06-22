@@ -36,11 +36,12 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
     @Override
     protected void beforeStream() {
         super.beforeStream();
-        JsonObject raptorQMeta=(JsonObject) inputJsonRoot.get("raptorQMeta");
+        JsonObject raptorQMeta=(JsonObject) inputJsonRoot.get("fecParameters");
         long commonOTI=raptorQMeta.get("commonOTI").getAsLong();
         int schemeSpecificOTI=raptorQMeta.get("schemeSpecificOTI").getAsInt();
         SerializableParameters serializableParameters=new SerializableParameters(commonOTI,schemeSpecificOTI);
         FECParameters parameters=FECParameters.parse(serializableParameters).value();
+        LOG.info(CustomMarker.fecParameters,new Gson().toJson(Utils.fecParametersToJson(parameters)));
         dataDecoder= OpenRQ.newDecoder(parameters,0);
     }
 

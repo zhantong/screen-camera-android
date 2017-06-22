@@ -50,6 +50,12 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
             return null;
         }
     }
+
+    @Override
+    protected void beforeStream() {
+        LOG.info(CustomMarker.barcodeConfig,new Gson().toJson(getBarcodeConfigInstance().toJson()));
+    }
+
     @Override
     protected void processFrame(RawImage frame) {
         Gson gson=new Gson();
@@ -95,7 +101,7 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
                         int numSourceBlock=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
                         FECParameters parameters=FECParameters.newParameters(transmitFileLengthInBytes, raptorQSymbolSize,numSourceBlock);
                         if(DUMP){
-                            LOG.info(CustomMarker.raptorQMeta,new Gson().toJson(Utils.fecParametersToJson(parameters)));
+                            LOG.info(CustomMarker.fecParameters,new Gson().toJson(Utils.fecParametersToJson(parameters)));
                         }
                     }
                 }

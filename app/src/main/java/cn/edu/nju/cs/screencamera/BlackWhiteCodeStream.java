@@ -44,6 +44,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
     @Override
     protected void beforeStream() {
         rsEcSize=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_SIZE_RS_ERROR_CORRECTION).toString());
+        LOG.info(CustomMarker.barcodeConfig,new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
     MediateBarcode getMediateBarcode(RawImage rawImage){
         try {
@@ -108,7 +109,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
                 if(dataDecoder!=null){
                     FECParameters parameters=dataDecoder.fecParameters();
                     if(DUMP){
-                        LOG.info(CustomMarker.raptorQMeta,new Gson().toJson(Utils.fecParametersToJson(parameters)));
+                        LOG.info(CustomMarker.fecParameters,new Gson().toJson(Utils.fecParametersToJson(parameters)));
                     }
                 }
             }
@@ -135,6 +136,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
                         }
                         if(encodingPacket!=null) {
                             encodingPacketJsonArray.add(Utils.encodingPacketToJson(encodingPacket));
+                            System.out.println(Utils.encodingPacketToJson(encodingPacket));
                             if (isLastEncodingPacket(encodingPacket)) {
                                 Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
                                 setStopQueue();
@@ -172,7 +174,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
     void writeRaptorQDataFile(ArrayDataDecoder decoder,String filePath){
         byte[] out = decoder.dataArray();
         String sha1 = FileVerification.bytesToSHA1(out);
-        Log.d(TAG, "file SHA-1 verification: " + sha1);
+        LOG.info(CustomMarker.sha1,sha1);
         if(Utils.bytesToFile(out, filePath)){
             Log.i(TAG,"successfully write to "+filePath);
         }else{
