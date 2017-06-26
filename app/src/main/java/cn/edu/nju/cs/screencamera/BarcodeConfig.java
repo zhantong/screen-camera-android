@@ -66,6 +66,9 @@ public class BarcodeConfig {
 
     public Map<String,Object> hints=new HashMap<>();
 
+    public int fps=0;
+    public int distance=0;
+
     JsonElement toJson(){
         Gson gson=new Gson();
         JsonObject root=new JsonObject();
@@ -80,6 +83,9 @@ public class BarcodeConfig {
         root.addProperty("mainBlockBitsPerUnit",block.getBitsPerUnit());
 
         root.add("hints",gson.toJsonTree(hints));
+
+        root.addProperty("fps",fps);
+        root.addProperty("distance",distance);
         return root;
     }
 }
