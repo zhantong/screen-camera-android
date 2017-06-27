@@ -3,6 +3,7 @@ package cn.edu.nju.cs.screencamera;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.fec.openrq.EncodingPacket;
@@ -46,14 +47,17 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
     }
 
     @Override
-    protected void processFrame(int[] frameData) {
+    protected void processFrame(JsonElement frameData) {
         Gson gson=new Gson();
+        int[] rsEncodedContent=gson.fromJson(((JsonObject)frameData).get("value"),int[].class);
+        int index=((JsonObject)frameData).get("index").getAsInt();
         JsonObject jsonRoot=new JsonObject();
+        jsonRoot.addProperty("index",index);
         JsonObject rsJsonRoot=new JsonObject();
         if(DUMP){
-            rsJsonRoot.add("rsEncodedContent",gson.toJsonTree(frameData));
+            rsJsonRoot.add("rsEncodedContent",gson.toJsonTree(rsEncodedContent));
         }
-        int[] rsDecodedContent=rsDecode(blackWhiteCodeML,frameData);
+        int[] rsDecodedContent=rsDecode(blackWhiteCodeML,rsEncodedContent);
         JsonObject raptorQJsonRoot=new JsonObject();
         if(rsDecodedContent!=null) {
             if(DUMP){

@@ -4,6 +4,10 @@ package cn.edu.nju.cs.screencamera;
 import android.util.Log;
 
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -59,9 +63,12 @@ public class RDCodeMLFile extends StreamDecode{
     }
 
     @Override
-    protected void processFrame(int[] frameData) {
+    protected void processFrame(JsonElement frameData) {
+        Gson gson=new Gson();
+        int[] rsEncodedContent=gson.fromJson(((JsonObject)frameData).get("value"),int[].class);
+        int index=((JsonObject)frameData).get("index").getAsInt();
         countFrames++;
-        frameData=Utils.changeNumBitsPerInt(frameData,config.mainBlock.get(District.MAIN).getBitsPerUnit(),8);
+        rsEncodedContent=Utils.changeNumBitsPerInt(rsEncodedContent,config.mainBlock.get(District.MAIN).getBitsPerUnit(),8);
         int[][] frame=new int[numRegions][];
         for(int indexRegionOffset=0,posOffset=0;indexRegionOffset<numRegions;indexRegionOffset+=config.numRegionHorizon,posOffset+=numBytesPerRegion*config.numRegionHorizon){
             for(int indexRegionInLine=0;indexRegionInLine<config.numRegionHorizon;indexRegionInLine++){
@@ -70,7 +77,7 @@ public class RDCodeMLFile extends StreamDecode{
                 int[] regionData=new int[numBytesPerRegion];
                 int regionDataPos=0;
                 for(int line=0;line<numBytesPerRegion;line+=numBytesPerRegionLine,pos+=numBytesPerRegionLine*config.numRegionHorizon){
-                    System.arraycopy(frameData,pos,regionData,regionDataPos,numBytesPerRegionLine);
+                    System.arraycopy(rsEncodedContent,pos,regionData,regionDataPos,numBytesPerRegionLine);
                     regionDataPos+=numBytesPerRegionLine;
                 }
                 try {

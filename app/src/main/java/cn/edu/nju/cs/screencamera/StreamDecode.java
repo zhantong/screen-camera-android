@@ -5,7 +5,8 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.google.common.io.Files;
-import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -94,9 +95,9 @@ public class StreamDecode {
         }
         afterStream();
     }
-    public void stream(int[][] framesData){
+    public void stream(JsonArray framesData){
         beforeStream();
-        for(int[] frameData:framesData){
+        for(JsonElement frameData:framesData){
             processFrame(frameData);
             if(stopQueue){
                 break;
@@ -108,13 +109,13 @@ public class StreamDecode {
     }
     protected void processFrame(RawImage frame){
     }
-    protected void processFrame(int[] frameData){
+    protected void processFrame(JsonElement frameData){
     }
     protected void afterStream(){
     }
     public void start(){
         if(isJsonFile){
-            int[][] data=new Gson().fromJson(inputJsonRoot.get("values"),int[][].class);
+            JsonArray data=inputJsonRoot.getAsJsonArray("values");
             stream(data);
         }else {
             if (isVideo) {
