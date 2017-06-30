@@ -16,6 +16,9 @@ public class BlackWhiteCodeMLConfig extends BarcodeConfig{
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
 
+        fps=22;
+        distance=50;
+
         hints.put(BlackWhiteCodeML.KEY_SIZE_RS_ERROR_CORRECTION,12);
         hints.put(BlackWhiteCodeML.KEY_LEVEL_RS_ERROR_CORRECTION,0.1);
         hints.put(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS,1);

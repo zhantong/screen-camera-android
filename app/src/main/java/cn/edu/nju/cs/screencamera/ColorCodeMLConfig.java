@@ -16,6 +16,9 @@ public class ColorCodeMLConfig extends BlackWhiteCodeMLConfig {
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new ColorBlock(2));
 
+        fps=22;
+        distance=50;
+
         hints.put(ColorCodeML.KEY_SIZE_RS_ERROR_CORRECTION,12);
         hints.put(ColorCodeML.KEY_LEVEL_RS_ERROR_CORRECTION,0.1);
         hints.put(ColorCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS,1);
