@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion = 23
-    buildToolsVersion = "25.0.3"
+    compileSdkVersion = 27
+    buildToolsVersion = "27.0.0"
 
     defaultConfig {
         applicationId = "cn.edu.nju.cs.screencamera"
         minSdkVersion 21
-        targetSdkVersion 23
+        targetSdkVersion 27
         versionCode = 1
         versionName = "1.0"
 
