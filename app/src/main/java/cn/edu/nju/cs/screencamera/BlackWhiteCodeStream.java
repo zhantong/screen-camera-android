@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.fec.openrq.ArrayDataDecoder;
@@ -25,7 +26,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  * Created by zhantong on 2017/6/18.
  */
 
-public class BlackWhiteCodeStream extends StreamDecode {
+public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     private static final String TAG="BlackWhiteCodeStream";
     private static final boolean DUMP=true;
     ArrayDataDecoder dataDecoder=null;
@@ -42,7 +43,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
         return new BlackWhiteCodeConfig();
     }
     @Override
-    protected void beforeStream() {
+    public void beforeStream(StreamDecode streamDecode) {
         rsEcSize=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_SIZE_RS_ERROR_CORRECTION).toString());
         LOG.info(CustomMarker.barcodeConfig,new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
@@ -84,7 +85,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
         return Utils.intArrayToByteArray(rSDecodedData,rSDecodedData.length,rsEcSize, blackWhiteCode.calcRaptorQPacketSize());
     }
     @Override
-    protected void processFrame(RawImage frame) {
+    public void processFrame(StreamDecode streamDecode, RawImage frame) {
         Gson gson=new Gson();
         JsonObject jsonRoot=new JsonObject();
         if(frame.getPixels()==null){
@@ -139,7 +140,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
                             System.out.println(Utils.encodingPacketToJson(encodingPacket));
                             if (isLastEncodingPacket(encodingPacket)) {
                                 Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
-                                setStopQueue();
+                                streamDecode.setStopQueue();
                             }
                             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
                         }
@@ -159,10 +160,15 @@ public class BlackWhiteCodeStream extends StreamDecode {
     }
 
     @Override
-    protected void afterStream() {
+    public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
+
+    }
+
+    @Override
+    public void afterStream(StreamDecode streamDecode) {
         if(dataDecoder!=null&&dataDecoder.isDataDecoded()){
             Log.i(TAG,"RaptorQ decode success");
-            writeRaptorQDataFile(dataDecoder,outputFilePath);
+            writeRaptorQDataFile(dataDecoder, streamDecode.outputFilePath);
         }
     }
     boolean isLastEncodingPacket(EncodingPacket encodingPacket){

@@ -48,7 +48,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream{
         blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
     }
     @Override
-    protected void processFrame(RawImage frame) {
+    public void processFrame(StreamDecode streamDecode, RawImage frame) {
         JsonObject barcodeJson=new JsonObject();
         if(frame.getPixels()==null){
             return;
@@ -65,6 +65,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream{
         ShiftCodeML shiftCodeML=getBarcodeInstance(mediateBarcode);
         sampleContent(shiftCodeML);
         int overlapSituation=shiftCodeML.getOverlapSituation();
+
         if(DUMP) {
             JsonObject mainJson=shiftCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
             barcodeJson.add("barcode",mainJson);
@@ -141,5 +142,6 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream{
         if(DUMP){
             LOG.info(CustomMarker.processed,new Gson().toJson(barcodeJson));
         }
+
     }
 }

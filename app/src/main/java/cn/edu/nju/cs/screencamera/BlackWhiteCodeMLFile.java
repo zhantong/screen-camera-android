@@ -35,9 +35,9 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
         return new BlackWhiteCodeMLConfig();
     }
     @Override
-    protected void beforeStream() {
-        super.beforeStream();
-        JsonObject raptorQMeta=(JsonObject) inputJsonRoot.get("fecParameters");
+    public void beforeStream(StreamDecode streamDecode) {
+        super.beforeStream(streamDecode);
+        JsonObject raptorQMeta=(JsonObject) streamDecode.inputJsonRoot.get("fecParameters");
         long commonOTI=raptorQMeta.get("commonOTI").getAsLong();
         int schemeSpecificOTI=raptorQMeta.get("schemeSpecificOTI").getAsInt();
         SerializableParameters serializableParameters=new SerializableParameters(commonOTI,schemeSpecificOTI);
@@ -47,7 +47,7 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
     }
 
     @Override
-    protected void processFrame(JsonElement frameData) {
+    public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
         Gson gson=new Gson();
         int[] rsEncodedContent=gson.fromJson(((JsonObject)frameData).get("value"),int[].class);
         int index=((JsonObject)frameData).get("index").getAsInt();
@@ -75,7 +75,7 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream{
                 raptorQJsonRoot.add("encodingPacket",Utils.encodingPacketToJson(encodingPacket));
                 if (isLastEncodingPacket(encodingPacket)) {
                     Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
-                    setStopQueue();
+                    streamDecode.setStopQueue();
                 }
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }

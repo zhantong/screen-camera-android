@@ -25,7 +25,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  * Created by zhantong on 2017/6/4.
  */
 
-public class RDCodeMLFile extends StreamDecode{
+public class RDCodeMLFile implements StreamDecode.CallBack{
     private static final String TAG="ShiftCodeMLFile";
     RDCodeMLConfig config=new RDCodeMLConfig();
     int countAllRegions=0;
@@ -45,7 +45,7 @@ public class RDCodeMLFile extends StreamDecode{
     }
 
     @Override
-    protected void beforeStream() {
+    public void beforeStream(StreamDecode streamDecod) {
         numRSBytes=6;
         int numColors=4;
         int numRegionBytes=(config.regionWidth*config.regionHeight)/(8/(int)Math.sqrt(numColors));
@@ -63,7 +63,12 @@ public class RDCodeMLFile extends StreamDecode{
     }
 
     @Override
-    protected void processFrame(JsonElement frameData) {
+    public void processFrame(StreamDecode streamDecode, RawImage frame) {
+
+    }
+
+    @Override
+    public void processFrame(StreamDecode streamDecode,JsonElement frameData) {
         Gson gson=new Gson();
         int[] rsEncodedContent=gson.fromJson(((JsonObject)frameData).get("value"),int[].class);
         int index=((JsonObject)frameData).get("index").getAsInt();
@@ -155,7 +160,7 @@ public class RDCodeMLFile extends StreamDecode{
     }
 
     @Override
-    protected void afterStream() {
+    public void afterStream(StreamDecode streamDecode) {
         if(numAllRegions==countAllRegions) {
             byte[] out=new byte[numFileBytes];
             int outPos=0;
@@ -179,10 +184,10 @@ public class RDCodeMLFile extends StreamDecode{
             }
             String sha1 = FileVerification.bytesToSHA1(out);
             Log.d(TAG, "file SHA-1 verification: " + sha1);
-            if(Utils.bytesToFile(out, outputFilePath)){
-                Log.i(TAG,"successfully write to "+outputFilePath);
+            if(Utils.bytesToFile(out, streamDecode.outputFilePath)){
+                Log.i(TAG,"successfully write to "+streamDecode.outputFilePath);
             }else{
-                Log.i(TAG,"failed to write to "+outputFilePath);
+                Log.i(TAG,"failed to write to "+streamDecode.outputFilePath);
             }
         }else{
             Log.i(TAG,"file not complete");

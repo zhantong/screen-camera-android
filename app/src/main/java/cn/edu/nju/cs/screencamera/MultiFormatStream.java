@@ -6,59 +6,60 @@ package cn.edu.nju.cs.screencamera;
  */
 
 public class MultiFormatStream {
-    public static StreamDecode getStreamDecode(BarcodeFormat barcodeFormat){
-        return getStreamDecode(barcodeFormat,false);
+    public static StreamDecode.CallBack getCallBack(BarcodeFormat barcodeFormat) {
+        return getCallBack(barcodeFormat, false);
     }
-    public static StreamDecode getStreamDecode(BarcodeFormat barcodeFormat,boolean isFile){
-        StreamDecode streamDecode;
-        if(isFile){
-            switch (barcodeFormat){
+
+    public static StreamDecode.CallBack getCallBack(BarcodeFormat barcodeFormat, boolean isFile) {
+        StreamDecode.CallBack callBack;
+        if (isFile) {
+            switch (barcodeFormat) {
                 case BLACK_WHITE_CODE_ML:
-                    streamDecode=new BlackWhiteCodeMLFile();
+                    callBack = new BlackWhiteCodeMLFile();
                     break;
                 case COLOR_CODE_ML:
-                    streamDecode=new ColorCodeMLFile();
+                    callBack = new ColorCodeMLFile();
                     break;
                 case RD_CODE_ML:
-                    streamDecode=new RDCodeMLFile();
+                    callBack = new RDCodeMLFile();
                     break;
                 default:
                     throw new IllegalArgumentException();
             }
-        }else {
+        } else {
             switch (barcodeFormat) {
                 case SHIFT_CODE:
-                    streamDecode = new ShiftCodeStream();
+                    callBack = new ShiftCodeStream();
                     break;
                 case SHIFT_CODE_COLOR:
-                    streamDecode = new ShiftCodeColorStream();
+                    callBack = new ShiftCodeColorStream();
                     break;
 
                 case SHIFT_CODE_ML:
-                    streamDecode = new ShiftCodeMLStream();
+                    callBack = new ShiftCodeMLStream();
                     break;
                 case SHIFT_CODE_COLOR_ML:
-                    streamDecode = new ShiftCodeColorMLStream();
+                    callBack = new ShiftCodeColorMLStream();
                     break;
                 case BLACK_WHITE_CODE_ML:
-                    streamDecode = new BlackWhiteCodeMLStream();
+                    callBack = new BlackWhiteCodeMLStream();
                     break;
                 case COLOR_CODE_ML:
-                    streamDecode = new ColorCodeMLStream();
+                    callBack = new ColorCodeMLStream();
                     break;
                 case BLACK_WHITE_CODE_WITH_BAR:
-                    streamDecode = new BlackWhiteCodeWithBarStream();
+                    callBack = new BlackWhiteCodeWithBarStream();
                     break;
                 case RD_CODE_ML:
-                    streamDecode = new RDCodeMLStream();
+                    callBack = new RDCodeMLStream();
                     break;
                 case BLACK_WHITE_CODE:
-                    streamDecode = new BlackWhiteCodeStream();
+                    callBack = new BlackWhiteCodeStream();
                     break;
                 default:
                     throw new IllegalArgumentException();
             }
         }
-        return streamDecode;
+        return callBack;
     }
 }

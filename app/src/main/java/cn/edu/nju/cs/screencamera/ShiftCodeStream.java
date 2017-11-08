@@ -32,7 +32,8 @@ public class ShiftCodeStream extends BlackWhiteCodeStream{
     ShiftCode getShiftCode(MediateBarcode mediateBarcode){
         return new ShiftCode(mediateBarcode);
     }
-    public void processFrame(RawImage frame) {
+    @Override
+    public void processFrame(StreamDecode streamDecode, RawImage frame) {
         //Utils.dumpFile(Environment.getExternalStorageDirectory().toString()+"/"+frame.getIndex()+".yuv",frame.getPixels());
         Log.i(TAG,frame.toString());
 
@@ -41,8 +42,8 @@ public class ShiftCodeStream extends BlackWhiteCodeStream{
             mediateBarcode = new MediateBarcode(frame,getBarcodeConfigInstance(),null,RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             Log.i(TAG,"barcode not found: "+e.toString());
-            if(getIsCamera()){
-                focusCamera();
+            if(streamDecode.getIsCamera()){
+                streamDecode.focusCamera();
             }
             return;
         }
@@ -60,8 +61,8 @@ public class ShiftCodeStream extends BlackWhiteCodeStream{
                 dataDecoder= OpenRQ.newDecoder(parameters,0);
             } catch (CRCCheckException e) {
                 e.printStackTrace();
-                if(getIsCamera()){
-                    focusCamera();
+                if(streamDecode.getIsCamera()){
+                    streamDecode.focusCamera();
                 }
                 return;
             }
@@ -102,7 +103,7 @@ public class ShiftCodeStream extends BlackWhiteCodeStream{
             Log.i(TAG,"encoding packet: source block number: "+encodingPacket.sourceBlockNumber()+" "+encodingPacket.encodingSymbolID()+" "+encodingPacket.symbolType()+" "+encodingPacket.numberOfSymbols());
             if(isLastEncodingPacket(encodingPacket)){
                 Log.i(TAG,"last encoding packet: "+encodingPacket.encodingSymbolID());
-                setStopQueue();
+                streamDecode.setStopQueue();
             }
             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
         }

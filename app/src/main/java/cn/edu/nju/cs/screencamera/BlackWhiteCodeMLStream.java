@@ -3,6 +3,7 @@ package cn.edu.nju.cs.screencamera;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.fec.openrq.parameters.FECParameters;
@@ -18,7 +19,7 @@ import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
  * Created by zhantong on 2017/5/11.
  */
 
-public class BlackWhiteCodeMLStream extends StreamDecode {
+public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
     private static final String TAG="BlackWhiteCodeMLStream";
     private static final boolean DUMP=true;
     int transmitFileLengthInBytes =-1;
@@ -52,12 +53,12 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
     }
 
     @Override
-    protected void beforeStream() {
+    public void beforeStream(StreamDecode streamDecode) {
         LOG.info(CustomMarker.barcodeConfig,new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
 
     @Override
-    protected void processFrame(RawImage frame) {
+    public void processFrame(StreamDecode streamDecode, RawImage frame) {
         Gson gson=new Gson();
         JsonObject jsonRoot=new JsonObject();
         if(frame.getPixels()==null){
@@ -110,5 +111,15 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
         if(DUMP){
             LOG.info(CustomMarker.processed,new Gson().toJson(jsonRoot));
         }
+    }
+
+    @Override
+    public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
+
+    }
+
+    @Override
+    public void afterStream(StreamDecode streamDecode) {
+
     }
 }

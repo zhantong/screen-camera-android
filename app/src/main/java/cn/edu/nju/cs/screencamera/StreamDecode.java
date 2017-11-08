@@ -34,9 +34,18 @@ public class StreamDecode {
     private String videoFilePath;
     protected String outputFilePath;
     protected JsonObject inputJsonRoot;
-
+    CallBack callBack;
+    interface CallBack{
+        void beforeStream(StreamDecode streamDecode);
+        void processFrame(StreamDecode streamDecode,RawImage frame);
+        void processFrame(StreamDecode streamDecode,JsonElement frameData);
+        void afterStream(StreamDecode streamDecode);
+    }
     public StreamDecode(){
         queue=new LinkedBlockingQueue<>(4);
+    }
+    void setCallBack(CallBack callBack){
+        this.callBack=callBack;
     }
     public void setVideo(String videoFilePath){
         videoToFrames = new VideoToFrames();
@@ -78,9 +87,13 @@ public class StreamDecode {
         return isCamera;
     }
     public void stream(LinkedBlockingQueue<RawImage> frames) throws InterruptedException{
-        beforeStream();
+        if(callBack!=null){
+            callBack.beforeStream(this);
+        }
         for(RawImage frame;((frame=frames.poll(QUEUE_TIME_OUT, TimeUnit.SECONDS))!=null)&&(frame.getPixels()!=null);){
-            processFrame(frame);
+            if(callBack!=null){
+                callBack.processFrame(this,frame);
+            }
             if(stopQueue){
                 if(isVideo){
                     stopVideoDecoding();
@@ -93,26 +106,27 @@ public class StreamDecode {
                 queue.add(rawImage);
             }
         }
-        afterStream();
+        if(callBack!=null){
+            callBack.afterStream(this);
+        }
     }
     public void stream(JsonArray framesData){
-        beforeStream();
+        if(callBack!=null){
+            callBack.beforeStream(this);
+        }
         for(JsonElement frameData:framesData){
-            processFrame(frameData);
+            if(callBack!=null){
+                callBack.processFrame(this,frameData);
+            }
             if(stopQueue){
                 break;
             }
         }
-        afterStream();
+        if(callBack!=null){
+            callBack.afterStream(this);
+        }
     }
-    protected void beforeStream(){
-    }
-    protected void processFrame(RawImage frame){
-    }
-    protected void processFrame(JsonElement frameData){
-    }
-    protected void afterStream(){
-    }
+
     public void start(){
         if(isJsonFile){
             JsonArray data=inputJsonRoot.getAsJsonArray("values");

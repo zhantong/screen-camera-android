@@ -299,7 +299,9 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat);
+                StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat);
+                StreamDecode streamDecode=new StreamDecode();
+                streamDecode.setCallBack(callBack);
                 streamDecode.setVideo(videoFilePath);
                 streamDecode.setOutputFilePath(outputFilePath);
                 streamDecode.start();
@@ -321,7 +323,9 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat);
+                StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat);
+                StreamDecode streamDecode=new StreamDecode();
+                streamDecode.setCallBack(callBack);
                 streamDecode.setImage(imageFilePath);
                 streamDecode.start();
             }
@@ -339,7 +343,9 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat,true);
+                StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat,true);
+                StreamDecode streamDecode=new StreamDecode();
+                streamDecode.setCallBack(callBack);
                 if(inputFilePath.endsWith(".json")){
                     streamDecode.setJsonFile(inputFilePath);
                 }else{
@@ -426,7 +432,9 @@ public class MainActivity extends Activity{
                 Thread worker = new Thread() {
                     @Override
                     public void run() {
-                        StreamDecode streamDecode=MultiFormatStream.getStreamDecode(barcodeFormat);
+                        StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat);
+                        StreamDecode streamDecode=new StreamDecode();
+                        streamDecode.setCallBack(callBack);
                         streamDecode.setCamera(fragment.mPreview);
                         streamDecode.setOutputFilePath(outputFilePath);
                         streamDecode.start();
