@@ -5,8 +5,10 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import net.fec.openrq.ArrayDataDecoder;
 import net.fec.openrq.OpenRQ;
 import net.fec.openrq.parameters.FECParameters;
 import net.fec.openrq.parameters.SerializableParameters;
@@ -49,6 +51,8 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream{
     }
     @Override
     public void processFrame(StreamDecode streamDecode, RawImage frame) {
+        int raptorQSymbolSize=-1;
+        ArrayDataDecoder dataDecoder=null;
         JsonObject barcodeJson=new JsonObject();
         if(frame.getPixels()==null){
             return;
@@ -70,7 +74,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream{
             JsonObject mainJson=shiftCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN).toJson();
             barcodeJson.add("barcode",mainJson);
             barcodeJson.addProperty("index",shiftCodeML.mediateBarcode.rawImage.getIndex());
-            JsonObject varyBarJson=shiftCodeML.getVaryBarToJson();
+            JsonElement varyBarJson=shiftCodeML.getVaryBarToJson();
             barcodeJson.add("varyBar",varyBarJson);
             barcodeJson.addProperty("overlapSituation",overlapSituation);
             barcodeJson.addProperty("isRandom",shiftCodeML.getIsRandom());
