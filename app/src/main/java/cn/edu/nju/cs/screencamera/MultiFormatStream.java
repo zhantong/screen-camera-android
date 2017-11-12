@@ -1,6 +1,11 @@
 package cn.edu.nju.cs.screencamera;
 
 
+import com.j256.simplemagic.ContentInfo;
+import com.j256.simplemagic.ContentInfoUtil;
+
+import java.io.IOException;
+
 /**
  * Created by zhantong on 2016/12/17.
  */
@@ -61,5 +66,48 @@ public class MultiFormatStream {
             }
         }
         return callBack;
+    }
+
+    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, String inputFilePath, String outputFilePath) {
+        ContentInfoUtil util = new ContentInfoUtil();
+        ContentInfo info = null;
+        try {
+            info = util.findMatch(inputFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (info == null) {
+            return null;
+        }
+        StreamDecode streamDecode = new StreamDecode();
+        StreamDecode.CallBack callBack;
+        String mimeType = info.getMimeType();
+        System.out.println(mimeType);
+        if (mimeType.startsWith("video")) {
+            streamDecode.setVideo(inputFilePath);
+            callBack = MultiFormatStream.getCallBack(barcodeFormat);
+        } else if (mimeType.startsWith("image")) {
+            streamDecode.setImage(inputFilePath);
+            callBack = MultiFormatStream.getCallBack(barcodeFormat);
+        } else if (mimeType.startsWith("application/json")) {
+            streamDecode.setJsonFile(inputFilePath);
+            callBack = MultiFormatStream.getCallBack(barcodeFormat, true);
+        } else {
+            throw new IllegalArgumentException();
+        }
+        streamDecode.setCallBack(callBack);
+        if (outputFilePath != null) {
+            streamDecode.setOutputFilePath(outputFilePath);
+        }
+        return streamDecode;
+    }
+
+    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, CameraPreview cameraPreview, String outputFilePath) {
+        StreamDecode streamDecode = new StreamDecode();
+        StreamDecode.CallBack callBack = MultiFormatStream.getCallBack(barcodeFormat);
+        streamDecode.setCallBack(callBack);
+        streamDecode.setCamera(cameraPreview);
+        streamDecode.setOutputFilePath(outputFilePath);
+        return streamDecode;
     }
 }

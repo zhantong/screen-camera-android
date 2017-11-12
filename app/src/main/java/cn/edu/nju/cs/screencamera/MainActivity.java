@@ -299,11 +299,7 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat);
-                StreamDecode streamDecode=new StreamDecode();
-                streamDecode.setCallBack(callBack);
-                streamDecode.setVideo(videoFilePath);
-                streamDecode.setOutputFilePath(outputFilePath);
+                StreamDecode streamDecode=MultiFormatStream.getInstance(barcodeFormat,videoFilePath,outputFilePath);
                 streamDecode.start();
             }
         };
@@ -323,10 +319,7 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat);
-                StreamDecode streamDecode=new StreamDecode();
-                streamDecode.setCallBack(callBack);
-                streamDecode.setImage(imageFilePath);
+                StreamDecode streamDecode=MultiFormatStream.getInstance(barcodeFormat,imageFilePath,null);
                 streamDecode.start();
             }
         };
@@ -343,15 +336,7 @@ public class MainActivity extends Activity{
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat,true);
-                StreamDecode streamDecode=new StreamDecode();
-                streamDecode.setCallBack(callBack);
-                if(inputFilePath.endsWith(".json")){
-                    streamDecode.setJsonFile(inputFilePath);
-                }else{
-                    throw new IllegalArgumentException();
-                }
-                streamDecode.setOutputFilePath(outputFilePath);
+                StreamDecode streamDecode=MultiFormatStream.getInstance(barcodeFormat,inputFilePath,outputFilePath);
                 streamDecode.start();
             }
         };
@@ -432,11 +417,7 @@ public class MainActivity extends Activity{
                 Thread worker = new Thread() {
                     @Override
                     public void run() {
-                        StreamDecode.CallBack callBack=MultiFormatStream.getCallBack(barcodeFormat);
-                        StreamDecode streamDecode=new StreamDecode();
-                        streamDecode.setCallBack(callBack);
-                        streamDecode.setCamera(fragment.mPreview);
-                        streamDecode.setOutputFilePath(outputFilePath);
+                        StreamDecode streamDecode=MultiFormatStream.getInstance(barcodeFormat,fragment.mPreview,outputFilePath);
                         streamDecode.start();
                         getFragmentManager().popBackStack();
                     }
