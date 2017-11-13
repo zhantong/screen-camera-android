@@ -1,194 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:layout_margin="20dp">
+    android:layout_margin="20dp"
+    android:orientation="horizontal">
+
     <FrameLayout
         android:id="@+id/left_part"
-        android:layout_weight="1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <TextView
                     android:id="@+id/text_barcode_format"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:text="@string/barcode_type"/>
+                    android:text="@string/barcode_type" />
+
                 <Spinner
+                    android:id="@+id/barcode_format"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/text_barcode_format"
-                    android:id="@+id/barcode_format"></Spinner>
+                    android:layout_below="@+id/text_barcode_format"></Spinner>
             </RelativeLayout>
-            <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/text_file_name_created"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:text="@string/file_name_created"/>
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/text_file_name_created"
-                android:layout_toLeftOf="@+id/button_file_name_created"
-                android:id="@+id/file_name_created"/>
-            <ToggleButton
-                android:id="@+id/toggle_file_name_created"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textOn="@string/auto"
-                android:textOff="@string/manual"
-                android:layout_toLeftOf="@id/button_file_name_created"/>
-            <Button
-                android:id="@+id/button_file_name_created"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/open_file"
-                android:onClick="openFile"
-                android:layout_alignParentRight="true"
-                />
-            </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/text_file_name_created"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:text="@string/file_name_created" />
+
+                <EditText
+                    android:id="@+id/file_name_created"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/text_file_name_created"
+                    android:layout_toLeftOf="@+id/button_file_name_created" />
+
+                <ToggleButton
+                    android:id="@+id/toggle_file_name_created"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@id/button_file_name_created"
+                    android:textOff="@string/manual"
+                    android:textOn="@string/auto" />
+
+                <Button
+                    android:id="@+id/button_file_name_created"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:onClick="openFile"
+                    android:text="@string/open_file" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
                 <TextView
                     android:id="@+id/text_logging"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:text="@string/logging"/>
+                    android:text="@string/logging" />
+
                 <EditText
+                    android:id="@+id/file_name_logging"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/text_logging"
-                    android:layout_toLeftOf="@+id/toggle_file_name_logging_auto"
-                    android:id="@+id/file_name_logging"/>
+                    android:layout_toLeftOf="@+id/toggle_file_name_logging_auto" />
+
                 <ToggleButton
                     android:id="@+id/toggle_file_name_logging_auto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textOn="@string/auto"
+                    android:layout_toLeftOf="@+id/switch_enable_logging"
                     android:textOff="@string/manual"
-                    android:layout_toLeftOf="@+id/switch_enable_logging"/>
+                    android:textOn="@string/auto" />
+
                 <Switch
                     android:id="@+id/switch_enable_logging"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true" />
             </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <TextView
                     android:id="@+id/text_file_path_input"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:text="@string/image_or_video_file_path"/>
+                    android:text="@string/image_or_video_file_path" />
+
                 <EditText
+                    android:id="@+id/file_path_input"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/text_file_path_input"
-                    android:layout_toLeftOf="@+id/button_file_path_input"
-                    android:id="@+id/file_path_input"/>
+                    android:layout_toLeftOf="@+id/button_file_path_input" />
+
                 <Button
                     android:id="@+id/button_file_path_input"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/choose_image_or_video_file"
                     android:layout_alignParentRight="true"
-                    />
+                    android:text="@string/choose_image_or_video_file" />
             </RelativeLayout>
+
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <TextView
                     android:id="@+id/text_file_path_truth"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentLeft="true"
-                    android:text="@string/file_path_truth"/>
+                    android:text="@string/file_path_truth" />
+
                 <EditText
+                    android:id="@+id/file_path_truth"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/text_file_path_truth"
                     android:layout_toLeftOf="@+id/button_file_path_truth"
-                    android:id="@+id/file_path_truth"
-                    android:hint="@string/file_path_truth_hint"/>
+                    android:hint="@string/file_path_truth_hint" />
+
                 <Button
                     android:id="@+id/button_file_path_truth"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/choose_file"
                     android:layout_alignParentRight="true"
-                    />
+                    android:text="@string/choose_file" />
             </RelativeLayout>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
+
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/process_video"
+                    android:layout_weight="1"
                     android:onClick="processVideo"
-                    android:layout_weight="1"/>
+                    android:text="@string/process_video" />
+
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/open_camera"
+                    android:layout_weight="1"
                     android:onClick="processCamera"
-                    android:layout_weight="1"/>
+                    android:text="@string/open_camera" />
+
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/process_image"
+                    android:layout_weight="1"
                     android:onClick="processImg"
-                    android:layout_weight="1"/>
+                    android:text="@string/process_image" />
+
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/process_file"
+                    android:layout_weight="1"
                     android:onClick="processFile"
-                    android:layout_weight="1"/>
+                    android:text="@string/process_file" />
+
                 <Button
+                    android:id="@+id/save_frames"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/save_frames"
-                    android:id="@+id/save_frames"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1"
+                    android:text="@string/save_frames" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>
+
     <LinearLayout
-        android:layout_weight="2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_weight="2"
         android:orientation="vertical">
+
         <TextView
             android:id="@+id/debug_view"
-            android:layout_weight="1"
-            android:scrollbars = "vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scrollbars="vertical" />
 
         <TextView
             android:id="@+id/info_view"
-            android:layout_weight="1"
-            android:scrollbars = "vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:scrollbars="vertical" />
     </LinearLayout>
 </LinearLayout>

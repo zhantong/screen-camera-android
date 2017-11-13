@@ -16,14 +16,18 @@ import android.widget.FrameLayout;
  */
 public class CameraPreviewFragment extends Fragment {
     private OnStartListener mCallback;
-    private boolean onWorking=false;
-    public interface OnStartListener{
+    private boolean onWorking = false;
+
+    public interface OnStartListener {
         void onStartRecognize();
     }
+
     public CameraPreview mPreview;
+
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
@@ -32,10 +36,10 @@ public class CameraPreviewFragment extends Fragment {
         buttonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(getChildFragmentManager().getBackStackEntryCount()==0){
+                if (getChildFragmentManager().getBackStackEntryCount() == 0) {
                     getChildFragmentManager().beginTransaction().replace(R.id.cameraPreview, new CameraSettingsFragment()).addToBackStack(null).commit();
                     buttonSettings.setText("取消");
-                }else{
+                } else {
                     getChildFragmentManager().popBackStack();
                     buttonSettings.setText("设置");
                 }
@@ -45,12 +49,12 @@ public class CameraPreviewFragment extends Fragment {
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(onWorking){
+                if (onWorking) {
                     getActivity().getFragmentManager().popBackStack();
-                }else{
+                } else {
                     buttonStart.setText("停止");
                     mCallback.onStartRecognize();
-                    onWorking=true;
+                    onWorking = true;
                 }
             }
         });
@@ -58,14 +62,15 @@ public class CameraPreviewFragment extends Fragment {
         FrameLayout preview = (FrameLayout) rootView.findViewById(R.id.cameraPreview);
         preview.addView(mPreview);
         CameraSettingsFragment.passCamera(mPreview.getCameraInstance());
-        CameraSettingsFragment cameraSettingsFragment =new CameraSettingsFragment();
-        SharedPreferences sharedPreferences= PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+        CameraSettingsFragment cameraSettingsFragment = new CameraSettingsFragment();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
         cameraSettingsFragment.setDefault(sharedPreferences);
         PreferenceManager.setDefaultValues(this.getActivity(), R.xml.camera_preferences, false);
         CameraSettingsFragment.init(PreferenceManager.getDefaultSharedPreferences(this.getActivity()));
         return rootView;
     }
-    public void addCallback(OnStartListener listener){
-        mCallback=listener;
+
+    public void addCallback(OnStartListener listener) {
+        mCallback = listener;
     }
 }

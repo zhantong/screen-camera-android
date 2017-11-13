@@ -50,13 +50,13 @@ public class CameraSettingsFragment extends PreferenceFragment implements Shared
     }
 
     public void setDefault(SharedPreferences sharedPrefs) {
-        String valPreviewSize=sharedPrefs.getString(KEY_PREF_PREV_SIZE,null);
-        if(valPreviewSize==null){
-            SharedPreferences.Editor editor=sharedPrefs.edit();
-            editor.putString(KEY_PREF_PREV_SIZE,getDefaultPreviewSize());
-            editor.putString(KEY_PREF_PIC_SIZE,getDefaultPictureSize());
-            editor.putString(KEY_PREF_VIDEO_SIZE,getDefaultVideoSize());
-            editor.putString(KEY_PREF_FOCUS_MODE,getDefaultFocusMode());
+        String valPreviewSize = sharedPrefs.getString(KEY_PREF_PREV_SIZE, null);
+        if (valPreviewSize == null) {
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putString(KEY_PREF_PREV_SIZE, getDefaultPreviewSize());
+            editor.putString(KEY_PREF_PIC_SIZE, getDefaultPictureSize());
+            editor.putString(KEY_PREF_VIDEO_SIZE, getDefaultVideoSize());
+            editor.putString(KEY_PREF_FOCUS_MODE, getDefaultFocusMode());
             editor.apply();
         }
     }
@@ -75,25 +75,30 @@ public class CameraSettingsFragment extends PreferenceFragment implements Shared
         mCamera.setParameters(mParameters);
         mCamera.startPreview();
     }
-    private String getDefaultPreviewSize(){
-        Camera.Size previewSize=mParameters.getPreviewSize();
-        return previewSize.width+"x"+previewSize.height;
+
+    private String getDefaultPreviewSize() {
+        Camera.Size previewSize = mParameters.getPreviewSize();
+        return previewSize.width + "x" + previewSize.height;
     }
-    private String getDefaultPictureSize(){
-        Camera.Size pictureSize=mParameters.getPictureSize();
-        return pictureSize.width+"x"+pictureSize.height;
+
+    private String getDefaultPictureSize() {
+        Camera.Size pictureSize = mParameters.getPictureSize();
+        return pictureSize.width + "x" + pictureSize.height;
     }
-    private String getDefaultVideoSize(){
-        Camera.Size VideoSize=mParameters.getPreferredPreviewSizeForVideo();
-        return VideoSize.width+"x"+VideoSize.height;
+
+    private String getDefaultVideoSize() {
+        Camera.Size VideoSize = mParameters.getPreferredPreviewSizeForVideo();
+        return VideoSize.width + "x" + VideoSize.height;
     }
-    private String getDefaultFocusMode(){
-        List<String> supportedFocusModes=mParameters.getSupportedFocusModes();
-        if(supportedFocusModes.contains("continuous-picture")){
+
+    private String getDefaultFocusMode() {
+        List<String> supportedFocusModes = mParameters.getSupportedFocusModes();
+        if (supportedFocusModes.contains("continuous-picture")) {
             return "continuous-picture";
         }
         return "continuous-video";
     }
+
     private void loadSupportedPreviewSize() {
         cameraSizeListToListPreference(mParameters.getSupportedPreviewSizes(), KEY_PREF_PREV_SIZE);
     }
@@ -146,7 +151,7 @@ public class CameraSettingsFragment extends PreferenceFragment implements Shared
         ListPreference listPref = (ListPreference) getPreferenceScreen().findPreference(key);
         listPref.setEntries(charSeq);
         listPref.setEntryValues(charSeq);
-        ListPreference listPreference=new ListPreference(getActivity());
+        ListPreference listPreference = new ListPreference(getActivity());
     }
 
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {

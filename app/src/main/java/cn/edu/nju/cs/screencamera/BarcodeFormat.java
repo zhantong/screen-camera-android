@@ -3,7 +3,7 @@ package cn.edu.nju.cs.screencamera;
 /**
  * Created by zhantong on 16/4/23.
  */
-public enum BarcodeFormat{
+public enum BarcodeFormat {
     SHIFT_CODE("ShiftCode"),
     SHIFT_CODE_COLOR("ShiftCodeColor"),
     SHIFT_CODE_ML("ShiftCodeML"),
@@ -14,10 +14,12 @@ public enum BarcodeFormat{
     RD_CODE_ML("RDCodeML"),
     BLACK_WHITE_CODE("BlackWhiteCode");
     private String friendlyName;
-    BarcodeFormat(String friendlyName){
-        this.friendlyName=friendlyName;
+
+    BarcodeFormat(String friendlyName) {
+        this.friendlyName = friendlyName;
     }
-    public String toString(){
+
+    public String toString() {
         return friendlyName;
     }
 }

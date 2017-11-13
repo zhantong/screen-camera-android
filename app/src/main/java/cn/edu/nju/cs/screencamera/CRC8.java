@@ -20,6 +20,7 @@ public class CRC8 implements Checksum {
     public void update(final byte[] input) {
         update(input, 0, input.length);
     }
+
     private final void update(final byte b) {
         crc ^= b;
         for (int j = 0; j < 8; j++) {

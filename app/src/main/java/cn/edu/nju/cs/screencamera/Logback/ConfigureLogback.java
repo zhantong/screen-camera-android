@@ -14,7 +14,7 @@ import ch.qos.logback.core.FileAppender;
  */
 
 public class ConfigureLogback {
-    public static void configureLogbackDirectly(String logFilePath){
+    public static void configureLogbackDirectly(String logFilePath) {
         // reset the default context (which may already have been initialized)
         // since we want to reconfigure it
         LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();

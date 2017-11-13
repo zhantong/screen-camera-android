@@ -10,9 +10,9 @@ import org.slf4j.MarkerFactory;
 public class CustomMarker {
     public static final Marker barcodeConfig = MarkerFactory.getMarker("barcodeConfig");
     public static final Marker fecParameters = MarkerFactory.getMarker("fecParameters");
-    public static final Marker raw= MarkerFactory.getMarker("raw");
-    public static final Marker processed= MarkerFactory.getMarker("processed");
-    public static final Marker source= MarkerFactory.getMarker("source");
-    public static final Marker sha1= MarkerFactory.getMarker("sha1");
-    public static final Marker raptorQMeta= MarkerFactory.getMarker("raptorQMeta");
+    public static final Marker raw = MarkerFactory.getMarker("raw");
+    public static final Marker processed = MarkerFactory.getMarker("processed");
+    public static final Marker source = MarkerFactory.getMarker("source");
+    public static final Marker sha1 = MarkerFactory.getMarker("sha1");
+    public static final Marker raptorQMeta = MarkerFactory.getMarker("raptorQMeta");
 }

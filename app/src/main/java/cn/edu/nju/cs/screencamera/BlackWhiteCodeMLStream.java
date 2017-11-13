@@ -20,33 +20,37 @@ import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
  */
 
 public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
-    private static final String TAG="BlackWhiteCodeMLStream";
-    private static final boolean DUMP=true;
-    int transmitFileLengthInBytes =-1;
+    private static final String TAG = "BlackWhiteCodeMLStream";
+    private static final boolean DUMP = true;
+    int transmitFileLengthInBytes = -1;
     int numRandomBarcode;
     BarcodeConfig barcodeConfig;
 
-    static Logger LOG= LoggerFactory.getLogger(MainActivity.class);
+    static Logger LOG = LoggerFactory.getLogger(MainActivity.class);
 
     List<int[]> randomIntArrayList;
 
-    public BlackWhiteCodeMLStream(){
-        barcodeConfig=getBarcodeConfigInstance();
-        numRandomBarcode=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RANDOM_BARCODES).toString());
-        randomIntArrayList=getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance())).randomBarcodeValue(getBarcodeConfigInstance(),numRandomBarcode);
+    public BlackWhiteCodeMLStream() {
+        barcodeConfig = getBarcodeConfigInstance();
+        numRandomBarcode = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RANDOM_BARCODES).toString());
+        randomIntArrayList = getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance())).randomBarcodeValue(getBarcodeConfigInstance(), numRandomBarcode);
     }
-    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode){
+
+    BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode) {
         return new BlackWhiteCodeML(mediateBarcode);
     }
-    BarcodeConfig getBarcodeConfigInstance(){
+
+    BarcodeConfig getBarcodeConfigInstance() {
         return new BlackWhiteCodeMLConfig();
     }
-    void sampleContent(BlackWhiteCodeML blackWhiteCodeML){
-        blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN),RawImage.CHANNLE_Y);
+
+    void sampleContent(BlackWhiteCodeML blackWhiteCodeML) {
+        blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN), RawImage.CHANNLE_Y);
     }
-    MediateBarcode getMediateBarcode(RawImage rawImage){
+
+    MediateBarcode getMediateBarcode(RawImage rawImage) {
         try {
-            return new MediateBarcode(rawImage,getBarcodeConfigInstance(),null,RawImage.CHANNLE_Y);
+            return new MediateBarcode(rawImage, getBarcodeConfigInstance(), null, RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             return null;
         }
@@ -54,62 +58,62 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
 
     @Override
     public void beforeStream(StreamDecode streamDecode) {
-        LOG.info(CustomMarker.barcodeConfig,new Gson().toJson(getBarcodeConfigInstance().toJson()));
+        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
 
     @Override
     public void processFrame(StreamDecode streamDecode, RawImage frame) {
-        Gson gson=new Gson();
-        JsonObject jsonRoot=new JsonObject();
-        if(frame.getPixels()==null){
+        Gson gson = new Gson();
+        JsonObject jsonRoot = new JsonObject();
+        if (frame.getPixels() == null) {
             return;
         }
-        Log.i(TAG,frame.toString());
-        MediateBarcode mediateBarcode=getMediateBarcode(frame);
-        if(DUMP) {
+        Log.i(TAG, frame.toString());
+        MediateBarcode mediateBarcode = getMediateBarcode(frame);
+        if (DUMP) {
             jsonRoot.add("image", frame.toJson());
         }
-        if(mediateBarcode!=null){
+        if (mediateBarcode != null) {
             BlackWhiteCodeML blackWhiteCodeML = getBarcodeInstance(mediateBarcode);
             sampleContent(blackWhiteCodeML);
-            if(DUMP) {
-                jsonRoot.add("barcode",blackWhiteCodeML.toJson());
+            if (DUMP) {
+                jsonRoot.add("barcode", blackWhiteCodeML.toJson());
             }
-            if(blackWhiteCodeML.getIsRandom()){
-                int index=Integer.MAX_VALUE;
+            if (blackWhiteCodeML.getIsRandom()) {
+                int index = Integer.MAX_VALUE;
                 try {
                     index = blackWhiteCodeML.getTransmitFileLengthInBytes();
                 } catch (CRCCheckException e) {
                     e.printStackTrace();
-                }catch (NumberFormatException e){
+                } catch (NumberFormatException e) {
                     e.printStackTrace();
                 }
-                if(index<numRandomBarcode){
-                    JsonObject randomJsonRoot=new JsonObject();
-                    randomJsonRoot.addProperty("index",index);
-                    randomJsonRoot.add("truthValue",gson.toJsonTree(randomIntArrayList.get(index)));
-                    jsonRoot.add("random",randomJsonRoot);
+                if (index < numRandomBarcode) {
+                    JsonObject randomJsonRoot = new JsonObject();
+                    randomJsonRoot.addProperty("index", index);
+                    randomJsonRoot.add("truthValue", gson.toJsonTree(randomIntArrayList.get(index)));
+                    jsonRoot.add("random", randomJsonRoot);
                 }
-            }else{
-                if(transmitFileLengthInBytes==-1){
+            } else {
+                if (transmitFileLengthInBytes == -1) {
                     try {
-                        transmitFileLengthInBytes=blackWhiteCodeML.getTransmitFileLengthInBytes();
+                        transmitFileLengthInBytes = blackWhiteCodeML.getTransmitFileLengthInBytes();
                     } catch (CRCCheckException e) {
                         e.printStackTrace();
                     }
-                    if(transmitFileLengthInBytes!=-1){
-                        int raptorQSymbolSize =blackWhiteCodeML.calcRaptorQSymbolSize(blackWhiteCodeML.calcRaptorQPacketSize());
-                        int numSourceBlock=Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
-                        FECParameters parameters=FECParameters.newParameters(transmitFileLengthInBytes, raptorQSymbolSize,numSourceBlock);
-                        if(DUMP){
-                            LOG.info(CustomMarker.fecParameters,new Gson().toJson(Utils.fecParametersToJson(parameters)));
+                    if (transmitFileLengthInBytes != -1) {
+                        int raptorQSymbolSize = blackWhiteCodeML.calcRaptorQSymbolSize(blackWhiteCodeML.calcRaptorQPacketSize());
+                        int numSourceBlock = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
+                        FECParameters parameters = FECParameters.newParameters(transmitFileLengthInBytes, raptorQSymbolSize, numSourceBlock);
+                        if (DUMP) {
+                            LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
                         }
                     }
                 }
             }
         }
-        if(DUMP){
-            LOG.info(CustomMarker.processed,new Gson().toJson(jsonRoot));
+        if (DUMP) {
+            LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
         }
     }
 

@@ -26,18 +26,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public CameraPreview(Context context) {
         super(context);
-        pause=true;
+        pause = true;
         mHolder = getHolder();
         mHolder.addCallback(this);
     }
-    public void start(LinkedBlockingQueue<RawImage> frames){
-        previewSize=mCamera.getParameters().getPreviewSize();
-        this.frameQueue =frames;
-        pause=false;
+
+    public void start(LinkedBlockingQueue<RawImage> frames) {
+        previewSize = mCamera.getParameters().getPreviewSize();
+        this.frameQueue = frames;
+        pause = false;
     }
-    public Camera.Size getPreviewSize(){
+
+    public Camera.Size getPreviewSize() {
         return mCamera.getParameters().getPreviewSize();
     }
+
     public void surfaceCreated(SurfaceHolder holder) {
         getCameraInstance();
         mCamera.setPreviewCallback(this);
@@ -48,6 +51,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
     }
+
     public Camera getCameraInstance() {
         if (mCamera == null) {
             try {
@@ -58,6 +62,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
         return mCamera;
     }
+
     /**
      * surface销毁时释放相机
      *
@@ -111,7 +116,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (!pause) {
             try {
-                frameQueue.put(new RawImage(data,previewSize.width,previewSize.height,RawImage.COLOR_TYPE_YUV));
+                frameQueue.put(new RawImage(data, previewSize.width, previewSize.height, RawImage.COLOR_TYPE_YUV));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -122,21 +127,21 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * 主动控制释放相机资源
      */
     public void stop() {
-        ((ViewGroup)getParent()).removeView(this);
+        ((ViewGroup) getParent()).removeView(this);
     }
 
     public void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (changed) {
-            ViewGroup parent=((ViewGroup)getParent());
-            Rect rect=new Rect();
+            ViewGroup parent = ((ViewGroup) getParent());
+            Rect rect = new Rect();
 
             parent.getLocalVisibleRect(rect);
-            int width=rect.width();
-            int height=rect.height();
+            int width = rect.width();
+            int height = rect.height();
 
-            Camera.Size previewSize=mCamera.getParameters().getPreviewSize();
-            int previewWidth=previewSize.width;
-            int previewHeight=previewSize.height;
+            Camera.Size previewSize = mCamera.getParameters().getPreviewSize();
+            int previewWidth = previewSize.width;
+            int previewHeight = previewSize.height;
 
             if (width * previewHeight > height * previewWidth) {
                 final int scaledChildWidth = previewWidth * height / previewHeight;

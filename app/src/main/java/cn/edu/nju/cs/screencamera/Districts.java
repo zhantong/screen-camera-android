@@ -8,19 +8,21 @@ import java.util.List;
  * Created by zhantong on 2016/11/24.
  */
 
-public class Districts implements Iterable<District>{
-    public static final int MARGIN=0;
-    public static final int BORDER=1;
-    public static final int PADDING=2;
-    public static final int META=3;
-    public static final int MAIN=4;
-    private List<District> districts=new ArrayList<>();
-    public Districts(){
-        for(int i=0;i<5;i++){
+public class Districts implements Iterable<District> {
+    public static final int MARGIN = 0;
+    public static final int BORDER = 1;
+    public static final int PADDING = 2;
+    public static final int META = 3;
+    public static final int MAIN = 4;
+    private List<District> districts = new ArrayList<>();
+
+    public Districts() {
+        for (int i = 0; i < 5; i++) {
             districts.add(new District());
         }
     }
-    public District get(int part){
+
+    public District get(int part) {
         return districts.get(part);
     }
 

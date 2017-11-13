@@ -17,13 +17,12 @@
 package cn.edu.nju.cs.screencamera.ReedSolomon;
 
 
-
 /**
  * <p>Implements Reed-Solomon decoding, as the name implies.</p>
- *
+ * <p>
  * <p>The algorithm will not be explained here, but the following references were helpful
  * in creating this implementation:</p>
- *
+ * <p>
  * <ul>
  * <li>Bruce Maggs.
  * <a href="http://www.cs.cmu.edu/afs/cs.cmu.edu/project/pscico-guyb/realworld/www/rs_decode.ps">
@@ -32,7 +31,7 @@ package cn.edu.nju.cs.screencamera.ReedSolomon;
  * "Chapter 5. Generalized Reed-Solomon Codes"</a>
  * (see discussion of Euclidean algorithm)</li>
  * </ul>
- *
+ * <p>
  * <p>Much credit is due to William Rucklidge since portions of this code are an indirect
  * port of his C++ Reed-Solomon implementation.</p>
  *
@@ -54,7 +53,7 @@ public final class ReedSolomonDecoder {
      * in the input.</p>
      *
      * @param received data and error-correction codewords
-     * @param twoS number of error-correction codewords available
+     * @param twoS     number of error-correction codewords available
      * @throws ReedSolomonException if decoding fails for any reason
      */
     public void decode(int[] received, int twoS) throws ReedSolomonException {
@@ -146,7 +145,7 @@ public final class ReedSolomonDecoder {
         // This is a direct application of Chien's search
         int numErrors = errorLocator.getDegree();
         if (numErrors == 1) { // shortcut
-            return new int[] { errorLocator.getCoefficient(1) };
+            return new int[]{errorLocator.getCoefficient(1)};
         }
         int[] result = new int[numErrors];
         int e = 0;

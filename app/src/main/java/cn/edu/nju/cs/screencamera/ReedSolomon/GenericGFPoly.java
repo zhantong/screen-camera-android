@@ -19,7 +19,7 @@ package cn.edu.nju.cs.screencamera.ReedSolomon;
 /**
  * <p>Represents a polynomial whose coefficients are elements of a GF.
  * Instances of this class are immutable.</p>
- *
+ * <p>
  * <p>Much credit is due to William Rucklidge since portions of this code are an indirect
  * port of his C++ Reed-Solomon implementation.</p>
  *
@@ -31,13 +31,13 @@ final class GenericGFPoly {
     private final int[] coefficients;
 
     /**
-     * @param field the {@link GenericGF} instance representing the field to use
-     * to perform computations
+     * @param field        the {@link GenericGF} instance representing the field to use
+     *                     to perform computations
      * @param coefficients coefficients as ints representing elements of GF(size), arranged
-     * from most significant (highest-power term) coefficient to least significant
+     *                     from most significant (highest-power term) coefficient to least significant
      * @throws IllegalArgumentException if argument is null or empty,
-     * or if leading coefficient is 0 and this is not a
-     * constant polynomial (that is, it is not the monomial "0")
+     *                                  or if leading coefficient is 0 and this is not a
+     *                                  constant polynomial (that is, it is not the monomial "0")
      */
     GenericGFPoly(GenericGF field, int[] coefficients) {
         if (coefficients.length == 0) {
@@ -220,7 +220,7 @@ final class GenericGFPoly {
             remainder = remainder.addOrSubtract(term);
         }
 
-        return new GenericGFPoly[] { quotient, remainder };
+        return new GenericGFPoly[]{quotient, remainder};
     }
 
     @Override

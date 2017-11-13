@@ -17,11 +17,11 @@ public class ShiftCodeColorMLConfig extends ShiftCodeMLConfig {
 
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         metaBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
-        mainBlock = new DistrictConfig<Block>(new ColorShiftBlock(new int[]{1,2}));
+        mainBlock = new DistrictConfig<Block>(new ColorShiftBlock(new int[]{1, 2}));
 
-        hints.put(ShiftCodeColorML.KEY_SIZE_RS_ERROR_CORRECTION,12);
-        hints.put(ShiftCodeColorML.KEY_LEVEL_RS_ERROR_CORRECTION,0.1);
-        hints.put(ShiftCodeColorML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS,1);
-        hints.put(ShiftCodeColorML.KEY_NUMBER_RANDOM_BARCODES,100);
+        hints.put(ShiftCodeColorML.KEY_SIZE_RS_ERROR_CORRECTION, 12);
+        hints.put(ShiftCodeColorML.KEY_LEVEL_RS_ERROR_CORRECTION, 0.1);
+        hints.put(ShiftCodeColorML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS, 1);
+        hints.put(ShiftCodeColorML.KEY_NUMBER_RANDOM_BARCODES, 100);
     }
 }

@@ -6,10 +6,11 @@ package cn.edu.nju.cs.screencamera;
  */
 
 public class ShiftCodeColorStream extends ShiftCodeStream {
-    BarcodeConfig getBarcodeConfigInstance(){
+    BarcodeConfig getBarcodeConfigInstance() {
         return new ShiftCodeColorConfig();
     }
-    protected ShiftCode getShiftCode(MediateBarcode mediateBarcode){
+
+    protected ShiftCode getShiftCode(MediateBarcode mediateBarcode) {
         return new ShiftCodeColor(mediateBarcode);
     }
 }

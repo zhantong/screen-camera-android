@@ -41,13 +41,16 @@ public class VideoToFrames implements Runnable {
 
     private Callback callback;
 
-    public interface Callback{
+    public interface Callback {
         void onFinishDecode();
+
         void onDecodeFrame(int index);
     }
-    public void setCallback(Callback callback){
-        this.callback=callback;
+
+    public void setCallback(Callback callback) {
+        this.callback = callback;
     }
+
     public void setEnqueue(LinkedBlockingQueue<RawImage> queue) {
         mQueue = queue;
     }
@@ -124,13 +127,13 @@ public class VideoToFrames implements Runnable {
     }
 
     private void showSupportedColorFormat(MediaCodecInfo.CodecCapabilities caps) {
-        StringBuilder builder=new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         builder.append("supported color format: ");
         for (int c : caps.colorFormats) {
             builder.append(c);
             builder.append("\t");
         }
-        Log.i(TAG,builder.toString());
+        Log.i(TAG, builder.toString());
     }
 
     private boolean isColorFormatSupported(int colorFormat, MediaCodecInfo.CodecCapabilities caps) {
@@ -175,7 +178,7 @@ public class VideoToFrames implements Runnable {
                 boolean doRender = (info.size != 0);
                 if (doRender) {
                     outputFrameCount++;
-                    if(callback!=null){
+                    if (callback != null) {
                         callback.onDecodeFrame(outputFrameCount);
                     }
                     Image image = decoder.getOutputImage(outputBufferId);
@@ -184,7 +187,7 @@ public class VideoToFrames implements Runnable {
                     if (mQueue != null) {
                         try {
 
-                            mQueue.put(new RawImage(getDataFromImage(image,COLOR_FormatI420),width,height,RawImage.COLOR_TYPE_YUV,outputFrameCount,image.getTimestamp()));
+                            mQueue.put(new RawImage(getDataFromImage(image, COLOR_FormatI420), width, height, RawImage.COLOR_TYPE_YUV, outputFrameCount, image.getTimestamp()));
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -194,15 +197,15 @@ public class VideoToFrames implements Runnable {
                         String fileName;
                         switch (outputImageFormat) {
                             case I420:
-                                fileName=Utils.combinePaths(OUTPUT_DIR,String.format("frame_%05d_I420_%dx%d.yuv", outputFrameCount, width, height));
+                                fileName = Utils.combinePaths(OUTPUT_DIR, String.format("frame_%05d_I420_%dx%d.yuv", outputFrameCount, width, height));
                                 dumpFile(fileName, getDataFromImage(image, COLOR_FormatI420));
                                 break;
                             case NV21:
-                                fileName=Utils.combinePaths(OUTPUT_DIR,String.format("frame_%05d_NV21_%dx%d.yuv", outputFrameCount, width, height));
+                                fileName = Utils.combinePaths(OUTPUT_DIR, String.format("frame_%05d_NV21_%dx%d.yuv", outputFrameCount, width, height));
                                 dumpFile(fileName, getDataFromImage(image, COLOR_FormatNV21));
                                 break;
                             case JPEG:
-                                fileName=Utils.combinePaths(OUTPUT_DIR,String.format("frame_%05d.jpg", outputFrameCount));
+                                fileName = Utils.combinePaths(OUTPUT_DIR, String.format("frame_%05d.jpg", outputFrameCount));
                                 compressToJpeg(fileName, image);
                                 break;
                         }
@@ -212,10 +215,11 @@ public class VideoToFrames implements Runnable {
                 }
             }
         }
-        if(callback!=null) {
+        if (callback != null) {
             callback.onFinishDecode();
         }
     }
+
     private static int selectTrack(MediaExtractor extractor) {
         int numTracks = extractor.getTrackCount();
         for (int i = 0; i < numTracks; i++) {
@@ -241,15 +245,16 @@ public class VideoToFrames implements Runnable {
         }
         return false;
     }
-    private static byte[] getGrayDataFromImage(Image image){
+
+    private static byte[] getGrayDataFromImage(Image image) {
         if (!isImageFormatSupported(image)) {
             throw new RuntimeException("can't convert Image to byte array, format " + image.getFormat());
         }
         Rect crop = image.getCropRect();
         int width = crop.width();
         int height = crop.height();
-        byte[] data=new byte[width*height];
-        Image.Plane yPlanes=image.getPlanes()[0];
+        byte[] data = new byte[width * height];
+        Image.Plane yPlanes = image.getPlanes()[0];
         byte[] rowData = new byte[yPlanes.getRowStride()];
         ByteBuffer buffer = yPlanes.getBuffer();
         int rowStride = yPlanes.getRowStride();
@@ -276,6 +281,7 @@ public class VideoToFrames implements Runnable {
         }
         return data;
     }
+
     private static byte[] getDataFromImage(Image image, int colorFormat) {
         if (colorFormat != COLOR_FormatI420 && colorFormat != COLOR_FormatNV21) {
             throw new IllegalArgumentException("only support COLOR_FormatI420 " + "and COLOR_FormatNV21");
