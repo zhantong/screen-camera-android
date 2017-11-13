@@ -1,9 +1,10 @@
 <resources>
     <string name="app_name">ScreenCamera</string>
-    <string name="barcode_type">类型</string>
+    <string name="barcode_type">二维码类型</string>
     <string name="file_name_created">生成文件名</string>
     <string name="open_file">打开文件</string>
     <string name="image_or_video_file_path">图片/视频文件路径</string>
+    <string name="input_file_path">输入文件路径</string>
     <string name="choose_image_or_video_file">选择图片/视频文件</string>
     <string name="choose_file">选择文件</string>
     <string name="file_path_truth">真实文件路径</string>

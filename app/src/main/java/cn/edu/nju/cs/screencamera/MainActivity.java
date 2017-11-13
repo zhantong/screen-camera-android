@@ -52,37 +52,12 @@ public class MainActivity extends Activity {
 
     private BarcodeFormat barcodeFormat;
 
-    public static final int MESSAGE_UI_DEBUG_VIEW = 1;
-    public static final int MESSAGE_UI_INFO_VIEW = 2;
-
     public static final int REQUEST_CODE_FILE_PATH_INPUT = 1;
-    public static final int REQUEST_CODE_FILE_PATH_TRUTH = 2;
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
 
     Logger LOG = LoggerFactory.getLogger(MainActivity.class);
-
-    final Handler mHandler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            String text;
-            switch (msg.what) {
-                case MESSAGE_UI_DEBUG_VIEW:
-                    text = (String) msg.obj;
-                    TextView debugView = findViewById(R.id.debug_view);
-                    debugView.setText(text);
-                    return true;
-                case MESSAGE_UI_INFO_VIEW:
-                    text = (String) msg.obj;
-                    TextView infoView = findViewById(R.id.info_view);
-                    infoView.setText(text);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-    });
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
@@ -95,12 +70,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         mContext = this;
 
-        TextView debugView = findViewById(R.id.debug_view);
-        TextView infoView = findViewById(R.id.info_view);
-        debugView.setGravity(Gravity.BOTTOM);
-        infoView.setGravity(Gravity.BOTTOM);
-
-
         Button buttonFilePathInput = findViewById(R.id.button_file_path_input);
         buttonFilePathInput.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,31 +77,16 @@ public class MainActivity extends Activity {
                 getFilePath(REQUEST_CODE_FILE_PATH_INPUT);
             }
         });
-        Button buttonFilePathTruth = findViewById(R.id.button_file_path_truth);
-        buttonFilePathTruth.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getFilePath(REQUEST_CODE_FILE_PATH_TRUTH);
-            }
-        });
-
-        Button buttonSaveFrames = findViewById(R.id.save_frames);
-        buttonSaveFrames.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveFrames(v);
-            }
-        });
 
         sharedPref = getSharedPreferences("main", Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
-        ToggleButton toggleButtonFileNameCreated = findViewById(R.id.toggle_file_name_created);
+        ToggleButton toggleButtonFileNameCreated = findViewById(R.id.toggle_file_name_output);
         toggleButtonFileNameCreated.setTag("AUTO_GENERATE_FILE_NAME_CREATED");
         toggleButtonFileNameCreated.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                EditText editTextFileNameCreated = findViewById(R.id.file_name_created);
+                EditText editTextFileNameCreated = findViewById(R.id.file_name_output);
                 if (isChecked) {
                     String randomFileName = UUID.randomUUID().toString();
                     editTextFileNameCreated.setText(randomFileName);
@@ -147,7 +101,7 @@ public class MainActivity extends Activity {
 
 
         initBarcodeFormatSpinner();
-        final EditText editTextFileNameCreated = findViewById(R.id.file_name_created);
+        final EditText editTextFileNameCreated = findViewById(R.id.file_name_output);
         editTextFileNameCreated.setTag("FILE_NAME_CREATED");
         editTextFileNameCreated.setText(sharedPref.getString((String) editTextFileNameCreated.getTag(), ""));
         editTextFileNameCreated.addTextChangedListener(new EditTextTextWatcher(editTextFileNameCreated));
@@ -157,10 +111,6 @@ public class MainActivity extends Activity {
         editTextFilePathInput.setText(sharedPref.getString((String) editTextFilePathInput.getTag(), ""));
         editTextFilePathInput.addTextChangedListener(new EditTextTextWatcher(editTextFilePathInput));
 
-        final EditText editTextFilePathTruth = findViewById(R.id.file_path_truth);
-        editTextFilePathTruth.setTag("FILE_PATH_TRUTH");
-        editTextFilePathTruth.setText(sharedPref.getString((String) editTextFilePathTruth.getTag(), ""));
-        editTextFilePathTruth.addTextChangedListener(new EditTextTextWatcher(editTextFilePathTruth));
 
         toggleButtonFileNameCreated.setChecked(sharedPref.getBoolean((String) toggleButtonFileNameCreated.getTag(), false));
 
@@ -197,6 +147,30 @@ public class MainActivity extends Activity {
 
         toggleButtonFileNameLoggingAuto.setChecked(sharedPref.getBoolean((String) toggleButtonFileNameLoggingAuto.getTag(), false));
         switchEnableLogging.setChecked(false);
+
+        Button btnProcessFile = findViewById(R.id.btn_process_file);
+        btnProcessFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                processFile();
+            }
+        });
+
+        Button btnOpenCamera = findViewById(R.id.btn_open_camera);
+        btnOpenCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                processCamera();
+            }
+        });
+
+        Button btnSaveFrames = findViewById(R.id.btn_save_frames);
+        btnSaveFrames.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                saveFrames();
+            }
+        });
     }
 
     public static Context getContext() {
@@ -249,9 +223,9 @@ public class MainActivity extends Activity {
         });
     }
 
-    public void saveFrames(View view) {
+    public void saveFrames() {
         SaveFramesFragment fragment = new SaveFramesFragment();
-        getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
+        //getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
         getFragmentManager().executePendingTransactions();
     }
 
@@ -275,9 +249,6 @@ public class MainActivity extends Activity {
             case REQUEST_CODE_FILE_PATH_INPUT:
                 id = R.id.file_path_input;
                 break;
-            case REQUEST_CODE_FILE_PATH_TRUTH:
-                id = R.id.file_path_truth;
-                break;
         }
         if (resultCode == RESULT_OK) {
             EditText editText = findViewById(id);
@@ -286,55 +257,10 @@ public class MainActivity extends Activity {
         }
     }
 
-    /**
-     * 处理视频文件,从视频帧识别二维码
-     *
-     * @param view 默认参数
-     */
-    public void processVideo(View view) {
-        EditText editTextVideoFilePath = findViewById(R.id.file_path_input);
-        final String videoFilePath = editTextVideoFilePath.getText().toString();
-        EditText editTextFileName = findViewById(R.id.file_name_created);
-        final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), editTextFileName.getText().toString());
-        EditText editTextTruthFilePath = findViewById(R.id.file_path_truth);
-        final String truthFilePath = editTextTruthFilePath.getText().toString();
-
-        LOG.info(CustomMarker.source, videoFilePath);
-
-        Thread worker = new Thread() {
-            @Override
-            public void run() {
-                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeFormat, videoFilePath, outputFilePath);
-                streamDecode.start();
-            }
-        };
-        worker.start();
-    }
-
-    /**
-     * 处理单个图片,识别二维码
-     *
-     * @param view 默认参数
-     */
-    public void processImg(View view) {
-        EditText editTextVideoFilePath = findViewById(R.id.file_path_input);
-        final String imageFilePath = editTextVideoFilePath.getText().toString();
-        EditText editTextTruthFilePath = findViewById(R.id.file_path_truth);
-        final String truthFilePath = editTextTruthFilePath.getText().toString();
-        Thread worker = new Thread() {
-            @Override
-            public void run() {
-                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeFormat, imageFilePath, null);
-                streamDecode.start();
-            }
-        };
-        worker.start();
-    }
-
-    public void processFile(View view) {
+    public void processFile() {
         EditText editTextInputFilePath = findViewById(R.id.file_path_input);
         final String inputFilePath = editTextInputFilePath.getText().toString();
-        EditText editTextFileName = findViewById(R.id.file_name_created);
+        EditText editTextFileName = findViewById(R.id.file_name_output);
         final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), editTextFileName.getText().toString());
 
         LOG.info(CustomMarker.source, inputFilePath);
@@ -355,7 +281,7 @@ public class MainActivity extends Activity {
      * @param view 默认参数
      */
     public void openFile(View view) {
-        EditText editTextFileName = findViewById(R.id.file_name_created);
+        EditText editTextFileName = findViewById(R.id.file_name_output);
         String originFileName = editTextFileName.getText().toString();
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), originFileName);
         file = correctFileExtension(file);
@@ -414,15 +340,13 @@ public class MainActivity extends Activity {
         return info.getFileExtensions()[0];
     }
 
-    public void processCamera(View view) {
+    public void processCamera() {
         final CameraPreviewFragment fragment = new CameraPreviewFragment();
         fragment.addCallback(new CameraPreviewFragment.OnStartListener() {
             @Override
             public void onStartRecognize() {
-                EditText editTextFileName = findViewById(R.id.file_name_created);
+                EditText editTextFileName = findViewById(R.id.file_name_output);
                 final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), editTextFileName.getText().toString());
-                EditText editTextTruthFilePath = findViewById(R.id.file_path_truth);
-                final String truthFilePath = editTextTruthFilePath.getText().toString();
                 Thread worker = new Thread() {
                     @Override
                     public void run() {
@@ -435,7 +359,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
+        //getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
         getFragmentManager().executePendingTransactions();
     }
 }

@@ -10,8 +10,8 @@ public class BlackWhiteCodeWithBarConfig extends BarcodeConfig {
         paddingLength = new DistrictConfig<>(2, 0, 2, 0);
         metaLength = new DistrictConfig<>(0);
 
-        mainWidth = 40;
-        mainHeight = 40;
+        mainWidth = 80;
+        mainHeight = 80;
 
         borderBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
         mainBlock = new DistrictConfig<Block>(new BlackWhiteBlock());
