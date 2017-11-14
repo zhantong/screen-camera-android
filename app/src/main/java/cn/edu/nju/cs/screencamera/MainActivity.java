@@ -10,7 +10,7 @@ import android.widget.Button;
  * Created by zhantong on 2017/11/14.
  */
 
-public class RouteActivity extends Activity {
+public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -20,7 +20,7 @@ public class RouteActivity extends Activity {
         btnFromFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(RouteActivity.this, FileActivity.class);
+                Intent intent = new Intent(MainActivity.this, FileActivity.class);
                 startActivity(intent);
             }
         });
@@ -28,7 +28,7 @@ public class RouteActivity extends Activity {
         btnFromCamera.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(RouteActivity.this, CameraActivity.class);
+                Intent intent = new Intent(MainActivity.this, CameraActivity.class);
                 startActivity(intent);
             }
         });
