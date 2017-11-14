@@ -117,21 +117,15 @@
             android:layout_alignParentRight="true" />
     </RelativeLayout>
 
-    <Button
-        android:id="@+id/btn_process_file"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/process_file" />
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/btn_open_camera"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/open_camera" />
-
-    <Button
-        android:id="@+id/btn_save_frames"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/save_frames" />
+        <Button
+            android:id="@+id/btn_start"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="@string/start" />
+    </RelativeLayout>
 </LinearLayout>

@@ -30,4 +30,6 @@
     <string name="logging">记录日志</string>
     <string name="test">测试</string>
     <string name="process_file">识别文件</string>
+    <string name="from_file">从文件</string>
+    <string name="from_camera">从相机</string>
 </resources>

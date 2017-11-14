@@ -148,27 +148,11 @@ public class MainActivity extends Activity {
         toggleButtonFileNameLoggingAuto.setChecked(sharedPref.getBoolean((String) toggleButtonFileNameLoggingAuto.getTag(), false));
         switchEnableLogging.setChecked(false);
 
-        Button btnProcessFile = findViewById(R.id.btn_process_file);
-        btnProcessFile.setOnClickListener(new View.OnClickListener() {
+        Button btnStart = findViewById(R.id.btn_start);
+        btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 processFile();
-            }
-        });
-
-        Button btnOpenCamera = findViewById(R.id.btn_open_camera);
-        btnOpenCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                processCamera();
-            }
-        });
-
-        Button btnSaveFrames = findViewById(R.id.btn_save_frames);
-        btnSaveFrames.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveFrames();
             }
         });
     }
