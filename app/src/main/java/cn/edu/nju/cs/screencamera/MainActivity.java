@@ -9,11 +9,11 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,7 +22,6 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -157,6 +156,24 @@ public class MainActivity extends Activity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.file_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_video_to_frames:
+                videoToFrames();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     public static Context getContext() {
         return mContext;
     }
@@ -207,10 +224,9 @@ public class MainActivity extends Activity {
         });
     }
 
-    public void saveFrames() {
-        SaveFramesFragment fragment = new SaveFramesFragment();
-        //getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
-        getFragmentManager().executePendingTransactions();
+    void videoToFrames() {
+        Intent intent = new Intent(this, VideoToFramesActivity.class);
+        startActivity(intent);
     }
 
     private void getFilePath(int requestCode) {

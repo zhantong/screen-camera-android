@@ -2,15 +2,12 @@ package cn.edu.nju.cs.screencamera;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -22,11 +19,10 @@ import android.widget.TextView;
 /**
  * Created by zhantong on 16/5/18.
  */
-public class SaveFramesFragment extends Fragment implements VideoToFrames.Callback {
+public class VideoToFramesActivity extends Activity implements VideoToFrames.Callback {
     private static final int REQUEST_CODE_GET_FILE_PATH = 1;
-    private View thisView;
     private OutputImageFormat outputImageFormat;
-    private SaveFramesFragment self = this;
+    private VideoToFramesActivity self = this;
 
     final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
@@ -35,10 +31,11 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
         }
     };
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        thisView = inflater.inflate(R.layout.fragment_save_frames, container, false);
-        final Button buttonFilePathInput = (Button) thisView.findViewById(R.id.button_file_path_input);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_video_to_frames);
+        final Button buttonFilePathInput = findViewById(R.id.button_file_path_input);
         buttonFilePathInput.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,13 +43,13 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
             }
         });
 
-        final Button buttonStart = (Button) thisView.findViewById(R.id.button_start);
+        final Button buttonStart = findViewById(R.id.button_start);
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText editTextOutputFolder = (EditText) thisView.findViewById(R.id.folder_created);
+                EditText editTextOutputFolder = findViewById(R.id.folder_created);
                 String outputDir = Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(), editTextOutputFolder.getText().toString());
-                EditText editTextInputFilePath = (EditText) thisView.findViewById(R.id.file_path_input);
+                EditText editTextInputFilePath = findViewById(R.id.file_path_input);
                 String inputFilePath = editTextInputFilePath.getText().toString();
                 VideoToFrames videoToFrames = new VideoToFrames();
                 videoToFrames.setCallback(self);
@@ -66,17 +63,17 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
             }
         });
         initImageFormatSpinner();
-        return thisView;
     }
+
 
     private void getFilePath(int requestCode) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+        if (intent.resolveActivity(getPackageManager()) != null) {
             startActivityForResult(Intent.createChooser(intent, "Select a File"), requestCode);
         } else {
-            new AlertDialog.Builder(getActivity()).setTitle("未找到文件管理器")
+            new AlertDialog.Builder(this).setTitle("未找到文件管理器")
                     .setMessage("请安装文件管理器以选择文件")
                     .setPositiveButton("确定", null)
                     .show();
@@ -91,15 +88,15 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
                 break;
         }
         if (resultCode == Activity.RESULT_OK) {
-            EditText editText = (EditText) thisView.findViewById(id);
+            EditText editText = findViewById(id);
             String curFileName = data.getData().getPath();
             editText.setText(curFileName);
         }
     }
 
     private void initImageFormatSpinner() {
-        Spinner barcodeFormatSpinner = (Spinner) thisView.findViewById(R.id.image_format);
-        ArrayAdapter<OutputImageFormat> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, OutputImageFormat.values());
+        Spinner barcodeFormatSpinner = findViewById(R.id.image_format);
+        ArrayAdapter<OutputImageFormat> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, OutputImageFormat.values());
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         barcodeFormatSpinner.setAdapter(adapter);
         barcodeFormatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -116,7 +113,7 @@ public class SaveFramesFragment extends Fragment implements VideoToFrames.Callba
     }
 
     private void updateInfo(String info) {
-        TextView textView = (TextView) thisView.findViewById(R.id.info);
+        TextView textView = findViewById(R.id.info);
         textView.setText(info);
     }
 
