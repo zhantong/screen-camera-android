@@ -26,7 +26,7 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
     int numRandomBarcode;
     BarcodeConfig barcodeConfig;
 
-    static Logger LOG = LoggerFactory.getLogger(MainActivity.class);
+    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     List<int[]> randomIntArrayList;
 

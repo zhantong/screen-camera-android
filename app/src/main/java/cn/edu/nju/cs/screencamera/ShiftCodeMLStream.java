@@ -29,7 +29,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
     private static final String TAG = "ShiftCodeMLStream";
     private static final boolean DUMP = true;
 
-    static Logger LOG = LoggerFactory.getLogger(MainActivity.class);
+    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     private List<BitSet> truthBitSetList;
 

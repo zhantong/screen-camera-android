@@ -46,7 +46,7 @@ import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
  * UI主要操作
  * 也是控制二维码识别的主要入口
  */
-public class MainActivity extends Activity {
+public class FileActivity extends Activity {
     private static Context mContext;
 
     private BarcodeFormat barcodeFormat;
@@ -56,7 +56,7 @@ public class MainActivity extends Activity {
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
 
-    Logger LOG = LoggerFactory.getLogger(MainActivity.class);
+    Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数

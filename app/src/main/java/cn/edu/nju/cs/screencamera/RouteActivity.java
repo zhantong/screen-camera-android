@@ -20,7 +20,7 @@ public class RouteActivity extends Activity {
         btnFromFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(RouteActivity.this, MainActivity.class);
+                Intent intent = new Intent(RouteActivity.this, FileActivity.class);
                 startActivity(intent);
             }
         });

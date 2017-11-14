@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".FileActivity"
             android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity
             android:name=".CameraActivity"

@@ -21,7 +21,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
 public class ShiftCodeStream extends BlackWhiteCodeStream {
     private static final String TAG = "ShiftCodeStream";
-    static Logger LOG = LoggerFactory.getLogger(MainActivity.class);
+    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     private boolean DUMP = false;
 

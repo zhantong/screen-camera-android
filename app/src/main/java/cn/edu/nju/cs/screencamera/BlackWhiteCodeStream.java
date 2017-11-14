@@ -33,7 +33,7 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     int rsEcSize = -1;
     BarcodeConfig barcodeConfig;
 
-    static Logger LOG = LoggerFactory.getLogger(MainActivity.class);
+    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     public BlackWhiteCodeStream() {
         barcodeConfig = getBarcodeConfigInstance();
