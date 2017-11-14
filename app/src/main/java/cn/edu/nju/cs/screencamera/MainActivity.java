@@ -339,27 +339,4 @@ public class MainActivity extends Activity {
         }
         return info.getFileExtensions()[0];
     }
-
-    public void processCamera() {
-        final CameraPreviewFragment fragment = new CameraPreviewFragment();
-        fragment.addCallback(new CameraPreviewFragment.OnStartListener() {
-            @Override
-            public void onStartRecognize() {
-                EditText editTextFileName = findViewById(R.id.file_name_output);
-                final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), editTextFileName.getText().toString());
-                Thread worker = new Thread() {
-                    @Override
-                    public void run() {
-                        StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeFormat, fragment.mPreview, outputFilePath);
-                        streamDecode.start();
-                        getFragmentManager().popBackStack();
-                    }
-                };
-                worker.start();
-            }
-        });
-
-        //getFragmentManager().beginTransaction().replace(R.id.left_part, fragment).addToBackStack(null).commit();
-        getFragmentManager().executePendingTransactions();
-    }
 }

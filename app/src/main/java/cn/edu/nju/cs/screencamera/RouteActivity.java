@@ -24,5 +24,13 @@ public class RouteActivity extends Activity {
                 startActivity(intent);
             }
         });
+        Button btnFromCamera = findViewById(R.id.btn_from_camera);
+        btnFromCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RouteActivity.this, CameraActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }
