@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/text_barcode_format"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/barcode_type" />
+
+        <Spinner
+            android:id="@+id/barcode_format"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text_barcode_format" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_file_path_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/text_file_path_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/input_file_path" />
+
+        <EditText
+            android:id="@+id/file_path_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text_file_path_input"
+            android:layout_toLeftOf="@+id/button_file_path_input" />
+
+        <Button
+            android:id="@+id/button_file_path_input"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/choose_file" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/text_file_name_output"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/file_name_created" />
+
+        <EditText
+            android:id="@+id/file_name_output"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text_file_name_output"
+            android:layout_toLeftOf="@+id/button_file_name_output" />
+
+        <ToggleButton
+            android:id="@+id/toggle_file_name_output"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@id/button_file_name_output"
+            android:textOff="@string/manual"
+            android:textOn="@string/auto" />
+
+        <Button
+            android:id="@+id/button_file_name_output"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:onClick="openFile"
+            android:text="@string/open_file" />
+    </RelativeLayout>
+</LinearLayout>
