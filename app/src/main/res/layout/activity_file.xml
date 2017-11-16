@@ -88,39 +88,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/text_logging"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:text="@string/logging" />
-
-        <EditText
-            android:id="@+id/file_name_logging"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/text_logging"
-            android:layout_toLeftOf="@+id/toggle_file_name_logging_auto" />
-
-        <ToggleButton
-            android:id="@+id/toggle_file_name_logging_auto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/switch_enable_logging"
-            android:textOff="@string/manual"
-            android:textOn="@string/auto" />
-
-        <Switch
-            android:id="@+id/switch_enable_logging"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
         <Button
             android:id="@+id/btn_start"
             android:layout_width="match_parent"

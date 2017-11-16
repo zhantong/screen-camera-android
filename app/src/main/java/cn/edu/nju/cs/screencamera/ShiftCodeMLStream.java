@@ -13,9 +13,6 @@ import net.fec.openrq.OpenRQ;
 import net.fec.openrq.parameters.FECParameters;
 import net.fec.openrq.parameters.SerializableParameters;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.BitSet;
 import java.util.List;
 
@@ -28,8 +25,6 @@ import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
     private static final String TAG = "ShiftCodeMLStream";
     private static final boolean DUMP = true;
-
-    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     private List<BitSet> truthBitSetList;
 
@@ -119,7 +114,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
                         SerializableParameters serializableParameters = parameters.asSerializable();
                         paramsJson.addProperty("commonOTI", serializableParameters.commonOTI());
                         paramsJson.addProperty("schemeSpecificOTI", serializableParameters.schemeSpecificOTI());
-                        LOG.info(CustomMarker.raptorQMeta, new Gson().toJson(paramsJson));
+                        streamDecode.LOG.info(CustomMarker.raptorQMeta, new Gson().toJson(paramsJson));
                     }
                     System.out.println("FECParameters: " + parameters.toString());
                     Log.i(TAG, "data length: " + parameters.dataLengthAsInt() + " symbol length: " + parameters.symbolSize());
@@ -149,7 +144,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
             }
         }
         if (DUMP) {
-            LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
+            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
         }
 
     }

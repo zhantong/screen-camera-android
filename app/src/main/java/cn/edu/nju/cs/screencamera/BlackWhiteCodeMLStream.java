@@ -8,9 +8,6 @@ import com.google.gson.JsonObject;
 
 import net.fec.openrq.parameters.FECParameters;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
@@ -25,8 +22,6 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
     int transmitFileLengthInBytes = -1;
     int numRandomBarcode;
     BarcodeConfig barcodeConfig;
-
-    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     List<int[]> randomIntArrayList;
 
@@ -58,7 +53,7 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
 
     @Override
     public void beforeStream(StreamDecode streamDecode) {
-        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
+        streamDecode.LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
 
     @Override
@@ -106,14 +101,14 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
                         int numSourceBlock = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
                         FECParameters parameters = FECParameters.newParameters(transmitFileLengthInBytes, raptorQSymbolSize, numSourceBlock);
                         if (DUMP) {
-                            LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
+                            streamDecode.LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
                         }
                     }
                 }
             }
         }
         if (DUMP) {
-            LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
+            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
         }
     }
 

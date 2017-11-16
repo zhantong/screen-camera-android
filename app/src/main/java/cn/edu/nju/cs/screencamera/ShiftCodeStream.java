@@ -9,9 +9,6 @@ import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.OpenRQ;
 import net.fec.openrq.parameters.FECParameters;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
@@ -21,7 +18,6 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
 public class ShiftCodeStream extends BlackWhiteCodeStream {
     private static final String TAG = "ShiftCodeStream";
-    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     private boolean DUMP = false;
 
@@ -79,7 +75,7 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
             //int[][] temp=new int[][]{Utils.changeNumBitsPerInt(rawContents[0],2,12),Utils.changeNumBitsPerInt(rawContents[1],4,12)};
 
             //barcodeJson.add("results", new Gson().toJsonTree(temp));
-            LOG.info(CustomMarker.source, new Gson().toJson(barcodeJson));
+            streamDecode.LOG.info(CustomMarker.source, new Gson().toJson(barcodeJson));
         }
         for (int[] rawContent : rawContents) {
             int[] rSDecodedData;
@@ -99,7 +95,7 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
                 barcodeJson.addProperty("index", shiftCode.mediateBarcode.rawImage.getIndex());
                 barcodeJson.addProperty("esi", encodingPacket.encodingSymbolID());
                 barcodeJson.addProperty("type", encodingPacket.symbolType().name());
-                LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
+                streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
             }
             Log.i(TAG, "encoding packet: source block number: " + encodingPacket.sourceBlockNumber() + " " + encodingPacket.encodingSymbolID() + " " + encodingPacket.symbolType() + " " + encodingPacket.numberOfSymbols());
             if (isLastEncodingPacket(encodingPacket)) {

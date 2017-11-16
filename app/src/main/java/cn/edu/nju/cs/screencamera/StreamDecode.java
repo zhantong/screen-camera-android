@@ -1,7 +1,9 @@
 package cn.edu.nju.cs.screencamera;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.common.io.Files;
@@ -10,12 +12,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import cn.edu.nju.cs.screencamera.Logback.ConfigureLogback;
 
 /**
  * Created by zhantong on 2016/12/4.
@@ -35,6 +44,7 @@ public class StreamDecode {
     protected String outputFilePath;
     protected JsonObject inputJsonRoot;
     CallBack callBack;
+    Logger LOG;
 
     interface CallBack {
         void beforeStream(StreamDecode streamDecode);
@@ -145,6 +155,7 @@ public class StreamDecode {
     }
 
     public void start() {
+        initLogging();
         if (isJsonFile) {
             JsonArray data = inputJsonRoot.getAsJsonArray("values");
             stream(data);
@@ -209,5 +220,15 @@ public class StreamDecode {
         }
         RawImage rawImage = new RawImage(data, widthAndHeight[0], widthAndHeight[1], RawImage.COLOR_TYPE_YUV);
         return rawImage;
+    }
+
+    void initLogging() {
+        boolean enableLogging = PreferenceManager.getDefaultSharedPreferences(App.getContext()).getBoolean(App.getContext().getString(R.string.logging), false);
+        if (enableLogging) {
+            ConfigureLogback.configureLogbackDirectly(Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(), (new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date())) + ".log"));
+            LOG = LoggerFactory.getLogger(StreamDecode.class);
+        } else {
+            LOG = null;
+        }
     }
 }

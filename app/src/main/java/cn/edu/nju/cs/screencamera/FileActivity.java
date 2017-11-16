@@ -21,26 +21,15 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Switch;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.j256.simplemagic.ContentInfo;
 import com.j256.simplemagic.ContentInfoUtil;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URLConnection;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.UUID;
-
-import cn.edu.nju.cs.screencamera.Logback.ConfigureLogback;
-import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 
 /**
  * UI主要操作
@@ -55,8 +44,6 @@ public class FileActivity extends Activity {
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
-
-    Logger LOG = LoggerFactory.getLogger(FileActivity.class);
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
@@ -112,40 +99,6 @@ public class FileActivity extends Activity {
 
 
         toggleButtonFileNameCreated.setChecked(sharedPref.getBoolean((String) toggleButtonFileNameCreated.getTag(), false));
-
-        ToggleButton toggleButtonFileNameLoggingAuto = findViewById(R.id.toggle_file_name_logging_auto);
-        toggleButtonFileNameLoggingAuto.setTag("AUTO_GENERATE_FILE_NAME_LOGGING");
-        toggleButtonFileNameLoggingAuto.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                EditText editTextFileNameLogging = findViewById(R.id.file_name_logging);
-                if (isChecked) {
-                    String randomFileName = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA).format(new Date())) + ".txt";
-                    editTextFileNameLogging.setText(randomFileName);
-                    editTextFileNameLogging.setEnabled(false);
-                } else {
-                    editTextFileNameLogging.setEnabled(true);
-                }
-                Switch switchEnableLogging = findViewById(R.id.switch_enable_logging);
-                switchEnableLogging.setChecked(false);
-                editor.putBoolean((String) buttonView.getTag(), isChecked);
-                editor.apply();
-            }
-        });
-        Switch switchEnableLogging = findViewById(R.id.switch_enable_logging);
-        switchEnableLogging.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    EditText editTextFileNameLogging = findViewById(R.id.file_name_logging);
-                    ConfigureLogback.configureLogbackDirectly(Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(), editTextFileNameLogging.getText().toString()));
-                    Toast.makeText(getApplicationContext(), "logging", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        toggleButtonFileNameLoggingAuto.setChecked(sharedPref.getBoolean((String) toggleButtonFileNameLoggingAuto.getTag(), false));
-        switchEnableLogging.setChecked(false);
 
         Button btnStart = findViewById(R.id.btn_start);
         btnStart.setOnClickListener(new View.OnClickListener() {
@@ -262,8 +215,6 @@ public class FileActivity extends Activity {
         final String inputFilePath = editTextInputFilePath.getText().toString();
         EditText editTextFileName = findViewById(R.id.file_name_output);
         final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), editTextFileName.getText().toString());
-
-        LOG.info(CustomMarker.source, inputFilePath);
 
         Thread worker = new Thread() {
             @Override

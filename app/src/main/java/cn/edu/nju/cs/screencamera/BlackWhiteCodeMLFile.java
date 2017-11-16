@@ -44,7 +44,7 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream {
         int schemeSpecificOTI = raptorQMeta.get("schemeSpecificOTI").getAsInt();
         SerializableParameters serializableParameters = new SerializableParameters(commonOTI, schemeSpecificOTI);
         FECParameters parameters = FECParameters.parse(serializableParameters).value();
-        LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
+        streamDecode.LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
         dataDecoder = OpenRQ.newDecoder(parameters, 0);
     }
 
@@ -86,7 +86,7 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream {
         jsonRoot.add("rs", rsJsonRoot);
         jsonRoot.add("raptorQ", raptorQJsonRoot);
         if (DUMP) {
-            LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
+            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
         }
     }
 }

@@ -15,9 +15,6 @@ import net.fec.openrq.SymbolType;
 import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
@@ -33,8 +30,6 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     int rsEcSize = -1;
     BarcodeConfig barcodeConfig;
 
-    static Logger LOG = LoggerFactory.getLogger(FileActivity.class);
-
     public BlackWhiteCodeStream() {
         barcodeConfig = getBarcodeConfigInstance();
     }
@@ -46,7 +41,7 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     @Override
     public void beforeStream(StreamDecode streamDecode) {
         rsEcSize = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_SIZE_RS_ERROR_CORRECTION).toString());
-        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
+        streamDecode.LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
 
     MediateBarcode getMediateBarcode(RawImage rawImage) {
@@ -119,7 +114,7 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
                 if (dataDecoder != null) {
                     FECParameters parameters = dataDecoder.fecParameters();
                     if (DUMP) {
-                        LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
+                        streamDecode.LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
                     }
                 }
             }
@@ -164,7 +159,7 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
             jsonRoot.add("raptorQ", raptorQJsonRoot);
         }
         if (DUMP) {
-            LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
+            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
         }
     }
 
@@ -177,7 +172,14 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     public void afterStream(StreamDecode streamDecode) {
         if (dataDecoder != null && dataDecoder.isDataDecoded()) {
             Log.i(TAG, "RaptorQ decode success");
-            writeRaptorQDataFile(dataDecoder, streamDecode.outputFilePath);
+            byte[] out = dataDecoder.dataArray();
+            String sha1 = FileVerification.bytesToSHA1(out);
+            streamDecode.LOG.info(CustomMarker.sha1, sha1);
+            if (Utils.bytesToFile(out, streamDecode.outputFilePath)) {
+                Log.i(TAG, "successfully write to " + streamDecode.outputFilePath);
+            } else {
+                Log.i(TAG, "failed to write to " + streamDecode.outputFilePath);
+            }
         }
     }
 
@@ -186,16 +188,5 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
         return (sourceBlock.missingSourceSymbols().size() - sourceBlock.availableRepairSymbols().size() == 1)
                 && ((encodingPacket.symbolType() == SymbolType.SOURCE && !sourceBlock.containsSourceSymbol(encodingPacket.encodingSymbolID()))
                 || (encodingPacket.symbolType() == SymbolType.REPAIR && !sourceBlock.containsRepairSymbol(encodingPacket.encodingSymbolID())));
-    }
-
-    void writeRaptorQDataFile(ArrayDataDecoder decoder, String filePath) {
-        byte[] out = decoder.dataArray();
-        String sha1 = FileVerification.bytesToSHA1(out);
-        LOG.info(CustomMarker.sha1, sha1);
-        if (Utils.bytesToFile(out, filePath)) {
-            Log.i(TAG, "successfully write to " + filePath);
-        } else {
-            Log.i(TAG, "failed to write to " + filePath);
-        }
     }
 }
