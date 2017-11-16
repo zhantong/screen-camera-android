@@ -30,7 +30,7 @@ public class CameraSettingsFragment extends PreferenceFragment implements Shared
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.camera_preferences);
+        addPreferencesFromResource(R.xml.preferences_camera);
         getActivity().setTheme(R.style.PreferenceTheme);
 
         loadSupportedPreviewSize();

@@ -112,7 +112,7 @@ public class FileActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.file_menu, menu);
+        inflater.inflate(R.menu.file, menu);
         return true;
     }
 

@@ -58,7 +58,7 @@ public class CameraActivity extends Activity {
         CameraSettingsFragment cameraSettingsFragment = new CameraSettingsFragment();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         cameraSettingsFragment.setDefault(sharedPreferences);
-        PreferenceManager.setDefaultValues(this, R.xml.camera_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_camera, false);
         CameraSettingsFragment.init(PreferenceManager.getDefaultSharedPreferences(this));
 
         final Button buttonStart = findViewById(R.id.btn_start);
