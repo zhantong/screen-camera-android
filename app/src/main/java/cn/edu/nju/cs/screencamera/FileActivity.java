@@ -66,7 +66,7 @@ public class FileActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_file);
         mContext = this;
 
         Button buttonFilePathInput = findViewById(R.id.button_file_path_input);
