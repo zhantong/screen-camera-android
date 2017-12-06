@@ -2,6 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <SwitchPreference
         android:defaultValue="false"
-        android:key="@string/logging"
+        android:key="@string/pref_logging"
         android:title="@string/logging" />
 </PreferenceScreen>

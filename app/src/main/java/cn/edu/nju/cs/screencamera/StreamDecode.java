@@ -1,5 +1,10 @@
 package cn.edu.nju.cs.screencamera;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -41,10 +47,10 @@ public class StreamDecode {
     private boolean isJsonFile = false;
     private LinkedBlockingQueue<RawImage> queue;
     private String videoFilePath;
-    protected String outputFilePath;
     protected JsonObject inputJsonRoot;
     CallBack callBack;
     Logger LOG;
+    Activity activity;
 
     interface CallBack {
         void beforeStream(StreamDecode streamDecode);
@@ -52,6 +58,8 @@ public class StreamDecode {
         void processFrame(StreamDecode streamDecode, RawImage frame);
 
         void processFrame(StreamDecode streamDecode, JsonElement frameData);
+
+        File restoreFile(StreamDecode streamDecode);
 
         void afterStream(StreamDecode streamDecode);
     }
@@ -92,12 +100,12 @@ public class StreamDecode {
         isJsonFile = true;
     }
 
-    public void setOutputFilePath(String outputFilePath) {
-        this.outputFilePath = outputFilePath;
-    }
-
     public void setStopQueue() {
         stopQueue = true;
+    }
+
+    public void setActivity(Activity activity) {
+        this.activity = activity;
     }
 
     public LinkedBlockingQueue<RawImage> getQueue() {
@@ -131,6 +139,36 @@ public class StreamDecode {
                 RawImage rawImage = new RawImage();
                 queue.add(rawImage);
             }
+        }
+        final File file = callBack.restoreFile(this);
+        if (file != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                    builder.setTitle("文件传输完成")
+                            .setMessage(file.getAbsolutePath())
+                            .setPositiveButton("打开", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    String mimeType = URLConnection.guessContentTypeFromName(file.getName());
+                                    if (mimeType != null) {
+                                        Intent newIntent = new Intent(Intent.ACTION_VIEW);
+                                        newIntent.setDataAndType(Uri.fromFile(file), mimeType);
+                                        newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        activity.startActivity(newIntent);
+                                    } else {
+                                        new AlertDialog.Builder(activity).setTitle("未识别的文件类型")
+                                                .setMessage("未识别的文件后缀名或文件内容")
+                                                .setPositiveButton("确定", null)
+                                                .show();
+                                    }
+                                }
+                            })
+                            .setNegativeButton("取消", null);
+                    builder.create().show();
+                }
+            });
         }
         if (callBack != null) {
             callBack.afterStream(this);

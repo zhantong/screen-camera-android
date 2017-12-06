@@ -3,11 +3,9 @@ package cn.edu.nju.cs.screencamera;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 
 
@@ -55,12 +53,10 @@ public class CameraActivity extends Activity {
     }
 
     void start() {
-        EditText editTextFileName = findViewById(R.id.file_name_output);
-        final String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), editTextFileName.getText().toString());
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeSettingsFragment.getBarcodeFormat(), mPreview, outputFilePath);
+                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeSettingsFragment.getBarcodeFormat(), mPreview);
                 streamDecode.start();
                 getFragmentManager().popBackStack();
             }

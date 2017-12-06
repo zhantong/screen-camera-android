@@ -14,12 +14,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.ToggleButton;
-
-import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -51,36 +47,13 @@ public class BarcodeSettingsFragment extends Fragment {
         sharedPref = getActivity().getSharedPreferences("main", Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
-        ToggleButton toggleButtonFileNameCreated = rootView.findViewById(R.id.toggle_file_name_output);
-        toggleButtonFileNameCreated.setTag("AUTO_GENERATE_FILE_NAME_CREATED");
-        toggleButtonFileNameCreated.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                EditText editTextFileNameCreated = rootView.findViewById(R.id.file_name_output);
-                if (isChecked) {
-                    String randomFileName = UUID.randomUUID().toString();
-                    editTextFileNameCreated.setText(randomFileName);
-                    editTextFileNameCreated.setEnabled(false);
-                } else {
-                    editTextFileNameCreated.setEnabled(true);
-                }
-                editor.putBoolean((String) buttonView.getTag(), isChecked);
-                editor.apply();
-            }
-        });
 
         initBarcodeFormatSpinner();
-        final EditText editTextFileNameCreated = rootView.findViewById(R.id.file_name_output);
-        editTextFileNameCreated.setTag("FILE_NAME_CREATED");
-        editTextFileNameCreated.setText(sharedPref.getString((String) editTextFileNameCreated.getTag(), ""));
-        editTextFileNameCreated.addTextChangedListener(new EditTextTextWatcher(editTextFileNameCreated));
 
         final EditText editTextFilePathInput = rootView.findViewById(R.id.file_path_input);
         editTextFilePathInput.setTag("FILE_PATH_INPUT");
         editTextFilePathInput.setText(sharedPref.getString((String) editTextFilePathInput.getTag(), ""));
         editTextFilePathInput.addTextChangedListener(new EditTextTextWatcher(editTextFilePathInput));
-
-        toggleButtonFileNameCreated.setChecked(sharedPref.getBoolean((String) toggleButtonFileNameCreated.getTag(), false));
 
         return rootView;
     }

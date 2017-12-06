@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 
 import net.fec.openrq.parameters.FECParameters;
 
+import java.io.File;
 import java.util.List;
 
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
@@ -115,6 +116,11 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
     @Override
     public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
 
+    }
+
+    @Override
+    public File restoreFile(StreamDecode streamDecode) {
+        return null;
     }
 
     @Override

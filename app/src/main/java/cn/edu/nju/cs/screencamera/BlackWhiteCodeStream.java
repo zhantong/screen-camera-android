@@ -1,5 +1,6 @@
 package cn.edu.nju.cs.screencamera;
 
+import android.os.Environment;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -14,6 +15,9 @@ import net.fec.openrq.ParsingFailureException;
 import net.fec.openrq.SymbolType;
 import net.fec.openrq.decoder.SourceBlockDecoder;
 import net.fec.openrq.parameters.FECParameters;
+
+import java.io.File;
+import java.util.UUID;
 
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
@@ -169,18 +173,28 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     }
 
     @Override
-    public void afterStream(StreamDecode streamDecode) {
+    public File restoreFile(StreamDecode streamDecode) {
         if (dataDecoder != null && dataDecoder.isDataDecoded()) {
             Log.i(TAG, "RaptorQ decode success");
             byte[] out = dataDecoder.dataArray();
             String sha1 = FileVerification.bytesToSHA1(out);
             streamDecode.LOG.info(CustomMarker.sha1, sha1);
-            if (Utils.bytesToFile(out, streamDecode.outputFilePath)) {
-                Log.i(TAG, "successfully write to " + streamDecode.outputFilePath);
+            String randomFileName = UUID.randomUUID().toString();
+            String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), randomFileName);
+            if (Utils.bytesToFile(out, outputFilePath)) {
+                Log.i(TAG, "successfully write to " + outputFilePath);
             } else {
-                Log.i(TAG, "failed to write to " + streamDecode.outputFilePath);
+                Log.i(TAG, "failed to write to " + outputFilePath);
             }
+            File outputFile = Utils.correctFileExtension(new File(outputFilePath));
+            return outputFile;
         }
+        return null;
+    }
+
+    @Override
+    public void afterStream(StreamDecode streamDecode) {
+
     }
 
     boolean isLastEncodingPacket(EncodingPacket encodingPacket) {

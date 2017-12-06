@@ -4,6 +4,8 @@ import android.util.Pair;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.j256.simplemagic.ContentInfo;
+import com.j256.simplemagic.ContentInfoUtil;
 
 import net.fec.openrq.EncodingPacket;
 import net.fec.openrq.decoder.SourceBlockDecoder;
@@ -352,5 +354,41 @@ public final class Utils {
         root.add("availableRepairSymbols", gson.toJsonTree(decoder.availableRepairSymbols()));
         root.add("missingSourceSymbols", gson.toJsonTree(decoder.missingSourceSymbols()));
         return root;
+    }
+
+    public static File correctFileExtension(File file) {
+        String originFileName = file.getName();
+        int lastSeparatorIndex = originFileName.lastIndexOf('.');
+        String fileNameWithoutExtension = originFileName;
+        String originExtension = "";
+        if (lastSeparatorIndex != -1) {
+            fileNameWithoutExtension = originFileName.substring(0, lastSeparatorIndex);
+            originExtension = originFileName.substring(lastSeparatorIndex + 1);
+        }
+        String correctedExtension = getFileExtension(file);
+        if (!correctedExtension.equals(originExtension)) {
+            String correctedFileName = fileNameWithoutExtension + "." + correctedExtension;
+            File newFile = new File(file.getParent(), correctedFileName);
+            file.renameTo(newFile);
+            file = newFile;
+        }
+        return file;
+    }
+
+    public static String getFileExtension(File file) {
+        if (!file.isFile()) {
+            throw new RuntimeException("file not exists");
+        }
+        ContentInfoUtil util = new ContentInfoUtil();
+        ContentInfo info;
+        try {
+            info = util.findMatch(file);
+        } catch (IOException e) {
+            throw new RuntimeException("file not exists");
+        }
+        if (info == null) {
+            return "txt";
+        }
+        return info.getFileExtensions()[0];
     }
 }

@@ -68,7 +68,7 @@ public class MultiFormatStream {
         return callBack;
     }
 
-    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, String inputFilePath, String outputFilePath) {
+    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, String inputFilePath) {
         ContentInfoUtil util = new ContentInfoUtil();
         ContentInfo info = null;
         try {
@@ -96,18 +96,14 @@ public class MultiFormatStream {
             throw new IllegalArgumentException();
         }
         streamDecode.setCallBack(callBack);
-        if (outputFilePath != null) {
-            streamDecode.setOutputFilePath(outputFilePath);
-        }
         return streamDecode;
     }
 
-    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, CameraPreview cameraPreview, String outputFilePath) {
+    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, CameraPreview cameraPreview) {
         StreamDecode streamDecode = new StreamDecode();
         StreamDecode.CallBack callBack = MultiFormatStream.getCallBack(barcodeFormat);
         streamDecode.setCallBack(callBack);
         streamDecode.setCamera(cameraPreview);
-        streamDecode.setOutputFilePath(outputFilePath);
         return streamDecode;
     }
 }

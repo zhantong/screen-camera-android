@@ -1,17 +1,20 @@
 package cn.edu.nju.cs.screencamera;
 
 
+import android.os.Environment;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
 
@@ -155,6 +158,11 @@ public class RDCodeMLFile implements StreamDecode.CallBack {
     }
 
     @Override
+    public File restoreFile(StreamDecode streamDecode) {
+        return null;
+    }
+
+    @Override
     public void afterStream(StreamDecode streamDecode) {
         if (numAllRegions == countAllRegions) {
             byte[] out = new byte[numFileBytes];
@@ -179,10 +187,12 @@ public class RDCodeMLFile implements StreamDecode.CallBack {
             }
             String sha1 = FileVerification.bytesToSHA1(out);
             Log.d(TAG, "file SHA-1 verification: " + sha1);
-            if (Utils.bytesToFile(out, streamDecode.outputFilePath)) {
-                Log.i(TAG, "successfully write to " + streamDecode.outputFilePath);
+            String randomFileName = UUID.randomUUID().toString();
+            String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), randomFileName);
+            if (Utils.bytesToFile(out, outputFilePath)) {
+                Log.i(TAG, "successfully write to " + outputFilePath);
             } else {
-                Log.i(TAG, "failed to write to " + streamDecode.outputFilePath);
+                Log.i(TAG, "failed to write to " + outputFilePath);
             }
         } else {
             Log.i(TAG, "file not complete");
