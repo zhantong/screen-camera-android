@@ -37,19 +37,19 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream {
     }
 
     @Override
-    public void beforeStream(StreamDecode streamDecode) {
-        super.beforeStream(streamDecode);
-        JsonObject raptorQMeta = (JsonObject) streamDecode.inputJsonRoot.get("fecParameters");
+    public void beforeStream() {
+        super.beforeStream();
+        JsonObject raptorQMeta = (JsonObject) inputJsonRoot.get("fecParameters");
         long commonOTI = raptorQMeta.get("commonOTI").getAsLong();
         int schemeSpecificOTI = raptorQMeta.get("schemeSpecificOTI").getAsInt();
         SerializableParameters serializableParameters = new SerializableParameters(commonOTI, schemeSpecificOTI);
         FECParameters parameters = FECParameters.parse(serializableParameters).value();
-        streamDecode.LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
+        LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
         dataDecoder = OpenRQ.newDecoder(parameters, 0);
     }
 
     @Override
-    public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
+    public void processFrame(JsonElement frameData) {
         Gson gson = new Gson();
         int[] rsEncodedContent = gson.fromJson(((JsonObject) frameData).get("value"), int[].class);
         int index = ((JsonObject) frameData).get("index").getAsInt();
@@ -77,7 +77,7 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream {
                 raptorQJsonRoot.add("encodingPacket", Utils.encodingPacketToJson(encodingPacket));
                 if (isLastEncodingPacket(encodingPacket)) {
                     Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
-                    streamDecode.setStopQueue();
+                    setStopQueue();
                 }
                 dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
             }
@@ -86,7 +86,7 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream {
         jsonRoot.add("rs", rsJsonRoot);
         jsonRoot.add("raptorQ", raptorQJsonRoot);
         if (DUMP) {
-            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
+            LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
         }
     }
 }

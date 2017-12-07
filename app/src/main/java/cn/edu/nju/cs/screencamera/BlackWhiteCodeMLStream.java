@@ -3,12 +3,10 @@ package cn.edu.nju.cs.screencamera;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.fec.openrq.parameters.FECParameters;
 
-import java.io.File;
 import java.util.List;
 
 import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
@@ -17,7 +15,7 @@ import cn.edu.nju.cs.screencamera.Logback.CustomMarker;
  * Created by zhantong on 2017/5/11.
  */
 
-public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
+public class BlackWhiteCodeMLStream extends StreamDecode {
     private static final String TAG = "BlackWhiteCodeMLStream";
     private static final boolean DUMP = true;
     int transmitFileLengthInBytes = -1;
@@ -53,12 +51,12 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
     }
 
     @Override
-    public void beforeStream(StreamDecode streamDecode) {
-        streamDecode.LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
+    public void beforeStream() {
+        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
 
     @Override
-    public void processFrame(StreamDecode streamDecode, RawImage frame) {
+    public void processFrame(RawImage frame) {
         Gson gson = new Gson();
         JsonObject jsonRoot = new JsonObject();
         if (frame.getPixels() == null) {
@@ -102,29 +100,14 @@ public class BlackWhiteCodeMLStream implements StreamDecode.CallBack {
                         int numSourceBlock = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RAPTORQ_SOURCE_BLOCKS).toString());
                         FECParameters parameters = FECParameters.newParameters(transmitFileLengthInBytes, raptorQSymbolSize, numSourceBlock);
                         if (DUMP) {
-                            streamDecode.LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
+                            LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
                         }
                     }
                 }
             }
         }
         if (DUMP) {
-            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
+            LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
         }
-    }
-
-    @Override
-    public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
-
-    }
-
-    @Override
-    public File restoreFile(StreamDecode streamDecode) {
-        return null;
-    }
-
-    @Override
-    public void afterStream(StreamDecode streamDecode) {
-
     }
 }

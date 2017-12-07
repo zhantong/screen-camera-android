@@ -11,22 +11,22 @@ import java.io.IOException;
  */
 
 public class MultiFormatStream {
-    public static StreamDecode.CallBack getCallBack(BarcodeFormat barcodeFormat) {
-        return getCallBack(barcodeFormat, false);
+    public static StreamDecode getStreamDecode(BarcodeFormat barcodeFormat) {
+        return getStreamDecode(barcodeFormat, false);
     }
 
-    public static StreamDecode.CallBack getCallBack(BarcodeFormat barcodeFormat, boolean isFile) {
-        StreamDecode.CallBack callBack;
+    public static StreamDecode getStreamDecode(BarcodeFormat barcodeFormat, boolean isFile) {
+        StreamDecode streamDecode;
         if (isFile) {
             switch (barcodeFormat) {
                 case BLACK_WHITE_CODE_ML:
-                    callBack = new BlackWhiteCodeMLFile();
+                    streamDecode = new BlackWhiteCodeMLFile();
                     break;
                 case COLOR_CODE_ML:
-                    callBack = new ColorCodeMLFile();
+                    streamDecode = new ColorCodeMLFile();
                     break;
                 case RD_CODE_ML:
-                    callBack = new RDCodeMLFile();
+                    streamDecode = new RDCodeMLFile();
                     break;
                 default:
                     throw new IllegalArgumentException();
@@ -34,38 +34,38 @@ public class MultiFormatStream {
         } else {
             switch (barcodeFormat) {
                 case SHIFT_CODE:
-                    callBack = new ShiftCodeStream();
+                    streamDecode = new ShiftCodeStream();
                     break;
                 case SHIFT_CODE_COLOR:
-                    callBack = new ShiftCodeColorStream();
+                    streamDecode = new ShiftCodeColorStream();
                     break;
 
                 case SHIFT_CODE_ML:
-                    callBack = new ShiftCodeMLStream();
+                    streamDecode = new ShiftCodeMLStream();
                     break;
                 case SHIFT_CODE_COLOR_ML:
-                    callBack = new ShiftCodeColorMLStream();
+                    streamDecode = new ShiftCodeColorMLStream();
                     break;
                 case BLACK_WHITE_CODE_ML:
-                    callBack = new BlackWhiteCodeMLStream();
+                    streamDecode = new BlackWhiteCodeMLStream();
                     break;
                 case COLOR_CODE_ML:
-                    callBack = new ColorCodeMLStream();
+                    streamDecode = new ColorCodeMLStream();
                     break;
                 case BLACK_WHITE_CODE_WITH_BAR:
-                    callBack = new BlackWhiteCodeWithBarStream();
+                    streamDecode = new BlackWhiteCodeWithBarStream();
                     break;
                 case RD_CODE_ML:
-                    callBack = new RDCodeMLStream();
+                    streamDecode = new RDCodeMLStream();
                     break;
                 case BLACK_WHITE_CODE:
-                    callBack = new BlackWhiteCodeStream();
+                    streamDecode = new BlackWhiteCodeStream();
                     break;
                 default:
                     throw new IllegalArgumentException();
             }
         }
-        return callBack;
+        return streamDecode;
     }
 
     public static StreamDecode getInstance(BarcodeFormat barcodeFormat, String inputFilePath) {
@@ -79,30 +79,25 @@ public class MultiFormatStream {
         if (info == null) {
             return null;
         }
-        StreamDecode streamDecode = new StreamDecode();
-        StreamDecode.CallBack callBack;
+        StreamDecode streamDecode;
         String mimeType = info.getMimeType();
-        System.out.println(mimeType);
         if (mimeType.startsWith("video")) {
+            streamDecode = getStreamDecode(barcodeFormat);
             streamDecode.setVideo(inputFilePath);
-            callBack = MultiFormatStream.getCallBack(barcodeFormat);
         } else if (mimeType.startsWith("image")) {
+            streamDecode = getStreamDecode(barcodeFormat);
             streamDecode.setImage(inputFilePath);
-            callBack = MultiFormatStream.getCallBack(barcodeFormat);
         } else if (mimeType.startsWith("application/json")) {
+            streamDecode = getStreamDecode(barcodeFormat, true);
             streamDecode.setJsonFile(inputFilePath);
-            callBack = MultiFormatStream.getCallBack(barcodeFormat, true);
         } else {
             throw new IllegalArgumentException();
         }
-        streamDecode.setCallBack(callBack);
         return streamDecode;
     }
 
     public static StreamDecode getInstance(BarcodeFormat barcodeFormat, CameraPreview cameraPreview) {
-        StreamDecode streamDecode = new StreamDecode();
-        StreamDecode.CallBack callBack = MultiFormatStream.getCallBack(barcodeFormat);
-        streamDecode.setCallBack(callBack);
+        StreamDecode streamDecode = getStreamDecode(barcodeFormat);
         streamDecode.setCamera(cameraPreview);
         return streamDecode;
     }

@@ -48,29 +48,13 @@ public class StreamDecode {
     private LinkedBlockingQueue<RawImage> queue;
     private String videoFilePath;
     protected JsonObject inputJsonRoot;
-    CallBack callBack;
     Logger LOG;
     Activity activity;
-
-    interface CallBack {
-        void beforeStream(StreamDecode streamDecode);
-
-        void processFrame(StreamDecode streamDecode, RawImage frame);
-
-        void processFrame(StreamDecode streamDecode, JsonElement frameData);
-
-        File restoreFile(StreamDecode streamDecode);
-
-        void afterStream(StreamDecode streamDecode);
-    }
 
     public StreamDecode() {
         queue = new LinkedBlockingQueue<>(4);
     }
 
-    void setCallBack(CallBack callBack) {
-        this.callBack = callBack;
-    }
 
     public void setVideo(String videoFilePath) {
         videoToFrames = new VideoToFrames();
@@ -120,14 +104,26 @@ public class StreamDecode {
         return isCamera;
     }
 
+    void beforeStream() {
+    }
+
+    void processFrame(RawImage frame) {
+    }
+
+    void processFrame(JsonElement frameData) {
+    }
+
+    File restoreFile() {
+        return null;
+    }
+
+    void afterStream() {
+    }
+
     public void stream(LinkedBlockingQueue<RawImage> frames) throws InterruptedException {
-        if (callBack != null) {
-            callBack.beforeStream(this);
-        }
+        beforeStream();
         for (RawImage frame; ((frame = frames.poll(QUEUE_TIME_OUT, TimeUnit.SECONDS)) != null) && (frame.getPixels() != null); ) {
-            if (callBack != null) {
-                callBack.processFrame(this, frame);
-            }
+            processFrame(frame);
             if (stopQueue) {
                 if (isVideo) {
                     stopVideoDecoding();
@@ -140,7 +136,7 @@ public class StreamDecode {
                 queue.add(rawImage);
             }
         }
-        final File file = callBack.restoreFile(this);
+        final File file = restoreFile();
         if (file != null) {
             activity.runOnUiThread(new Runnable() {
                 @Override
@@ -170,26 +166,18 @@ public class StreamDecode {
                 }
             });
         }
-        if (callBack != null) {
-            callBack.afterStream(this);
-        }
+        afterStream();
     }
 
     public void stream(JsonArray framesData) {
-        if (callBack != null) {
-            callBack.beforeStream(this);
-        }
+        beforeStream();
         for (JsonElement frameData : framesData) {
-            if (callBack != null) {
-                callBack.processFrame(this, frameData);
-            }
+            processFrame(frameData);
             if (stopQueue) {
                 break;
             }
         }
-        if (callBack != null) {
-            callBack.afterStream(this);
-        }
+        afterStream();
     }
 
     public void start() {

@@ -8,7 +8,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +21,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  * Created by zhantong on 2017/6/4.
  */
 
-public class RDCodeMLFile implements StreamDecode.CallBack {
+public class RDCodeMLFile extends StreamDecode {
     private static final String TAG = "ShiftCodeMLFile";
     RDCodeMLConfig config = new RDCodeMLConfig();
     int countAllRegions = 0;
@@ -43,7 +42,7 @@ public class RDCodeMLFile implements StreamDecode.CallBack {
     }
 
     @Override
-    public void beforeStream(StreamDecode streamDecod) {
+    public void beforeStream() {
         numRSBytes = 6;
         int numColors = 4;
         int numRegionBytes = (config.regionWidth * config.regionHeight) / (8 / (int) Math.sqrt(numColors));
@@ -61,12 +60,7 @@ public class RDCodeMLFile implements StreamDecode.CallBack {
     }
 
     @Override
-    public void processFrame(StreamDecode streamDecode, RawImage frame) {
-
-    }
-
-    @Override
-    public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
+    public void processFrame(JsonElement frameData) {
         Gson gson = new Gson();
         int[] rsEncodedContent = gson.fromJson(((JsonObject) frameData).get("value"), int[].class);
         int index = ((JsonObject) frameData).get("index").getAsInt();
@@ -158,12 +152,7 @@ public class RDCodeMLFile implements StreamDecode.CallBack {
     }
 
     @Override
-    public File restoreFile(StreamDecode streamDecode) {
-        return null;
-    }
-
-    @Override
-    public void afterStream(StreamDecode streamDecode) {
+    public void afterStream() {
         if (numAllRegions == countAllRegions) {
             byte[] out = new byte[numFileBytes];
             int outPos = 0;

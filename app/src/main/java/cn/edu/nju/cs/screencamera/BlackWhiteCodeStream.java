@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import net.fec.openrq.ArrayDataDecoder;
@@ -26,7 +25,7 @@ import cn.edu.nju.cs.screencamera.ReedSolomon.ReedSolomonException;
  * Created by zhantong on 2017/6/18.
  */
 
-public class BlackWhiteCodeStream implements StreamDecode.CallBack {
+public class BlackWhiteCodeStream extends StreamDecode {
     private static final String TAG = "BlackWhiteCodeStream";
     private static final boolean DUMP = true;
     ArrayDataDecoder dataDecoder = null;
@@ -43,9 +42,9 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     }
 
     @Override
-    public void beforeStream(StreamDecode streamDecode) {
+    public void beforeStream() {
         rsEcSize = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_SIZE_RS_ERROR_CORRECTION).toString());
-        streamDecode.LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
+        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
     }
 
     MediateBarcode getMediateBarcode(RawImage rawImage) {
@@ -93,7 +92,7 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
     }
 
     @Override
-    public void processFrame(StreamDecode streamDecode, RawImage frame) {
+    public void processFrame(RawImage frame) {
         Gson gson = new Gson();
         JsonObject jsonRoot = new JsonObject();
         if (frame.getPixels() == null) {
@@ -118,7 +117,7 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
                 if (dataDecoder != null) {
                     FECParameters parameters = dataDecoder.fecParameters();
                     if (DUMP) {
-                        streamDecode.LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
+                        LOG.info(CustomMarker.fecParameters, new Gson().toJson(Utils.fecParametersToJson(parameters)));
                     }
                 }
             }
@@ -148,7 +147,7 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
                             System.out.println(Utils.encodingPacketToJson(encodingPacket));
                             if (isLastEncodingPacket(encodingPacket)) {
                                 Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
-                                streamDecode.setStopQueue();
+                                setStopQueue();
                             }
                             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
                         }
@@ -163,22 +162,17 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
             jsonRoot.add("raptorQ", raptorQJsonRoot);
         }
         if (DUMP) {
-            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
+            LOG.info(CustomMarker.processed, new Gson().toJson(jsonRoot));
         }
     }
 
     @Override
-    public void processFrame(StreamDecode streamDecode, JsonElement frameData) {
-
-    }
-
-    @Override
-    public File restoreFile(StreamDecode streamDecode) {
+    public File restoreFile() {
         if (dataDecoder != null && dataDecoder.isDataDecoded()) {
             Log.i(TAG, "RaptorQ decode success");
             byte[] out = dataDecoder.dataArray();
             String sha1 = FileVerification.bytesToSHA1(out);
-            streamDecode.LOG.info(CustomMarker.sha1, sha1);
+            LOG.info(CustomMarker.sha1, sha1);
             String randomFileName = UUID.randomUUID().toString();
             String outputFilePath = Utils.combinePaths(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath(), randomFileName);
             if (Utils.bytesToFile(out, outputFilePath)) {
@@ -190,11 +184,6 @@ public class BlackWhiteCodeStream implements StreamDecode.CallBack {
             return outputFile;
         }
         return null;
-    }
-
-    @Override
-    public void afterStream(StreamDecode streamDecode) {
-
     }
 
     boolean isLastEncodingPacket(EncodingPacket encodingPacket) {

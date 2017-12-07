@@ -30,7 +30,7 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
     }
 
     @Override
-    public void processFrame(StreamDecode streamDecode, RawImage frame) {
+    public void processFrame(RawImage frame) {
         //Utils.dumpFile(Environment.getExternalStorageDirectory().toString()+"/"+frame.getIndex()+".yuv",frame.getPixels());
         Log.i(TAG, frame.toString());
 
@@ -39,8 +39,8 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
             mediateBarcode = new MediateBarcode(frame, getBarcodeConfigInstance(), null, RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             Log.i(TAG, "barcode not found: " + e.toString());
-            if (streamDecode.getIsCamera()) {
-                streamDecode.focusCamera();
+            if (getIsCamera()) {
+                focusCamera();
             }
             return;
         }
@@ -58,8 +58,8 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
                 dataDecoder = OpenRQ.newDecoder(parameters, 0);
             } catch (CRCCheckException e) {
                 e.printStackTrace();
-                if (streamDecode.getIsCamera()) {
-                    streamDecode.focusCamera();
+                if (getIsCamera()) {
+                    focusCamera();
                 }
                 return;
             }
@@ -75,7 +75,7 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
             //int[][] temp=new int[][]{Utils.changeNumBitsPerInt(rawContents[0],2,12),Utils.changeNumBitsPerInt(rawContents[1],4,12)};
 
             //barcodeJson.add("results", new Gson().toJsonTree(temp));
-            streamDecode.LOG.info(CustomMarker.source, new Gson().toJson(barcodeJson));
+            LOG.info(CustomMarker.source, new Gson().toJson(barcodeJson));
         }
         for (int[] rawContent : rawContents) {
             int[] rSDecodedData;
@@ -95,12 +95,12 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
                 barcodeJson.addProperty("index", shiftCode.mediateBarcode.rawImage.getIndex());
                 barcodeJson.addProperty("esi", encodingPacket.encodingSymbolID());
                 barcodeJson.addProperty("type", encodingPacket.symbolType().name());
-                streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
+                LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
             }
             Log.i(TAG, "encoding packet: source block number: " + encodingPacket.sourceBlockNumber() + " " + encodingPacket.encodingSymbolID() + " " + encodingPacket.symbolType() + " " + encodingPacket.numberOfSymbols());
             if (isLastEncodingPacket(encodingPacket)) {
                 Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
-                streamDecode.setStopQueue();
+                setStopQueue();
             }
             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
         }

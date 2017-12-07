@@ -50,7 +50,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
     }
 
     @Override
-    public void processFrame(StreamDecode streamDecode, RawImage frame) {
+    public void processFrame(RawImage frame) {
         int raptorQSymbolSize = -1;
         ArrayDataDecoder dataDecoder = null;
         JsonObject barcodeJson = new JsonObject();
@@ -114,7 +114,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
                         SerializableParameters serializableParameters = parameters.asSerializable();
                         paramsJson.addProperty("commonOTI", serializableParameters.commonOTI());
                         paramsJson.addProperty("schemeSpecificOTI", serializableParameters.schemeSpecificOTI());
-                        streamDecode.LOG.info(CustomMarker.raptorQMeta, new Gson().toJson(paramsJson));
+                        LOG.info(CustomMarker.raptorQMeta, new Gson().toJson(paramsJson));
                     }
                     System.out.println("FECParameters: " + parameters.toString());
                     Log.i(TAG, "data length: " + parameters.dataLengthAsInt() + " symbol length: " + parameters.symbolSize());
@@ -144,8 +144,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
             }
         }
         if (DUMP) {
-            streamDecode.LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
+            LOG.info(CustomMarker.processed, new Gson().toJson(barcodeJson));
         }
-
     }
 }
