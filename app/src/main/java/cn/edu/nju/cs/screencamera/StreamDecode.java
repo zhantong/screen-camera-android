@@ -50,6 +50,7 @@ public class StreamDecode {
     protected JsonObject inputJsonRoot;
     Logger LOG;
     Activity activity;
+    BarcodeConfig barcodeConfig;
 
     public StreamDecode() {
         queue = new LinkedBlockingQueue<>(4);
@@ -90,6 +91,10 @@ public class StreamDecode {
 
     public void setActivity(Activity activity) {
         this.activity = activity;
+    }
+
+    public void setBarcodeConfig(BarcodeConfig barcodeConfig) {
+        this.barcodeConfig = barcodeConfig;
     }
 
     public LinkedBlockingQueue<RawImage> getQueue() {

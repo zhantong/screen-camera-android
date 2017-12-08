@@ -68,7 +68,7 @@ public class MultiFormatStream {
         return streamDecode;
     }
 
-    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, String inputFilePath) {
+    public static StreamDecode getInstance(BarcodeConfig barcodeConfig, String inputFilePath) {
         ContentInfoUtil util = new ContentInfoUtil();
         ContentInfo info = null;
         try {
@@ -79,6 +79,7 @@ public class MultiFormatStream {
         if (info == null) {
             return null;
         }
+        BarcodeFormat barcodeFormat = barcodeConfig.barcodeFormat;
         StreamDecode streamDecode;
         String mimeType = info.getMimeType();
         if (mimeType.startsWith("video")) {
@@ -93,6 +94,7 @@ public class MultiFormatStream {
         } else {
             throw new IllegalArgumentException();
         }
+        streamDecode.setBarcodeConfig(barcodeConfig);
         return streamDecode;
     }
 

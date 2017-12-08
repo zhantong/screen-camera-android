@@ -26,8 +26,10 @@ import static android.app.Activity.RESULT_OK;
 public class BarcodeSettingsFragment extends Fragment {
     View rootView;
     private BarcodeFormat barcodeFormat;
+    String barcodeConfigFileName;
 
     public static final int REQUEST_CODE_FILE_PATH_INPUT = 1;
+    public static final int REQUEST_CODE_BARCODE_CONFIG = 2;
 
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor editor;
@@ -41,6 +43,15 @@ public class BarcodeSettingsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 getFilePath(REQUEST_CODE_FILE_PATH_INPUT);
+            }
+        });
+
+        Button buttonBarcodeConfig = rootView.findViewById(R.id.button_barcode_config);
+        buttonBarcodeConfig.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), ConfigListActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_BARCODE_CONFIG);
             }
         });
 
@@ -63,8 +74,12 @@ public class BarcodeSettingsFragment extends Fragment {
         view.setVisibility(View.GONE);
     }
 
+    BarcodeConfig getBarcodeConfig() {
+        return BarcodeConfig.load(barcodeConfigFileName);
+    }
+
     BarcodeFormat getBarcodeFormat() {
-        return barcodeFormat;
+        return null;
     }
 
     private void initBarcodeFormatSpinner() {
@@ -107,16 +122,21 @@ public class BarcodeSettingsFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        int id = 0;
         switch (requestCode) {
             case REQUEST_CODE_FILE_PATH_INPUT:
-                id = R.id.file_path_input;
+                if (resultCode == RESULT_OK) {
+                    EditText editText = rootView.findViewById(R.id.file_path_input);
+                    String curFileName = data.getData().getPath();
+                    editText.setText(curFileName);
+                }
                 break;
-        }
-        if (resultCode == RESULT_OK) {
-            EditText editText = rootView.findViewById(id);
-            String curFileName = data.getData().getPath();
-            editText.setText(curFileName);
+            case REQUEST_CODE_BARCODE_CONFIG:
+                if (resultCode == RESULT_OK) {
+                    barcodeConfigFileName = data.getStringExtra("result");
+                    EditText editText = rootView.findViewById(R.id.barcode_config);
+                    editText.setText(barcodeConfigFileName);
+                }
+                break;
         }
     }
 

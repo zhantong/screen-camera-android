@@ -23,6 +23,33 @@
     </RelativeLayout>
 
     <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/text_barcode_config"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/barcode_type" />
+
+        <EditText
+            android:id="@+id/barcode_config"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/text_barcode_config"
+            android:layout_toLeftOf="@+id/button_barcode_config"
+            android:editable="false" />
+
+        <Button
+            android:id="@+id/button_barcode_config"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="@string/choose_file" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/layout_file_path_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

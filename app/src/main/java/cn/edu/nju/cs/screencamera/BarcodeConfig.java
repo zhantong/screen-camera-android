@@ -17,6 +17,8 @@ import java.util.Map;
  */
 
 public class BarcodeConfig {
+    public BarcodeFormat barcodeFormat;
+
     public DistrictConfig<Integer> borderLength = new DistrictConfig<>(1);
     //public DistrictConfig<Integer> borderLength=new DistrictConfig<>(1,1,1,1);
 
@@ -83,6 +85,7 @@ public class BarcodeConfig {
             e.printStackTrace();
         }
         BarcodeConfig config = new BarcodeConfig();
+        config.barcodeFormat = BarcodeFormat.fromString(root.get("barcodeFormat").getAsString());
         config.borderLength = new DistrictConfig<>(root.get("borderLength").getAsInt());
         config.paddingLength = new DistrictConfig<>(root.get("paddingLength").getAsInt());
         config.metaLength = new DistrictConfig<>(root.get("metaLength").getAsInt());

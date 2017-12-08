@@ -31,6 +31,7 @@
             android:name=".VideoToFramesActivity"
             android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity android:name=".MainSettingsActivity" />
+        <activity android:name=".ConfigListActivity" />
     </application>
 
 </manifest>

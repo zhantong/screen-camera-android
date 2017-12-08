@@ -70,7 +70,7 @@ public class FileActivity extends Activity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeSettingsFragment.getBarcodeFormat(), inputFilePath);
+                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeSettingsFragment.getBarcodeConfig(), inputFilePath);
                 streamDecode.setActivity(FileActivity.this);
                 streamDecode.start();
             }

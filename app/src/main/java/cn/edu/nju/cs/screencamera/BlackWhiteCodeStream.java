@@ -31,11 +31,6 @@ public class BlackWhiteCodeStream extends StreamDecode {
     ArrayDataDecoder dataDecoder = null;
     int raptorQSymbolSize = -1;
     int rsEcSize = -1;
-    BarcodeConfig barcodeConfig;
-
-    public BlackWhiteCodeStream() {
-        barcodeConfig = getBarcodeConfigInstance();
-    }
 
     BarcodeConfig getBarcodeConfigInstance() {
         return new BlackWhiteCodeConfig();

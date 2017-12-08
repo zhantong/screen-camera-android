@@ -22,4 +22,13 @@ public enum BarcodeFormat {
     public String toString() {
         return friendlyName;
     }
+
+    public static BarcodeFormat fromString(String friendlyName) {
+        for (BarcodeFormat format : BarcodeFormat.values()) {
+            if (format.friendlyName.equals(friendlyName)) {
+                return format;
+            }
+        }
+        return null;
+    }
 }
