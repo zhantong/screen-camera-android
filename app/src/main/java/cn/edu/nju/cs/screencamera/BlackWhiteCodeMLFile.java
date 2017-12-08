@@ -25,16 +25,13 @@ public class BlackWhiteCodeMLFile extends BlackWhiteCodeStream {
 
 
     public BlackWhiteCodeMLFile() {
-        blackWhiteCodeML = getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance()));
+        blackWhiteCodeML = getBarcodeInstance(new MediateBarcode(barcodeConfig));
     }
 
     BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode) {
         return new BlackWhiteCodeML(mediateBarcode);
     }
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new BlackWhiteCodeMLConfig();
-    }
 
     @Override
     public void beforeStream() {

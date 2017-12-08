@@ -9,8 +9,4 @@ public class ShiftCodeMLFile extends BlackWhiteCodeMLFile {
     BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode) {
         return new ShiftCodeML(mediateBarcode);
     }
-
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new ShiftCodeMLConfig();
-    }
 }

@@ -41,10 +41,6 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
         return new ShiftCodeML(mediateBarcode);
     }
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new ShiftCodeMLConfig();
-    }
-
     void sampleContent(BlackWhiteCodeML blackWhiteCodeML) {
         blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN), RawImage.CHANNLE_Y);
     }
@@ -61,7 +57,7 @@ public class ShiftCodeMLStream extends BlackWhiteCodeMLStream {
 
         MediateBarcode mediateBarcode;
         try {
-            mediateBarcode = new MediateBarcode(frame, getBarcodeConfigInstance(), null, RawImage.CHANNLE_Y);
+            mediateBarcode = new MediateBarcode(frame, barcodeConfig, null, RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             Log.i(TAG, "barcode not found");
             return;

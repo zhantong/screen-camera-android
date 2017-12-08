@@ -34,4 +34,5 @@
     <string name="from_camera">从相机</string>
     <string name="video_to_frames">导出视频帧</string>
     <string name="camera_settings">相机设置</string>
+    <string name="choose_config_file">选择配置文件</string>
 </resources>

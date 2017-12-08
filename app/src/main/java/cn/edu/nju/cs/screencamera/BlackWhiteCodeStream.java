@@ -32,19 +32,15 @@ public class BlackWhiteCodeStream extends StreamDecode {
     int raptorQSymbolSize = -1;
     int rsEcSize = -1;
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new BlackWhiteCodeConfig();
-    }
-
     @Override
     public void beforeStream() {
         rsEcSize = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCode.KEY_SIZE_RS_ERROR_CORRECTION).toString());
-        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
+        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(barcodeConfig.toJson()));
     }
 
     MediateBarcode getMediateBarcode(RawImage rawImage) {
         try {
-            return new MediateBarcode(rawImage, getBarcodeConfigInstance(), null, RawImage.CHANNLE_Y);
+            return new MediateBarcode(rawImage, barcodeConfig, null, RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             return null;
         }

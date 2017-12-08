@@ -11,11 +11,8 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -25,7 +22,6 @@ import static android.app.Activity.RESULT_OK;
 
 public class BarcodeSettingsFragment extends Fragment {
     View rootView;
-    private BarcodeFormat barcodeFormat;
     String barcodeConfigFileName;
 
     public static final int REQUEST_CODE_FILE_PATH_INPUT = 1;
@@ -58,9 +54,6 @@ public class BarcodeSettingsFragment extends Fragment {
         sharedPref = getActivity().getSharedPreferences("main", Context.MODE_PRIVATE);
         editor = sharedPref.edit();
 
-
-        initBarcodeFormatSpinner();
-
         final EditText editTextFilePathInput = rootView.findViewById(R.id.file_path_input);
         editTextFilePathInput.setTag("FILE_PATH_INPUT");
         editTextFilePathInput.setText(sharedPref.getString((String) editTextFilePathInput.getTag(), ""));
@@ -76,34 +69,6 @@ public class BarcodeSettingsFragment extends Fragment {
 
     BarcodeConfig getBarcodeConfig() {
         return BarcodeConfig.load(barcodeConfigFileName);
-    }
-
-    BarcodeFormat getBarcodeFormat() {
-        return null;
-    }
-
-    private void initBarcodeFormatSpinner() {
-        Spinner barcodeFormatSpinner = rootView.findViewById(R.id.barcode_format);
-        barcodeFormatSpinner.setTag("BARCODE_FORMAT");
-        ArrayAdapter<BarcodeFormat> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_spinner_item, BarcodeFormat.values());
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        barcodeFormatSpinner.setAdapter(adapter);
-        barcodeFormatSpinner.setSelection(sharedPref.getInt((String) barcodeFormatSpinner.getTag(), 0));
-
-        barcodeFormatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                barcodeFormat = BarcodeFormat.values()[position];
-
-                editor.putInt((String) parent.getTag(), position);
-                editor.apply();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
     }
 
     private void getFilePath(int requestCode) {

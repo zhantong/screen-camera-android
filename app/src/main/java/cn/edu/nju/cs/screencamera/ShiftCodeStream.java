@@ -21,10 +21,6 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
 
     private boolean DUMP = false;
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new BlackWhiteCodeConfig();
-    }
-
     ShiftCode getShiftCode(MediateBarcode mediateBarcode) {
         return new ShiftCode(mediateBarcode);
     }
@@ -36,7 +32,7 @@ public class ShiftCodeStream extends BlackWhiteCodeStream {
 
         MediateBarcode mediateBarcode;
         try {
-            mediateBarcode = new MediateBarcode(frame, getBarcodeConfigInstance(), null, RawImage.CHANNLE_Y);
+            mediateBarcode = new MediateBarcode(frame, barcodeConfig, null, RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             Log.i(TAG, "barcode not found: " + e.toString());
             if (getIsCamera()) {

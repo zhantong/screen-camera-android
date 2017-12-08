@@ -98,9 +98,10 @@ public class MultiFormatStream {
         return streamDecode;
     }
 
-    public static StreamDecode getInstance(BarcodeFormat barcodeFormat, CameraPreview cameraPreview) {
-        StreamDecode streamDecode = getStreamDecode(barcodeFormat);
+    public static StreamDecode getInstance(BarcodeConfig barcodeConfig, CameraPreview cameraPreview) {
+        StreamDecode streamDecode = getStreamDecode(barcodeConfig.barcodeFormat);
         streamDecode.setCamera(cameraPreview);
+        streamDecode.setBarcodeConfig(barcodeConfig);
         return streamDecode;
     }
 }

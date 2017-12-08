@@ -13,10 +13,6 @@ public class ColorCodeMLStream extends BlackWhiteCodeMLStream {
         return new ColorCodeML(mediateBarcode);
     }
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new ColorCodeMLConfig();
-    }
-
     void sampleContent(BlackWhiteCodeML blackWhiteCodeML) {
         blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN), RawImage.CHANNLE_U);
         blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN), RawImage.CHANNLE_V);

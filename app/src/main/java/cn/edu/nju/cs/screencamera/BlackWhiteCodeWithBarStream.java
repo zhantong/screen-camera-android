@@ -7,10 +7,6 @@ package cn.edu.nju.cs.screencamera;
 
 public class BlackWhiteCodeWithBarStream extends BlackWhiteCodeStream {
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new BlackWhiteCodeWithBarConfig();
-    }
-
     BlackWhiteCode getBarcodeInstance(MediateBarcode mediateBarcode) {
         return new BlackWhiteCodeWithBar(mediateBarcode);
     }

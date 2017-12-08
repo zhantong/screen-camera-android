@@ -13,8 +13,4 @@ public class RDCodeMLStream extends ColorCodeMLStream {
     BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode) {
         return new RDCodeML(mediateBarcode);
     }
-
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new RDCodeMLConfig();
-    }
 }

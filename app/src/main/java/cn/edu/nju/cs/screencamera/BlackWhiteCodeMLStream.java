@@ -20,23 +20,18 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
     private static final boolean DUMP = true;
     int transmitFileLengthInBytes = -1;
     int numRandomBarcode;
-    BarcodeConfig barcodeConfig;
 
     List<int[]> randomIntArrayList;
 
     public BlackWhiteCodeMLStream() {
-        barcodeConfig = getBarcodeConfigInstance();
         numRandomBarcode = Integer.parseInt(barcodeConfig.hints.get(BlackWhiteCodeML.KEY_NUMBER_RANDOM_BARCODES).toString());
-        randomIntArrayList = getBarcodeInstance(new MediateBarcode(getBarcodeConfigInstance())).randomBarcodeValue(getBarcodeConfigInstance(), numRandomBarcode);
+        randomIntArrayList = getBarcodeInstance(new MediateBarcode(barcodeConfig)).randomBarcodeValue(barcodeConfig, numRandomBarcode);
     }
 
     BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode) {
         return new BlackWhiteCodeML(mediateBarcode);
     }
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new BlackWhiteCodeMLConfig();
-    }
 
     void sampleContent(BlackWhiteCodeML blackWhiteCodeML) {
         blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN), RawImage.CHANNLE_Y);
@@ -44,7 +39,7 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
 
     MediateBarcode getMediateBarcode(RawImage rawImage) {
         try {
-            return new MediateBarcode(rawImage, getBarcodeConfigInstance(), null, RawImage.CHANNLE_Y);
+            return new MediateBarcode(rawImage, barcodeConfig, null, RawImage.CHANNLE_Y);
         } catch (NotFoundException e) {
             return null;
         }
@@ -52,7 +47,7 @@ public class BlackWhiteCodeMLStream extends StreamDecode {
 
     @Override
     public void beforeStream() {
-        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(getBarcodeConfigInstance().toJson()));
+        LOG.info(CustomMarker.barcodeConfig, new Gson().toJson(barcodeConfig.toJson()));
     }
 
     @Override

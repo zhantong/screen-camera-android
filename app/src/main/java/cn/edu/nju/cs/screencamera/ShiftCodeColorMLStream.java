@@ -10,10 +10,6 @@ public class ShiftCodeColorMLStream extends ShiftCodeMLStream {
         return new ShiftCodeColorML(mediateBarcode);
     }
 
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new ShiftCodeColorMLConfig();
-    }
-
     void sampleContent(BlackWhiteCodeML blackWhiteCodeML) {
         blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN), RawImage.CHANNLE_U);
         blackWhiteCodeML.mediateBarcode.getContent(blackWhiteCodeML.mediateBarcode.districts.get(Districts.MAIN).get(District.MAIN), RawImage.CHANNLE_V);

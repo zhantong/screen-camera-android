@@ -13,8 +13,4 @@ public class ColorCodeMLFile extends BlackWhiteCodeMLFile {
     BlackWhiteCodeML getBarcodeInstance(MediateBarcode mediateBarcode) {
         return new ColorCodeML(mediateBarcode);
     }
-
-    BarcodeConfig getBarcodeConfigInstance() {
-        return new ColorCodeMLConfig();
-    }
 }
