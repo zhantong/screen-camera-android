@@ -1,5 +1,8 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 /**
  * Created by zhantong on 2016/12/2.
  */
@@ -40,6 +43,29 @@ public class ColorShiftBlock implements Block {
 
     public int[] getChannels() {
         return channels;
+    }
+
+    int getChannelFromString(String channel) {
+        switch (channel) {
+            case "Y":
+                return RawImage.CHANNLE_Y;
+            case "U":
+                return RawImage.CHANNLE_U;
+            case "V":
+                return RawImage.CHANNLE_V;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    @Override
+    public Block fromJson(JsonObject jsonRoot) {
+        String[] channelsInString = new Gson().fromJson(jsonRoot.get("channels"), String[].class);
+        int[] channels = new int[channelsInString.length];
+        for (int i = 0; i < channels.length; i++) {
+            channels[i] = getChannelFromString(channelsInString[i]);
+        }
+        return new ColorShiftBlock(channels);
     }
 
     public int getClear(boolean isWhite, int x, int y, int[][] rawPoints, int offset) {

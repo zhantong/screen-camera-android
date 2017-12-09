@@ -34,6 +34,19 @@ public class DistrictConfig<T> {
         configs.set(District.DOWN, down);
     }
 
+    public DistrictConfig(T[] ts) {
+        this();
+        if (ts.length == 1) {
+            for (int i = 0; i < District.NUM_TYPES; i++) {
+                configs.set(i, ts[0]);
+            }
+        } else if (ts.length == 4) {
+            for (int i = 0; i < District.NUM_TYPES; i++) {
+                configs.set(i, ts[i]);
+            }
+        }
+    }
+
     public DistrictConfig(T left, T up, T right, T down, T leftUp, T rightUp, T rightDown, T leftDown) {
         this();
         configs.set(District.LEFT, left);

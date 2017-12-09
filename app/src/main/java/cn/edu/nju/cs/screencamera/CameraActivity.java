@@ -56,7 +56,7 @@ public class CameraActivity extends Activity {
         Thread worker = new Thread() {
             @Override
             public void run() {
-                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeSettingsFragment.getBarcodeConfig(), mPreview);
+                StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeSettingsFragment.getConfig(), mPreview);
                 streamDecode.start();
                 getFragmentManager().popBackStack();
             }

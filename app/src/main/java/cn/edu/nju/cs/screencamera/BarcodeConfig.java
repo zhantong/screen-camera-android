@@ -3,12 +3,7 @@ package cn.edu.nju.cs.screencamera;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,28 +70,6 @@ public class BarcodeConfig {
 
     public int fps = 0;
     public int distance = 0;
-
-    static BarcodeConfig load(String configName) {
-        JsonParser parser = new JsonParser();
-        JsonObject root = null;
-        try {
-            root = parser.parse(new FileReader(new File(Utils.combinePaths(App.getContext().getFilesDir().getAbsolutePath(), "configs", configName + ".json")))).getAsJsonObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        BarcodeConfig config = new BarcodeConfig();
-        config.barcodeFormat = BarcodeFormat.fromString(root.get("barcodeFormat").getAsString());
-        config.borderLength = new DistrictConfig<>(root.get("borderLength").getAsInt());
-        config.paddingLength = new DistrictConfig<>(root.get("paddingLength").getAsInt());
-        config.metaLength = new DistrictConfig<>(root.get("metaLength").getAsInt());
-        config.mainWidth = root.get("mainWidth").getAsInt();
-        config.mainHeight = root.get("mainHeight").getAsInt();
-        config.fps = root.get("fps").getAsInt();
-        config.distance = root.get("distance").getAsInt();
-        config.hints = new Gson().fromJson(root.get("hints"), new TypeToken<Map<String, String>>() {
-        }.getType());
-        return config;
-    }
 
     JsonElement toJson() {
         Gson gson = new Gson();

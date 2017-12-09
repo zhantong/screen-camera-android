@@ -12,10 +12,12 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.common.io.Files;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,9 +26,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -123,6 +127,63 @@ public class StreamDecode {
     }
 
     void afterStream() {
+    }
+
+    void configureBarcode(JsonObject jsonRoot) {
+        barcodeConfig = new BarcodeConfig();
+        barcodeConfig.barcodeFormat = BarcodeFormat.fromString(jsonRoot.get("barcodeFormat").getAsString());
+        barcodeConfig.mainWidth = jsonRoot.get("mainWidth").getAsInt();
+        barcodeConfig.mainHeight = jsonRoot.get("mainHeight").getAsInt();
+        if (jsonRoot.has("borderLength")) {
+            JsonElement e = jsonRoot.get("borderLength");
+            if (e.isJsonPrimitive()) {
+                barcodeConfig.borderLength = new DistrictConfig<>(e.getAsInt());
+            } else if (e.isJsonArray()) {
+                barcodeConfig.borderLength = new DistrictConfig<>(new Gson().fromJson(e, Integer[].class));
+            }
+        }
+        if (jsonRoot.has("paddingLength")) {
+            JsonElement e = jsonRoot.get("paddingLength");
+            if (e.isJsonPrimitive()) {
+                barcodeConfig.paddingLength = new DistrictConfig<>(e.getAsInt());
+            } else if (e.isJsonArray()) {
+                barcodeConfig.paddingLength = new DistrictConfig<>(new Gson().fromJson(e, Integer[].class));
+            }
+        }
+        if (jsonRoot.has("metaLength")) {
+            JsonElement e = jsonRoot.get("metaLength");
+            if (e.isJsonPrimitive()) {
+                barcodeConfig.metaLength = new DistrictConfig<>(e.getAsInt());
+            } else if (e.isJsonArray()) {
+                barcodeConfig.metaLength = new DistrictConfig<>(new Gson().fromJson(e, Integer[].class));
+            }
+        }
+        if (jsonRoot.has("borderBlock")) {
+            try {
+                Method method = Class.forName(jsonRoot.get("borderBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
+                barcodeConfig.borderBlock = new DistrictConfig<>((Block) method.invoke(null, jsonRoot.get("borderBlock").getAsJsonObject()));
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+        }
+        if (jsonRoot.has("paddingBlock")) {
+            try {
+                Method method = Class.forName(jsonRoot.get("paddingBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
+                barcodeConfig.paddingBlock = new DistrictConfig<>((Block) method.invoke(null, jsonRoot.get("paddingBlock").getAsJsonObject()));
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+        }
+        if (jsonRoot.has("metaBlock")) {
+            try {
+                Method method = Class.forName(jsonRoot.get("metaBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
+                barcodeConfig.metaBlock = new DistrictConfig<>((Block) method.invoke(null, jsonRoot.get("metaBlock").getAsJsonObject()));
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+        }
+        barcodeConfig.hints = new Gson().fromJson(jsonRoot.get("hints"), new TypeToken<Map<String, String>>() {
+        }.getType());
     }
 
     public void stream(LinkedBlockingQueue<RawImage> frames) throws InterruptedException {

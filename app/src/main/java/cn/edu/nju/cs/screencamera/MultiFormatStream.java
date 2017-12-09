@@ -1,6 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
 
+import com.google.gson.JsonObject;
 import com.j256.simplemagic.ContentInfo;
 import com.j256.simplemagic.ContentInfoUtil;
 
@@ -68,7 +69,7 @@ public class MultiFormatStream {
         return streamDecode;
     }
 
-    public static StreamDecode getInstance(BarcodeConfig barcodeConfig, String inputFilePath) {
+    public static StreamDecode getInstance(JsonObject barcodeConfigJsonRoot, String inputFilePath) {
         ContentInfoUtil util = new ContentInfoUtil();
         ContentInfo info = null;
         try {
@@ -79,7 +80,7 @@ public class MultiFormatStream {
         if (info == null) {
             return null;
         }
-        BarcodeFormat barcodeFormat = barcodeConfig.barcodeFormat;
+        BarcodeFormat barcodeFormat = BarcodeFormat.fromString(barcodeConfigJsonRoot.get("barcodeFormat").getAsString());
         StreamDecode streamDecode;
         String mimeType = info.getMimeType();
         if (mimeType.startsWith("video")) {
@@ -94,14 +95,14 @@ public class MultiFormatStream {
         } else {
             throw new IllegalArgumentException();
         }
-        streamDecode.setBarcodeConfig(barcodeConfig);
+        streamDecode.configureBarcode(barcodeConfigJsonRoot);
         return streamDecode;
     }
 
-    public static StreamDecode getInstance(BarcodeConfig barcodeConfig, CameraPreview cameraPreview) {
-        StreamDecode streamDecode = getStreamDecode(barcodeConfig.barcodeFormat);
+    public static StreamDecode getInstance(JsonObject barcodeConfigJsonRoot, CameraPreview cameraPreview) {
+        StreamDecode streamDecode = getStreamDecode(BarcodeFormat.fromString(barcodeConfigJsonRoot.get("barcodeFormat").getAsString()));
         streamDecode.setCamera(cameraPreview);
-        streamDecode.setBarcodeConfig(barcodeConfig);
+        streamDecode.configureBarcode(barcodeConfigJsonRoot);
         return streamDecode;
     }
 }

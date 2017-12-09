@@ -1,5 +1,7 @@
 package cn.edu.nju.cs.screencamera;
 
+import com.google.gson.JsonObject;
+
 /**
  * Created by zhantong on 2016/11/24.
  */
@@ -23,6 +25,11 @@ public class ShiftBlock implements Block {
     @Override
     public int[] getChannels() {
         return null;
+    }
+
+    @Override
+    public Block fromJson(JsonObject jsonRoot) {
+        return new ShiftBlock();
     }
 
     private static int indexToValue(int index) {

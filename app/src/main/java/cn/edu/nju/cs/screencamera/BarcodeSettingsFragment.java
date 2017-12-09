@@ -14,6 +14,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 import static android.app.Activity.RESULT_OK;
 
 /**
@@ -67,8 +74,15 @@ public class BarcodeSettingsFragment extends Fragment {
         view.setVisibility(View.GONE);
     }
 
-    BarcodeConfig getBarcodeConfig() {
-        return BarcodeConfig.load(barcodeConfigFileName);
+    JsonObject getConfig() {
+        JsonParser parser = new JsonParser();
+        JsonObject root = null;
+        try {
+            root = parser.parse(new FileReader(new File(Utils.combinePaths(App.getContext().getFilesDir().getAbsolutePath(), "configs", barcodeConfigFileName + ".json")))).getAsJsonObject();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return root;
     }
 
     private void getFilePath(int requestCode) {
