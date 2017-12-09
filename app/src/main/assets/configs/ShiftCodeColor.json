@@ -1,0 +1,22 @@
+{
+  "barcodeFormat": "ShiftCodeColor",
+  "borderLength": 1,
+  "paddingLength": 1,
+  "metaLength": 0,
+  "mainWidth": 40,
+  "mainHeight": 40,
+  "borderBlock": {
+    "type": "BlackWhiteBlock"
+  },
+  "mainBlock": {
+    "type": "ColorShiftCode",
+    "channels": ["U", "V"]
+  },
+  "fps": 28,
+  "distance": 50,
+  "hints": {
+    "SIZE_RS_ERROR_CORRECTION": 12,
+    "LEVEL_RS_ERROR_CORRECTION": 0.1,
+    "NUMBER_RAPTORQ_SOURCE_BLOCKS": 1
+  }
+}
