@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -112,8 +113,13 @@ public class BarcodeSettingsFragment extends Fragment {
             case REQUEST_CODE_BARCODE_CONFIG:
                 if (resultCode == RESULT_OK) {
                     barcodeConfigFileName = data.getStringExtra("result");
-                    EditText editText = rootView.findViewById(R.id.barcode_config);
-                    editText.setText(barcodeConfigFileName);
+                    JsonObject jsonRoot = getConfig();
+                    TextView textBarcodeConfigName = rootView.findViewById(R.id.text_barcode_config_name);
+                    textBarcodeConfigName.setText(barcodeConfigFileName);
+                    TextView textBarcodeType = rootView.findViewById(R.id.text_barcode_type);
+                    textBarcodeType.setText(jsonRoot.get("barcodeFormat").getAsString());
+                    TextView textBarcodeSize = rootView.findViewById(R.id.text_barcode_size);
+                    textBarcodeSize.setText(jsonRoot.get("mainWidth").getAsInt() + "x" + jsonRoot.get("mainHeight").getAsInt());
                 }
                 break;
         }
