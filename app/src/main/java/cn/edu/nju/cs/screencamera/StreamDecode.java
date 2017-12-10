@@ -158,9 +158,10 @@ public class StreamDecode {
                 barcodeConfig.metaLength = new DistrictConfig<>(new Gson().fromJson(e, Integer[].class));
             }
         }
+        String PACKAGE_NAME = App.getContext().getPackageName();
         if (jsonRoot.has("borderBlock")) {
             try {
-                Method method = Class.forName(jsonRoot.get("borderBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
+                Method method = Class.forName(PACKAGE_NAME + "." + jsonRoot.get("borderBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
                 barcodeConfig.borderBlock = new DistrictConfig<>((Block) method.invoke(null, jsonRoot.get("borderBlock").getAsJsonObject()));
             } catch (ReflectiveOperationException e) {
                 e.printStackTrace();
@@ -168,7 +169,7 @@ public class StreamDecode {
         }
         if (jsonRoot.has("paddingBlock")) {
             try {
-                Method method = Class.forName(jsonRoot.get("paddingBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
+                Method method = Class.forName(PACKAGE_NAME + "." + jsonRoot.get("paddingBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
                 barcodeConfig.paddingBlock = new DistrictConfig<>((Block) method.invoke(null, jsonRoot.get("paddingBlock").getAsJsonObject()));
             } catch (ReflectiveOperationException e) {
                 e.printStackTrace();
@@ -176,8 +177,16 @@ public class StreamDecode {
         }
         if (jsonRoot.has("metaBlock")) {
             try {
-                Method method = Class.forName(jsonRoot.get("metaBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
+                Method method = Class.forName(PACKAGE_NAME + "." + jsonRoot.get("metaBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
                 barcodeConfig.metaBlock = new DistrictConfig<>((Block) method.invoke(null, jsonRoot.get("metaBlock").getAsJsonObject()));
+            } catch (ReflectiveOperationException e) {
+                e.printStackTrace();
+            }
+        }
+        if (jsonRoot.has("mainBlock")) {
+            try {
+                Method method = Class.forName(PACKAGE_NAME + "." + jsonRoot.get("mainBlock").getAsJsonObject().get("type").getAsString()).getMethod("fromJson", JsonObject.class);
+                barcodeConfig.mainBlock = new DistrictConfig<>((Block) method.invoke(null, jsonRoot.get("mainBlock").getAsJsonObject()));
             } catch (ReflectiveOperationException e) {
                 e.printStackTrace();
             }
