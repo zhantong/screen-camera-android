@@ -45,7 +45,7 @@ public class ColorShiftBlock implements Block {
         return channels;
     }
 
-    int getChannelFromString(String channel) {
+    static int getChannelFromString(String channel) {
         switch (channel) {
             case "Y":
                 return RawImage.CHANNLE_Y;
@@ -58,8 +58,7 @@ public class ColorShiftBlock implements Block {
         }
     }
 
-    @Override
-    public Block fromJson(JsonObject jsonRoot) {
+    public static Block fromJson(JsonObject jsonRoot) {
         String[] channelsInString = new Gson().fromJson(jsonRoot.get("channels"), String[].class);
         int[] channels = new int[channelsInString.length];
         for (int i = 0; i < channels.length; i++) {

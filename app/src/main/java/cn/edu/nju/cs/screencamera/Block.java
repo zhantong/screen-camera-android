@@ -15,5 +15,6 @@ public interface Block {
 
     int[] getChannels();
 
-    Block fromJson(JsonObject jsonRoot);
+    // 因API 21不支持静态接口方法，故注释掉，但子类仍需实现
+    // static Block fromJson(JsonObject jsonRoot);
 }

@@ -31,8 +31,7 @@ public class ColorBlock implements Block {
         return null;
     }
 
-    @Override
-    public Block fromJson(JsonObject jsonRoot) {
+    public static Block fromJson(JsonObject jsonRoot) {
         return new ColorBlock(jsonRoot.get("bitsPerUnit").getAsInt());
     }
 }

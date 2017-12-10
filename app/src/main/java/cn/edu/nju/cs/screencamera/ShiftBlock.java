@@ -27,8 +27,7 @@ public class ShiftBlock implements Block {
         return null;
     }
 
-    @Override
-    public Block fromJson(JsonObject jsonRoot) {
+    public static Block fromJson(JsonObject jsonRoot) {
         return new ShiftBlock();
     }
 
