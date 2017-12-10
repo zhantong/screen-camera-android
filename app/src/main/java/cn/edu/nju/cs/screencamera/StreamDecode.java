@@ -315,7 +315,7 @@ public class StreamDecode {
     }
 
     void initLogging() {
-        boolean enableLogging = PreferenceManager.getDefaultSharedPreferences(App.getContext()).getBoolean(App.getContext().getString(R.string.logging), false);
+        boolean enableLogging = PreferenceManager.getDefaultSharedPreferences(App.getContext()).getBoolean(App.getContext().getString(R.string.pref_logging), false);
         if (enableLogging) {
             ConfigureLogback.configureLogbackDirectly(Utils.combinePaths(Environment.getExternalStorageDirectory().getAbsolutePath(), (new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date())) + ".log"));
             LOG = LoggerFactory.getLogger(StreamDecode.class);
