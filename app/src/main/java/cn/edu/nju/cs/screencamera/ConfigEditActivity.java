@@ -18,20 +18,21 @@ public class ConfigEditActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config_edit);
-
-        String filePath = getIntent().getStringExtra("path");
-        String configName = new File(filePath).getName();
-        configName = configName.substring(0, configName.lastIndexOf("."));
-        EditText textConfigName = findViewById(R.id.config_name);
-        textConfigName.setText(configName);
-        String content = "";
-        try {
-            content = Utils.getStringFromFile(filePath);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (getIntent().hasExtra("path")) {
+            String filePath = getIntent().getStringExtra("path");
+            String configName = new File(filePath).getName();
+            configName = configName.substring(0, configName.lastIndexOf("."));
+            EditText textConfigName = findViewById(R.id.config_name);
+            textConfigName.setText(configName);
+            String content = "";
+            try {
+                content = Utils.getStringFromFile(filePath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            EditText textContent = findViewById(R.id.content);
+            textContent.setText(content);
         }
-        EditText textContent = findViewById(R.id.content);
-        textContent.setText(content);
     }
 
     @Override

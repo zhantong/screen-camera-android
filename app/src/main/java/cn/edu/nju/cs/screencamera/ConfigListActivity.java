@@ -3,6 +3,9 @@ package cn.edu.nju.cs.screencamera;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -23,6 +26,9 @@ import java.io.FileReader;
  */
 
 public class ConfigListActivity extends Activity {
+    File[] configFiles;
+    Adapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,8 +36,8 @@ public class ConfigListActivity extends Activity {
 
         ListView listView = findViewById(R.id.list_main);
 
-        final File[] configFiles = new File(getFilesDir(), "configs").listFiles();
-        Adapter adapter = new Adapter(configFiles);
+        configFiles = new File(getFilesDir(), "configs").listFiles();
+        adapter = new Adapter();
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -46,16 +52,37 @@ public class ConfigListActivity extends Activity {
         });
     }
 
-    class Adapter extends BaseAdapter {
-        File[] files;
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-        public Adapter(File[] files) {
-            this.files = files;
+        configFiles = new File(getFilesDir(), "configs").listFiles();
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.config_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_new_config:
+                startActivity(new Intent(ConfigListActivity.this, ConfigEditActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
+    }
+
+    class Adapter extends BaseAdapter {
 
         @Override
         public int getCount() {
-            return files.length;
+            return configFiles.length;
         }
 
         @Override
@@ -71,7 +98,7 @@ public class ConfigListActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = View.inflate(ConfigListActivity.this, R.layout.config_list_cell, null);
-            final File file = files[position];
+            final File file = configFiles[position];
             String fileName = file.getName();
             TextView textBarcodeConfigName = view.findViewById(R.id.text_barcode_config_name);
             textBarcodeConfigName.setText(fileName.substring(0, fileName.lastIndexOf(".")));
