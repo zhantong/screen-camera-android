@@ -32,6 +32,7 @@
             android:windowSoftInputMode="stateHidden|adjustPan" />
         <activity android:name=".MainSettingsActivity" />
         <activity android:name=".ConfigListActivity" />
+        <activity android:name=".ConfigEditActivity" />
     </application>
 
 </manifest>

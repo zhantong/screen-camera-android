@@ -7,10 +7,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 /**
  * Created by zhantong on 2017/12/8.
@@ -65,8 +71,31 @@ public class ConfigListActivity extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = View.inflate(ConfigListActivity.this, R.layout.config_list_cell, null);
-            TextView textFileName = view.findViewById(R.id.text_file_name);
-            textFileName.setText(files[position].getName());
+            final File file = files[position];
+            String fileName = file.getName();
+            TextView textBarcodeConfigName = view.findViewById(R.id.text_barcode_config_name);
+            textBarcodeConfigName.setText(fileName.substring(0, fileName.lastIndexOf(".")));
+            JsonParser parser = new JsonParser();
+            JsonObject jsonRoot = null;
+            try {
+                jsonRoot = parser.parse(new FileReader(file)).getAsJsonObject();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            TextView textBarcodeType = view.findViewById(R.id.text_barcode_type);
+            textBarcodeType.setText(jsonRoot.get("barcodeFormat").getAsString());
+            TextView textBarcodeSize = view.findViewById(R.id.text_barcode_size);
+            textBarcodeSize.setText(jsonRoot.get("mainWidth").getAsInt() + "x" + jsonRoot.get("mainHeight").getAsInt());
+
+            ImageButton btnEdit = view.findViewById(R.id.btn_edit);
+            btnEdit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(ConfigListActivity.this, ConfigEditActivity.class);
+                    intent.putExtra("path", file.getAbsolutePath());
+                    startActivity(intent);
+                }
+            });
             return view;
         }
     }
