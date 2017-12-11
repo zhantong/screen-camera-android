@@ -2,6 +2,9 @@ package cn.edu.nju.cs.screencamera;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.EditText;
 
 import java.io.File;
@@ -29,5 +32,36 @@ public class ConfigEditActivity extends Activity {
         }
         EditText textContent = findViewById(R.id.content);
         textContent.setText(content);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.config_edit, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_save:
+                saveConfig();
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    void saveConfig() {
+        EditText textContent = findViewById(R.id.content);
+        EditText textConfigName = findViewById(R.id.config_name);
+        String configName = textConfigName.getText().toString();
+        String filePath = Utils.combinePaths(getFilesDir().getAbsolutePath(), "configs", configName + ".json");
+        try {
+            Utils.saveStringToFile(textContent.getText().toString(), filePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

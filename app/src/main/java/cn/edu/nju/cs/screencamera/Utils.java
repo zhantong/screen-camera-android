@@ -414,4 +414,10 @@ public final class Utils {
         fin.close();
         return ret;
     }
+
+    public static void saveStringToFile(String string, String filePath) throws Exception {
+        FileOutputStream fos = new FileOutputStream(new File(filePath));
+        fos.write(string.getBytes("UTF-8"));
+        fos.close();
+    }
 }
