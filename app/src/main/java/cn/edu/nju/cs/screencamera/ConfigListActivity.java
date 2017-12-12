@@ -3,15 +3,15 @@ package cn.edu.nju.cs.screencamera;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.JsonObject;
@@ -34,22 +34,17 @@ public class ConfigListActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config_list);
 
-        ListView listView = findViewById(R.id.list_main);
-
         configFiles = new File(getFilesDir(), "configs").listFiles();
+
+        RecyclerView recyclerView = findViewById(R.id.recycler_main);
+
+        recyclerView.setHasFixedSize(true);
+
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
         adapter = new Adapter();
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent();
-                String fileName = configFiles[position].getName();
-                fileName = fileName.substring(0, fileName.lastIndexOf("."));
-                intent.putExtra("result", fileName);
-                setResult(RESULT_OK, intent);
-                finish();
-            }
-        });
+        recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -78,30 +73,19 @@ public class ConfigListActivity extends Activity {
         }
     }
 
-    class Adapter extends BaseAdapter {
-
+    class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         @Override
-        public int getCount() {
-            return configFiles.length;
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.config_list_cell, parent, false);
+            ViewHolder viewHolder = new ViewHolder(view);
+            return viewHolder;
         }
 
         @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return 0;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = View.inflate(ConfigListActivity.this, R.layout.config_list_cell, null);
+        public void onBindViewHolder(ViewHolder holder, int position) {
             final File file = configFiles[position];
             String fileName = file.getName();
-            TextView textBarcodeConfigName = view.findViewById(R.id.text_barcode_config_name);
-            textBarcodeConfigName.setText(fileName.substring(0, fileName.lastIndexOf(".")));
+            holder.textBarcodeConfigName.setText(fileName.substring(0, fileName.lastIndexOf(".")));
             JsonParser parser = new JsonParser();
             JsonObject jsonRoot = null;
             try {
@@ -109,13 +93,9 @@ public class ConfigListActivity extends Activity {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            TextView textBarcodeType = view.findViewById(R.id.text_barcode_type);
-            textBarcodeType.setText(jsonRoot.get("barcodeFormat").getAsString());
-            TextView textBarcodeSize = view.findViewById(R.id.text_barcode_size);
-            textBarcodeSize.setText(jsonRoot.get("mainWidth").getAsInt() + "x" + jsonRoot.get("mainHeight").getAsInt());
-
-            ImageButton btnEdit = view.findViewById(R.id.btn_edit);
-            btnEdit.setOnClickListener(new View.OnClickListener() {
+            holder.textBarcodeType.setText(jsonRoot.get("barcodeFormat").getAsString());
+            holder.textBarcodeSize.setText(jsonRoot.get("mainWidth").getAsInt() + "x" + jsonRoot.get("mainHeight").getAsInt());
+            holder.btnEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(ConfigListActivity.this, ConfigEditActivity.class);
@@ -123,7 +103,38 @@ public class ConfigListActivity extends Activity {
                     startActivity(intent);
                 }
             });
-            return view;
+        }
+
+        @Override
+        public int getItemCount() {
+            return configFiles.length;
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+            TextView textBarcodeConfigName;
+            TextView textBarcodeType;
+            TextView textBarcodeSize;
+            ImageButton btnEdit;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+                textBarcodeConfigName = itemView.findViewById(R.id.text_barcode_config_name);
+                textBarcodeType = itemView.findViewById(R.id.text_barcode_type);
+                textBarcodeSize = itemView.findViewById(R.id.text_barcode_size);
+                btnEdit = itemView.findViewById(R.id.btn_edit);
+
+                itemView.setOnClickListener(this);
+            }
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                String fileName = configFiles[getPosition()].getName();
+                fileName = fileName.substring(0, fileName.lastIndexOf("."));
+                intent.putExtra("result", fileName);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
         }
     }
 }
