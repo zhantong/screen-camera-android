@@ -30,7 +30,6 @@ import static android.app.Activity.RESULT_OK;
 
 public class BarcodeSettingsFragment extends Fragment {
     View rootView;
-    String barcodeConfigFileName;
 
     public static final int REQUEST_CODE_FILE_PATH_INPUT = 1;
     public static final int REQUEST_CODE_BARCODE_CONFIG = 2;
@@ -65,8 +64,13 @@ public class BarcodeSettingsFragment extends Fragment {
         final EditText editTextFilePathInput = rootView.findViewById(R.id.file_path_input);
         editTextFilePathInput.setTag("FILE_PATH_INPUT");
         editTextFilePathInput.setText(sharedPref.getString((String) editTextFilePathInput.getTag(), ""));
-        editTextFilePathInput.addTextChangedListener(new EditTextTextWatcher(editTextFilePathInput));
+        editTextFilePathInput.addTextChangedListener(new TextViewTextWatcher(editTextFilePathInput));
 
+        final TextView textViewConfigName = rootView.findViewById(R.id.text_barcode_config_name);
+        textViewConfigName.setTag("CONFIG_NAME");
+        textViewConfigName.setText(sharedPref.getString((String) textViewConfigName.getTag(), ""));
+        textViewConfigName.addTextChangedListener(new TextViewTextWatcher(textViewConfigName));
+        updateConfigInfo();
         return rootView;
     }
 
@@ -76,6 +80,8 @@ public class BarcodeSettingsFragment extends Fragment {
     }
 
     JsonObject getConfig() {
+        TextView textBarcodeConfigName = rootView.findViewById(R.id.text_barcode_config_name);
+        String barcodeConfigFileName = textBarcodeConfigName.getText().toString();
         JsonParser parser = new JsonParser();
         JsonObject root = null;
         try {
@@ -112,24 +118,30 @@ public class BarcodeSettingsFragment extends Fragment {
                 break;
             case REQUEST_CODE_BARCODE_CONFIG:
                 if (resultCode == RESULT_OK) {
-                    barcodeConfigFileName = data.getStringExtra("result");
-                    JsonObject jsonRoot = getConfig();
                     TextView textBarcodeConfigName = rootView.findViewById(R.id.text_barcode_config_name);
-                    textBarcodeConfigName.setText(barcodeConfigFileName);
-                    TextView textBarcodeType = rootView.findViewById(R.id.text_barcode_type);
-                    textBarcodeType.setText(jsonRoot.get("barcodeFormat").getAsString());
-                    TextView textBarcodeSize = rootView.findViewById(R.id.text_barcode_size);
-                    textBarcodeSize.setText(jsonRoot.get("mainWidth").getAsInt() + "x" + jsonRoot.get("mainHeight").getAsInt());
+                    textBarcodeConfigName.setText(data.getStringExtra("result"));
+                    updateConfigInfo();
                 }
                 break;
         }
     }
 
-    private class EditTextTextWatcher implements TextWatcher {
-        private EditText mEditText;
+    void updateConfigInfo() {
+        JsonObject jsonRoot = getConfig();
+        if (jsonRoot == null) {
+            return;
+        }
+        TextView textBarcodeType = rootView.findViewById(R.id.text_barcode_type);
+        textBarcodeType.setText(jsonRoot.get("barcodeFormat").getAsString());
+        TextView textBarcodeSize = rootView.findViewById(R.id.text_barcode_size);
+        textBarcodeSize.setText(jsonRoot.get("mainWidth").getAsInt() + "x" + jsonRoot.get("mainHeight").getAsInt());
+    }
 
-        public EditTextTextWatcher(EditText editText) {
-            mEditText = editText;
+    private class TextViewTextWatcher implements TextWatcher {
+        private TextView mTextView;
+
+        public TextViewTextWatcher(TextView textView) {
+            mTextView = textView;
         }
 
         @Override
@@ -142,7 +154,7 @@ public class BarcodeSettingsFragment extends Fragment {
 
         @Override
         public void afterTextChanged(Editable s) {
-            editor.putString((String) mEditText.getTag(), mEditText.getText().toString());
+            editor.putString((String) mTextView.getTag(), mTextView.getText().toString());
             editor.apply();
         }
     }
