@@ -20,21 +20,26 @@ import com.google.gson.JsonParser;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by zhantong on 2017/12/8.
  */
 
 public class ConfigListActivity extends Activity {
-    File[] configFiles;
+    List<File> configFileList;
     Adapter adapter;
+    boolean isEditing = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_config_list);
 
-        configFiles = new File(getFilesDir(), "configs").listFiles();
+        configFileList = new ArrayList<>();
+        configFileList.addAll(Arrays.asList(new File(getFilesDir(), "configs").listFiles()));
 
         RecyclerView recyclerView = findViewById(R.id.recycler_main);
 
@@ -51,7 +56,8 @@ public class ConfigListActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        configFiles = new File(getFilesDir(), "configs").listFiles();
+        configFileList.clear();
+        configFileList.addAll(Arrays.asList(new File(getFilesDir(), "configs").listFiles()));
         adapter.notifyDataSetChanged();
     }
 
@@ -59,6 +65,19 @@ public class ConfigListActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.config_list, menu);
+
+        MenuItem newConfig = menu.findItem(R.id.action_new_config);
+        MenuItem edit = menu.findItem(R.id.action_edit);
+        MenuItem doneEdit = menu.findItem(R.id.action_done_edit);
+        if (isEditing) {
+            newConfig.setVisible(false);
+            edit.setVisible(false);
+            doneEdit.setVisible(true);
+        } else {
+            newConfig.setVisible(true);
+            edit.setVisible(true);
+            doneEdit.setVisible(false);
+        }
         return true;
     }
 
@@ -67,6 +86,12 @@ public class ConfigListActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.action_new_config:
                 startActivity(new Intent(ConfigListActivity.this, ConfigEditActivity.class));
+                return true;
+            case R.id.action_edit:
+            case R.id.action_done_edit:
+                isEditing = !isEditing;
+                adapter.notifyDataSetChanged();
+                invalidateOptionsMenu();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -82,8 +107,8 @@ public class ConfigListActivity extends Activity {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            final File file = configFiles[position];
+        public void onBindViewHolder(final ViewHolder holder, int position) {
+            final File file = configFileList.get(position);
             String fileName = file.getName();
             holder.textBarcodeConfigName.setText(fileName.substring(0, fileName.lastIndexOf(".")));
             JsonParser parser = new JsonParser();
@@ -95,19 +120,35 @@ public class ConfigListActivity extends Activity {
             }
             holder.textBarcodeType.setText(jsonRoot.get("barcodeFormat").getAsString());
             holder.textBarcodeSize.setText(jsonRoot.get("mainWidth").getAsInt() + "x" + jsonRoot.get("mainHeight").getAsInt());
-            holder.btnEdit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(ConfigListActivity.this, ConfigEditActivity.class);
-                    intent.putExtra("path", file.getAbsolutePath());
-                    startActivity(intent);
-                }
-            });
+            if (isEditing) {
+                holder.btnEdit.setVisibility(View.GONE);
+                holder.btnDelete.setVisibility(View.VISIBLE);
+                holder.btnDelete.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        configFileList.get(holder.getAdapterPosition()).delete();
+                        configFileList.clear();
+                        configFileList.addAll(Arrays.asList(new File(getFilesDir(), "configs").listFiles()));
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            } else {
+                holder.btnEdit.setVisibility(View.VISIBLE);
+                holder.btnDelete.setVisibility(View.GONE);
+                holder.btnEdit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(ConfigListActivity.this, ConfigEditActivity.class);
+                        intent.putExtra("path", file.getAbsolutePath());
+                        startActivity(intent);
+                    }
+                });
+            }
         }
 
         @Override
         public int getItemCount() {
-            return configFiles.length;
+            return configFileList.size();
         }
 
         class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -115,6 +156,7 @@ public class ConfigListActivity extends Activity {
             TextView textBarcodeType;
             TextView textBarcodeSize;
             ImageButton btnEdit;
+            ImageButton btnDelete;
 
             public ViewHolder(View itemView) {
                 super(itemView);
@@ -122,6 +164,7 @@ public class ConfigListActivity extends Activity {
                 textBarcodeType = itemView.findViewById(R.id.text_barcode_type);
                 textBarcodeSize = itemView.findViewById(R.id.text_barcode_size);
                 btnEdit = itemView.findViewById(R.id.btn_edit);
+                btnDelete = itemView.findViewById(R.id.btn_delete);
 
                 itemView.setOnClickListener(this);
             }
@@ -129,7 +172,7 @@ public class ConfigListActivity extends Activity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent();
-                String fileName = configFiles[getPosition()].getName();
+                String fileName = configFileList.get(getAdapterPosition()).getName();
                 fileName = fileName.substring(0, fileName.lastIndexOf("."));
                 intent.putExtra("result", fileName);
                 setResult(RESULT_OK, intent);
