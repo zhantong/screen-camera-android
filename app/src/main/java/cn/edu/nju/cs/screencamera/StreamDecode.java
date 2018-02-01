@@ -55,6 +55,7 @@ public class StreamDecode {
     Logger LOG;
     Activity activity;
     BarcodeConfig barcodeConfig;
+    StreamProgressFragment streamProgressFragment;
 
     public StreamDecode() {
         queue = new LinkedBlockingQueue<>(4);
@@ -99,6 +100,10 @@ public class StreamDecode {
 
     public void setBarcodeConfig(BarcodeConfig barcodeConfig) {
         this.barcodeConfig = barcodeConfig;
+    }
+
+    public void setStreamProgressFragment(StreamProgressFragment streamProgressFragment) {
+        this.streamProgressFragment = streamProgressFragment;
     }
 
     public LinkedBlockingQueue<RawImage> getQueue() {

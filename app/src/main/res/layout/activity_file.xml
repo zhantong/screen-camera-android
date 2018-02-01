@@ -11,6 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <fragment
+        android:id="@+id/fragment_stream_progress"
+        android:name="cn.edu.nju.cs.screencamera.StreamProgressFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

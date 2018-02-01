@@ -140,6 +140,7 @@ public class BlackWhiteCodeStream extends StreamDecode {
                                 Log.i(TAG, "last encoding packet: " + encodingPacket.encodingSymbolID());
                                 setStopQueue();
                             }
+                            streamProgressFragment.updateProgress(dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).missingSourceSymbols().size(),dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).numberOfSourceSymbols());
                             dataDecoder.sourceBlock(encodingPacket.sourceBlockNumber()).putEncodingPacket(encodingPacket);
                         }
                     }

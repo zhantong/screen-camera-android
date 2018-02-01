@@ -17,6 +17,7 @@ import android.widget.EditText;
  */
 public class FileActivity extends Activity {
     BarcodeSettingsFragment barcodeSettingsFragment;
+    StreamProgressFragment streamProgressFragment;
 
     /**
      * 界面初始化,设置界面,调用CameraSettings()设置相机参数
@@ -29,6 +30,8 @@ public class FileActivity extends Activity {
         setContentView(R.layout.activity_file);
 
         barcodeSettingsFragment = (BarcodeSettingsFragment) getFragmentManager().findFragmentById(R.id.fragment_barcode_settings);
+
+        streamProgressFragment = (StreamProgressFragment) getFragmentManager().findFragmentById(R.id.fragment_stream_progress);
 
         Button btnStart = findViewById(R.id.btn_start);
         btnStart.setOnClickListener(new View.OnClickListener() {
@@ -72,6 +75,7 @@ public class FileActivity extends Activity {
             public void run() {
                 StreamDecode streamDecode = MultiFormatStream.getInstance(barcodeSettingsFragment.getConfig(), inputFilePath);
                 streamDecode.setActivity(FileActivity.this);
+                streamDecode.setStreamProgressFragment(streamProgressFragment);
                 streamDecode.start();
             }
         };
