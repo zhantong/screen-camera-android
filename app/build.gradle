@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion = 26
-    buildToolsVersion = "26.0.2"
+    compileSdkVersion = 28
+    buildToolsVersion = '28.0.3'
 
     defaultConfig {
         applicationId = "cn.edu.nju.cs.screencamera"
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode = 1
         versionName = "1.0"
 
@@ -43,21 +43,21 @@ android.packagingOptions {
 
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
 
-    compile 'com.j256.simplemagic:simplemagic:1.8'
+    implementation 'com.j256.simplemagic:simplemagic:1.8'
 
-    compile files('libs/openrq-3.4.2-alpha.jar')
+    implementation files('libs/openrq-3.4.2-alpha.jar')
 
-    compile 'org.slf4j:slf4j-api:1.7.21'
-    compile 'com.github.tony19:logback-android-core:1.1.1-6'
-    compile('com.github.tony19:logback-android-classic:1.1.1-6') {
+    implementation 'org.slf4j:slf4j-api:1.7.21'
+    implementation 'com.github.tony19:logback-android-core:1.1.1-6'
+    implementation('com.github.tony19:logback-android-classic:1.1.1-6') {
         exclude group: 'com.google.android', module: 'android'
     }
 
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.8.4'
-    compile 'com.google.code.gson:gson:2.8.0'
-    compile 'com.google.guava:guava:20.0'
-    compile 'com.android.support:recyclerview-v7:26.1.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.4'
+    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'com.google.guava:guava:20.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
 }
